@@ -7,8 +7,11 @@ import { CopilotContext } from "./copilot/copilot-context";
 import { CopilotActions } from "./copilot/copilot-actions";
 
 export function Providers({ children }: { children: React.ReactNode }) {
+  // Use environment variable or fallback to default public key
+  const copilotApiKey = process.env.NEXT_PUBLIC_COPILOT_API_KEY || "ck_pub_885b3aef1f61a5335479cf0beb7e6922";
+
   return (
-    <CopilotKit publicApiKey={process.env.NEXT_PUBLIC_COPILOT_API_KEY || ""}>
+    <CopilotKit publicApiKey={copilotApiKey}>
       <CopilotContext>
         <CopilotActions>
           <CopilotSidebar
