@@ -58,11 +58,14 @@ export function RealtimeConversation({ scenario, onEnd }: RealtimeConversationPr
   }, [scenario]);
 
   const handleConnect = async () => {
+    console.log("[RealtimeConversation] 🔌 Connecting to conversation server...");
+    console.log("[RealtimeConversation] Scenario:", scenario.title);
     setConnectionStatus("connecting");
     toast.info("Connecting to conversation server...");
 
     // Simulate connection delay
     setTimeout(() => {
+      console.log("[RealtimeConversation] ✅ Connected successfully");
       setIsConnected(true);
       setConnectionStatus("connected");
       toast.success("Connected! You can start speaking.");
@@ -77,6 +80,7 @@ export function RealtimeConversation({ scenario, onEnd }: RealtimeConversationPr
         },
       ]);
       setTurnCount(1);
+      console.log("[RealtimeConversation] Initial AI message added");
     }, 1500);
   };
 
@@ -87,19 +91,25 @@ export function RealtimeConversation({ scenario, onEnd }: RealtimeConversationPr
   };
 
   const handleToggleListen = () => {
+    console.log("[RealtimeConversation] 🎤 Toggle listen called. Connected:", isConnected, "Currently listening:", isListening);
     if (!isConnected) {
+      console.log("[RealtimeConversation] ❌ Not connected to server");
       toast.error("Not connected to server");
       return;
     }
 
     if (isListening) {
       // Stop listening
+      console.log("[RealtimeConversation] ⏹️ Stopping listening");
       setIsListening(false);
       toast.info("Stopped listening");
     } else {
       // Start listening
+      console.log("[RealtimeConversation] ▶️ Starting to listen...");
+      console.log("[RealtimeConversation] ⚠️ DEMO MODE: This is a simulation. Real implementation would use OpenAI Realtime API");
       setIsListening(true);
       toast.success("Listening... speak now");
+      toast.info("DEMO: Click 'Simulate Speech Input' button to test", { duration: 3000 });
     }
   };
 
@@ -135,9 +145,14 @@ export function RealtimeConversation({ scenario, onEnd }: RealtimeConversationPr
 
   // Simulate user message (in real implementation, this would come from speech recognition)
   const handleUserSpeak = () => {
-    if (!isListening) return;
+    console.log("[RealtimeConversation] 🗣️ User speak triggered. Is listening:", isListening);
+    if (!isListening) {
+      console.log("[RealtimeConversation] ⚠️ Not listening, skipping");
+      return;
+    }
 
     const simulatedUserMessage = "This is a simulated user response from speech recognition.";
+    console.log("[RealtimeConversation] Adding simulated user message:", simulatedUserMessage);
 
     setMessages(prev => [
       ...prev,
@@ -149,6 +164,7 @@ export function RealtimeConversation({ scenario, onEnd }: RealtimeConversationPr
     ]);
 
     setIsListening(false);
+    console.log("[RealtimeConversation] Triggering AI response...");
     simulateAIResponse(simulatedUserMessage);
   };
 

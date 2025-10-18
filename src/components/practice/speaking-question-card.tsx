@@ -27,18 +27,30 @@ export function SpeakingQuestionCard({
   const [showFeedback, setShowFeedback] = useState(false);
 
   const handleGetFeedback = async () => {
+    console.log("[SpeakingQuestionCard] 📝 Get Feedback button clicked");
+    console.log("[SpeakingQuestionCard] Current state:", {
+      hasAudioBlob: !!state.audioBlob,
+      audioSize: state.audioBlob?.size,
+      isTranscribing: state.isTranscribing,
+      isAssessing: state.isAssessing,
+      hasTranscription: !!state.transcription
+    });
     try {
       // First transcribe
+      console.log("[SpeakingQuestionCard] Starting transcription...");
       toast.info("Transcribing your response...");
       const transcription = await transcribe();
+      console.log("[SpeakingQuestionCard] ✅ Transcription received:", transcription);
 
       // Then assess
+      console.log("[SpeakingQuestionCard] Starting assessment...");
       toast.info("AI is evaluating your response...");
       const assessment = await assess(
         question.question,
         question.level,
         question.rubric?.description
       );
+      console.log("[SpeakingQuestionCard] ✅ Assessment received:", assessment);
 
       setShowFeedback(true);
 

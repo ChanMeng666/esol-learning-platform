@@ -35,14 +35,17 @@ export function VoiceRecorder({
   }
 
   const handleStartRecording = async () => {
+    console.log("[VoiceRecorderComponent] 🔴 Start Recording button clicked");
     try {
       await startRecording();
+      console.log("[VoiceRecorderComponent] ✅ Recording started successfully");
     } catch (error) {
-      console.error("Recording error:", error);
+      console.error("[VoiceRecorderComponent] ❌ Recording error:", error);
     }
   };
 
   const handleStopRecording = () => {
+    console.log("[VoiceRecorderComponent] ⏹️ Stop Recording button clicked");
     stopRecording();
   };
 
