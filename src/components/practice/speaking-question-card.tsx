@@ -46,6 +46,7 @@ export function SpeakingQuestionCard({
       console.log("[SpeakingQuestionCard] Starting assessment...");
       toast.info("AI is evaluating your response...");
       const assessment = await assess(
+        transcription,
         question.question,
         question.level,
         question.rubric?.description

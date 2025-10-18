@@ -234,11 +234,11 @@ export function useVoiceRecorder() {
 
   // Assess transcription using GPT-4
   const assess = useCallback(
-    async (questionText: string, level: string, rubric?: string) => {
-      console.log("[VoiceRecorder] 📊 Assess called. Has transcription:", !!state.transcription);
+    async (transcriptionText: string, questionText: string, level: string, rubric?: string) => {
+      console.log("[VoiceRecorder] 📊 Assess called. Transcription text:", transcriptionText);
       console.log("[VoiceRecorder] Assessment params:", { questionText, level, rubric });
-      if (!state.transcription) {
-        console.error("[VoiceRecorder] ❌ No transcription to assess");
+      if (!transcriptionText) {
+        console.error("[VoiceRecorder] ❌ No transcription text provided");
         throw new Error("No transcription to assess");
       }
 
@@ -246,7 +246,7 @@ export function useVoiceRecorder() {
 
       try {
         const requestBody = {
-          text: state.transcription,
+          text: transcriptionText,
           level,
           skill: "speaking",
           questionText,
@@ -294,7 +294,7 @@ export function useVoiceRecorder() {
         throw new Error("Failed to assess response. Please try again.");
       }
     },
-    [state.transcription]
+    []
   );
 
   // Cleanup on unmount
