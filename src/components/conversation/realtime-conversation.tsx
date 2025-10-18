@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Mic, MicOff, X, Volume2, VolumeX } from "lucide-react";
+import { Mic, MicOff, X, Volume2, VolumeX, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
+import { useVoiceRecorder } from "@/hooks/use-voice-recorder";
 import type { ConversationScenario } from "@/types";
 
 interface RealtimeConversationProps {
@@ -23,11 +24,14 @@ interface Message {
 export function RealtimeConversation({ scenario, onEnd }: RealtimeConversationProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isConnected, setIsConnected] = useState(false);
-  const [isListening, setIsListening] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [turnCount, setTurnCount] = useState(0);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<"idle" | "connecting" | "connected" | "error">("idle");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const { state, startRecording, stopRecording, reset } = useVoiceRecorder();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -39,6 +43,9 @@ export function RealtimeConversation({ scenario, onEnd }: RealtimeConversationPr
 
   // Initialize conversation
   useEffect(() => {
+    console.log("[RealtimeConversation] 🎬 Initializing conversation...");
+    console.log("[RealtimeConversation] Scenario:", scenario.title);
+
     // Add initial system message with scenario context
     setMessages([
       {
@@ -48,27 +55,29 @@ export function RealtimeConversation({ scenario, onEnd }: RealtimeConversationPr
       },
     ]);
 
-    // Simulate connection (in real implementation, this would connect to OpenAI Realtime API)
     handleConnect();
 
     return () => {
-      // Cleanup on unmount
       handleDisconnect();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scenario]);
 
   const handleConnect = async () => {
     console.log("[RealtimeConversation] 🔌 Connecting to conversation server...");
-    console.log("[RealtimeConversation] Scenario:", scenario.title);
     setConnectionStatus("connecting");
-    toast.info("Connecting to conversation server...");
+    toast.info("Preparing conversation...");
 
-    // Simulate connection delay
-    setTimeout(() => {
-      console.log("[RealtimeConversation] ✅ Connected successfully");
+    // Check microphone availability
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("Microphone not supported in this browser");
+      }
+
+      console.log("[RealtimeConversation] ✅ Microphone API available");
       setIsConnected(true);
       setConnectionStatus("connected");
-      toast.success("Connected! You can start speaking.");
+      toast.success("Ready! Click the microphone to speak.");
 
       // Add AI's initial message
       setMessages(prev => [
@@ -81,94 +90,233 @@ export function RealtimeConversation({ scenario, onEnd }: RealtimeConversationPr
       ]);
       setTurnCount(1);
       console.log("[RealtimeConversation] Initial AI message added");
-    }, 1500);
+
+      // Speak AI's initial message if not muted
+      if (!isMuted) {
+        speakText(scenario.initialPrompt);
+      }
+    } catch (error) {
+      console.error("[RealtimeConversation] ❌ Connection failed:", error);
+      setConnectionStatus("error");
+      toast.error("Failed to access microphone. Please check permissions.");
+    }
   };
 
   const handleDisconnect = () => {
+    console.log("[RealtimeConversation] 🔌 Disconnecting...");
     setIsConnected(false);
-    setIsListening(false);
     setConnectionStatus("idle");
+    if (state.isRecording) {
+      stopRecording();
+    }
   };
 
-  const handleToggleListen = () => {
-    console.log("[RealtimeConversation] 🎤 Toggle listen called. Connected:", isConnected, "Currently listening:", isListening);
+  const handleToggleListen = async () => {
+    console.log("[RealtimeConversation] 🎤 Toggle listen called. Connected:", isConnected, "Currently recording:", state.isRecording);
+
     if (!isConnected) {
       console.log("[RealtimeConversation] ❌ Not connected to server");
-      toast.error("Not connected to server");
+      toast.error("Not connected");
       return;
     }
 
-    if (isListening) {
-      // Stop listening
-      console.log("[RealtimeConversation] ⏹️ Stopping listening");
-      setIsListening(false);
-      toast.info("Stopped listening");
+    if (isProcessing) {
+      console.log("[RealtimeConversation] ⚠️ Already processing, please wait");
+      toast.error("Please wait for the current response to complete");
+      return;
+    }
+
+    if (state.isRecording) {
+      // Stop recording and process
+      console.log("[RealtimeConversation] ⏹️ Stopping recording...");
+      stopRecording();
+
+      // Wait a bit for the blob to be created
+      setTimeout(async () => {
+        await processUserSpeech();
+      }, 500);
     } else {
-      // Start listening
-      console.log("[RealtimeConversation] ▶️ Starting to listen...");
-      console.log("[RealtimeConversation] ⚠️ DEMO MODE: This is a simulation. Real implementation would use OpenAI Realtime API");
-      setIsListening(true);
-      toast.success("Listening... speak now");
-      toast.info("DEMO: Click 'Simulate Speech Input' button to test", { duration: 3000 });
+      // Start recording
+      console.log("[RealtimeConversation] ▶️ Starting recording...");
+      try {
+        await startRecording();
+        toast.success("Listening... Click again when done speaking");
+      } catch (error) {
+        console.error("[RealtimeConversation] ❌ Failed to start recording:", error);
+        toast.error("Failed to start recording. Please check microphone permissions.");
+      }
+    }
+  };
+
+  const processUserSpeech = async () => {
+    if (!state.audioBlob) {
+      console.log("[RealtimeConversation] ⚠️ No audio blob to process");
+      toast.error("No audio recorded. Please try again.");
+      return;
+    }
+
+    console.log("[RealtimeConversation] 🔄 Processing user speech...");
+    console.log("[RealtimeConversation] Audio blob size:", state.audioBlob.size);
+    setIsProcessing(true);
+
+    try {
+      // 1. Transcribe user's speech
+      toast.info("Transcribing your speech...");
+      console.log("[RealtimeConversation] 📝 Transcribing audio...");
+
+      const audioFile = new File([state.audioBlob], "recording.webm", {
+        type: "audio/webm",
+      });
+
+      const formData = new FormData();
+      formData.append("audio", audioFile);
+
+      const transcribeResponse = await fetch("/api/openai/transcribe", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!transcribeResponse.ok) {
+        throw new Error("Transcription failed");
+      }
+
+      const { text: transcription } = await transcribeResponse.json();
+      console.log("[RealtimeConversation] ✅ Transcription:", transcription);
+
+      // Add user message to conversation
+      const userMessage: Message = {
+        role: "user",
+        content: transcription,
+        timestamp: new Date(),
+      };
+
+      setMessages(prev => [...prev, userMessage]);
+
+      // 2. Generate AI response using GPT-4
+      toast.info("AI is thinking...");
+      console.log("[RealtimeConversation] 🤖 Generating AI response...");
+
+      const conversationHistory = messages
+        .filter(m => m.role !== "system")
+        .map(m => ({
+          role: m.role,
+          content: m.content,
+        }));
+
+      conversationHistory.push({
+        role: "user",
+        content: transcription,
+      });
+
+      const aiResponse = await fetch("/api/openai/conversation", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: "system",
+              content: `You are participating in a conversation practice scenario.
+Scenario: ${scenario.title}
+Context: ${scenario.context}
+Your Role: ${scenario.aiRole}
+User's Role: ${scenario.userRole}
+
+Respond naturally as your character would. Keep responses conversational and appropriate for an NZCEL ${scenario.level} level learner. Focus on these topics: ${scenario.topics.join(", ")}.`,
+            },
+            ...conversationHistory,
+          ],
+        }),
+      });
+
+      if (!aiResponse.ok) {
+        throw new Error("AI response failed");
+      }
+
+      const { response: aiText } = await aiResponse.json();
+      console.log("[RealtimeConversation] ✅ AI response:", aiText);
+
+      // Add AI message
+      const aiMessage: Message = {
+        role: "assistant",
+        content: aiText,
+        timestamp: new Date(),
+      };
+
+      setMessages(prev => [...prev, aiMessage]);
+      setTurnCount(prev => prev + 1);
+
+      // Speak AI's response if not muted
+      if (!isMuted) {
+        speakText(aiText);
+      }
+
+      // Reset recording state
+      reset();
+      toast.success("Ready for your next response!");
+    } catch (error) {
+      console.error("[RealtimeConversation] ❌ Error processing speech:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to process speech");
+      reset();
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const speakText = async (text: string) => {
+    if (isMuted) return;
+
+    try {
+      console.log("[RealtimeConversation] 🔊 Generating speech for:", text.substring(0, 50) + "...");
+
+      const response = await fetch("/api/openai/tts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text }),
+      });
+
+      if (!response.ok) {
+        console.warn("[RealtimeConversation] ⚠️ TTS failed, skipping audio playback");
+        return;
+      }
+
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+
+      const audio = new Audio(audioUrl);
+      audioRef.current = audio;
+
+      audio.onended = () => {
+        URL.revokeObjectURL(audioUrl);
+      };
+
+      await audio.play();
+      console.log("[RealtimeConversation] ✅ Playing AI speech");
+    } catch (error) {
+      console.warn("[RealtimeConversation] ⚠️ Failed to play speech:", error);
+      // Don't show error to user - text is still displayed
     }
   };
 
   const handleToggleMute = () => {
     setIsMuted(!isMuted);
     toast.info(isMuted ? "Unmuted AI voice" : "Muted AI voice");
-  };
 
-  // Simulate receiving a message (in real implementation, this would come from Realtime API)
-  const simulateAIResponse = (userMessage: string) => {
-    setTimeout(() => {
-      const responses = [
-        "That's an interesting point. Could you elaborate on that?",
-        "I see. How does that relate to your main objective?",
-        "Good question. Let me explain that in more detail...",
-        "I understand your perspective. Have you considered alternative approaches?",
-        "That makes sense. What challenges do you anticipate with this approach?",
-      ];
-
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-
-      setMessages(prev => [
-        ...prev,
-        {
-          role: "assistant",
-          content: randomResponse,
-          timestamp: new Date(),
-        },
-      ]);
-      setTurnCount(prev => prev + 1);
-    }, 1000);
-  };
-
-  // Simulate user message (in real implementation, this would come from speech recognition)
-  const handleUserSpeak = () => {
-    console.log("[RealtimeConversation] 🗣️ User speak triggered. Is listening:", isListening);
-    if (!isListening) {
-      console.log("[RealtimeConversation] ⚠️ Not listening, skipping");
-      return;
+    // Stop current audio if muting
+    if (!isMuted && audioRef.current) {
+      audioRef.current.pause();
     }
-
-    const simulatedUserMessage = "This is a simulated user response from speech recognition.";
-    console.log("[RealtimeConversation] Adding simulated user message:", simulatedUserMessage);
-
-    setMessages(prev => [
-      ...prev,
-      {
-        role: "user",
-        content: simulatedUserMessage,
-        timestamp: new Date(),
-      },
-    ]);
-
-    setIsListening(false);
-    console.log("[RealtimeConversation] Triggering AI response...");
-    simulateAIResponse(simulatedUserMessage);
   };
 
   const handleEndConversation = () => {
+    console.log("[RealtimeConversation] 🏁 Ending conversation. Turns:", turnCount);
     if (turnCount > 0) {
       toast.success(`Conversation ended. You completed ${turnCount} turns.`);
     }
@@ -257,6 +405,14 @@ export function RealtimeConversation({ scenario, onEnd }: RealtimeConversationPr
                 </div>
               </div>
             ))}
+          {isProcessing && (
+            <div className="flex justify-start">
+              <div className="bg-muted rounded-lg p-3 flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span className="text-sm text-muted-foreground">AI is responding...</span>
+              </div>
+            </div>
+          )}
           <div ref={messagesEndRef} />
         </CardContent>
       </Card>
@@ -277,14 +433,19 @@ export function RealtimeConversation({ scenario, onEnd }: RealtimeConversationPr
 
             <Button
               size="lg"
-              className={`gap-2 px-8 ${isListening ? "bg-red-600 hover:bg-red-700" : ""}`}
+              className={`gap-2 px-8 ${state.isRecording ? "bg-red-600 hover:bg-red-700 animate-pulse" : ""}`}
               onClick={handleToggleListen}
-              disabled={!isConnected}
+              disabled={!isConnected || isProcessing}
             >
-              {isListening ? (
+              {state.isRecording ? (
                 <>
                   <MicOff className="h-5 w-5" />
                   Stop Speaking
+                </>
+              ) : isProcessing ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  Processing...
                 </>
               ) : (
                 <>
@@ -305,25 +466,16 @@ export function RealtimeConversation({ scenario, onEnd }: RealtimeConversationPr
             </Button>
           </div>
 
-          {/* Demo Note */}
-          <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-md">
-            <p className="text-xs text-blue-900 dark:text-blue-100">
-              <strong>Demo Mode:</strong> This is a simulation. In the full implementation, this
-              would connect to OpenAI&apos;s Realtime API for live voice conversation with
-              speech-to-text and text-to-speech capabilities.
-            </p>
-          </div>
-
-          {isListening && (
-            <div className="mt-4">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={handleUserSpeak}
-                className="w-full"
-              >
-                Simulate Speech Input (Demo)
-              </Button>
+          {/* Recording indicator */}
+          {state.isRecording && (
+            <div className="mt-4 flex items-center justify-center gap-3 p-3 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-md">
+              <div className="relative">
+                <div className="h-3 w-3 rounded-full bg-red-500 animate-pulse" />
+                <div className="absolute inset-0 h-3 w-3 rounded-full bg-red-500 opacity-75 animate-ping" />
+              </div>
+              <span className="text-sm font-medium text-red-600 dark:text-red-400">
+                Recording... ({state.recordingDuration}s)
+              </span>
             </div>
           )}
         </CardContent>
@@ -334,7 +486,9 @@ export function RealtimeConversation({ scenario, onEnd }: RealtimeConversationPr
         <CardContent className="p-4">
           <h4 className="font-semibold mb-2 text-sm">Tips for Success:</h4>
           <ul className="text-sm space-y-1 text-muted-foreground">
-            <li>• Speak clearly and at a natural pace</li>
+            <li>• Click the microphone button and speak your response</li>
+            <li>• Click again when you finish speaking to send your message</li>
+            <li>• The AI will transcribe, respond, and speak back to you</li>
             <li>• Stay in character for your assigned role</li>
             <li>• Aim for {scenario.targetTurns} meaningful exchanges</li>
             <li>• Focus on: {scenario.topics.join(", ")}</li>
