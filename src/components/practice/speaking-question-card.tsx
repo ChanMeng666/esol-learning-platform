@@ -23,7 +23,7 @@ export function SpeakingQuestionCard({
   onSubmit,
   onSkip,
 }: SpeakingQuestionCardProps) {
-  const { state, transcribe, assess, reset } = useVoiceRecorder();
+  const { state, startRecording, stopRecording, transcribe, assess, reset } = useVoiceRecorder();
   const [showFeedback, setShowFeedback] = useState(false);
 
   const handleGetFeedback = async () => {
@@ -111,6 +111,10 @@ export function SpeakingQuestionCard({
             <>
               {/* Voice Recorder */}
               <VoiceRecorder
+                state={state}
+                startRecording={startRecording}
+                stopRecording={stopRecording}
+                reset={reset}
                 maxDuration={question.expectedDuration || 300}
               />
 

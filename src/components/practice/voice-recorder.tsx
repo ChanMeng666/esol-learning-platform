@@ -3,21 +3,28 @@
 import { Mic, Square, RotateCcw, Loader2, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useVoiceRecorder } from "@/hooks/use-voice-recorder";
 import { cn } from "@/lib/utils";
+import type { VoiceRecordingState } from "@/types";
 
 interface VoiceRecorderProps {
+  state: VoiceRecordingState;
+  startRecording: () => Promise<void>;
+  stopRecording: () => void;
+  reset: () => void;
   onRecordingComplete?: (audioBlob: Blob) => void;
   maxDuration?: number; // in seconds
   className?: string;
 }
 
 export function VoiceRecorder({
+  state,
+  startRecording,
+  stopRecording,
+  reset,
   onRecordingComplete,
   maxDuration = 300, // 5 minutes default
   className,
 }: VoiceRecorderProps) {
-  const { state, startRecording, stopRecording, reset } = useVoiceRecorder();
 
   // Format time as MM:SS
   const formatTime = (seconds: number) => {
