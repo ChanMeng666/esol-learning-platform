@@ -1,20 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Confetti from "react-confetti";
 import { useWindowSize } from "@/hooks/use-window-size";
-import { BookOpen, Trophy, Target, Sparkles, ChevronRight } from "lucide-react";
+import { Target, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { useUserProgress } from "@/lib/store/user-progress";
 import { NZCEL_LEVELS } from "@/data/nzcel-levels";
 import { getRandomQuestion } from "@/data/questions";
 import { QuestionCard } from "@/components/practice/question-card";
-import { LevelSelector } from "@/components/practice/level-selector";
 import type { Question, SkillType } from "@/types";
 
 export default function PracticePage() {

@@ -11,7 +11,7 @@ import { useUserProgress } from "@/lib/store/user-progress";
 
 export default function HomePage() {
   const router = useRouter();
-  const { currentLevel, totalPoints, streak } = useUserProgress();
+  const { totalPoints, streak } = useUserProgress();
   const [hoveredFeature, setHoveredFeature] = useState<number | null>(null);
 
   const features = [

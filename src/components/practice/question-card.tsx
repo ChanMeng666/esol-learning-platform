@@ -203,7 +203,7 @@ export function QuestionCard({ question, onSubmit, onSkip }: QuestionCardProps) 
           <div className="mt-4 p-3 bg-blue-50 rounded-lg flex items-start gap-2">
             <Lightbulb className="w-5 h-5 text-blue-600 mt-0.5" />
             <p className="text-sm text-gray-700">
-              Ask the AI Study Assistant for help if you're stuck!
+              Ask the AI Study Assistant for help if you&apos;re stuck!
             </p>
           </div>
         </CardContent>

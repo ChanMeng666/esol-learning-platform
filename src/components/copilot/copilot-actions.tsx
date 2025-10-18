@@ -13,11 +13,9 @@ import { toast } from "sonner";
 export function CopilotActions({ children }: { children: React.ReactNode }) {
   const {
     setCurrentLevel,
-    setTargetLevel,
     addPoints,
     addBadge,
     updateSkillProgress,
-    completeAchievement,
   } = useUserProgress();
 
   // Action: Generate a practice question
@@ -86,7 +84,7 @@ export function CopilotActions({ children }: { children: React.ReactNode }) {
         required: true,
       },
     ],
-    handler: async ({ questionId, userAnswer }) => {
+    handler: async () => {
       // In a real app, this would check against the question bank
       // For now, provide encouraging feedback
       const isCorrect = Math.random() > 0.3; // Simulated for demo

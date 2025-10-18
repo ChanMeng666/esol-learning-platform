@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { UserProgress, Badge, Achievement, AnswerSubmission, NZCELLevel, SkillType } from "@/types";
+import type { UserProgress, Badge, AnswerSubmission, NZCELLevel, SkillType } from "@/types";
 
 interface UserProgressState extends UserProgress {
   // Actions
@@ -91,7 +91,7 @@ const initialState: UserProgress = {
 
 export const useUserProgress = create<UserProgressState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       ...initialState,
 
       setCurrentLevel: (level) => set({ currentLevel: level }),
