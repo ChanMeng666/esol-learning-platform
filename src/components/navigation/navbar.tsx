@@ -13,7 +13,7 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet"
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 const navLinks = [
     { href: '/', label: 'Home', icon: BookOpen },
@@ -26,6 +26,12 @@ export function Navbar() {
     const pathname = usePathname()
     const { totalPoints, streak } = useUserProgress()
     const [isOpen, setIsOpen] = useState(false)
+    const [mounted, setMounted] = useState(false)
+
+    // Ensure Sheet only renders on client to prevent hydration mismatch
+    useEffect(() => {
+        setMounted(true)
+    }, [])
 
     return (
         <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -79,51 +85,57 @@ export function Navbar() {
                         </div>
 
                         {/* Mobile Menu */}
-                        <Sheet open={isOpen} onOpenChange={setIsOpen}>
-                            <SheetTrigger asChild className="md:hidden">
-                                <Button variant="ghost" size="icon">
-                                    <Menu className="h-5 w-5" />
-                                </Button>
-                            </SheetTrigger>
-                            <SheetContent>
-                                <SheetHeader>
-                                    <SheetTitle className="text-left">Navigation</SheetTitle>
-                                    <SheetDescription className="text-left">
-                                        Navigate through the NZCEL Prep platform
-                                    </SheetDescription>
-                                </SheetHeader>
-                                <div className="mt-6 flex flex-col gap-2">
-                                    {/* Mobile Stats */}
-                                    <div className="mb-4 flex items-center justify-between rounded-lg bg-muted p-4">
-                                        <div className="flex items-center gap-2">
-                                            <Trophy className="h-5 w-5 text-primary" />
-                                            <span className="font-semibold">{totalPoints} Points</span>
+                        {mounted ? (
+                            <Sheet open={isOpen} onOpenChange={setIsOpen}>
+                                <SheetTrigger asChild className="md:hidden">
+                                    <Button variant="ghost" size="icon">
+                                        <Menu className="h-5 w-5" />
+                                    </Button>
+                                </SheetTrigger>
+                                <SheetContent>
+                                    <SheetHeader>
+                                        <SheetTitle className="text-left">Navigation</SheetTitle>
+                                        <SheetDescription className="text-left">
+                                            Navigate through the NZCEL Prep platform
+                                        </SheetDescription>
+                                    </SheetHeader>
+                                    <div className="mt-6 flex flex-col gap-2">
+                                        {/* Mobile Stats */}
+                                        <div className="mb-4 flex items-center justify-between rounded-lg bg-muted p-4">
+                                            <div className="flex items-center gap-2">
+                                                <Trophy className="h-5 w-5 text-primary" />
+                                                <span className="font-semibold">{totalPoints} Points</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <Flame className="h-5 w-5 text-orange-500" />
+                                                <span className="font-semibold">{streak} Days</span>
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <Flame className="h-5 w-5 text-orange-500" />
-                                            <span className="font-semibold">{streak} Days</span>
-                                        </div>
-                                    </div>
 
-                                    {/* Mobile Nav Links */}
-                                    {navLinks.map((link) => {
-                                        const Icon = link.icon
-                                        const isActive = pathname === link.href
-                                        return (
-                                            <Link key={link.href} href={link.href} onClick={() => setIsOpen(false)}>
-                                                <Button
-                                                    variant={isActive ? "default" : "ghost"}
-                                                    className="w-full justify-start gap-3"
-                                                >
-                                                    <Icon className="h-5 w-5" />
-                                                    {link.label}
-                                                </Button>
-                                            </Link>
-                                        )
-                                    })}
-                                </div>
-                            </SheetContent>
-                        </Sheet>
+                                        {/* Mobile Nav Links */}
+                                        {navLinks.map((link) => {
+                                            const Icon = link.icon
+                                            const isActive = pathname === link.href
+                                            return (
+                                                <Link key={link.href} href={link.href} onClick={() => setIsOpen(false)}>
+                                                    <Button
+                                                        variant={isActive ? "default" : "ghost"}
+                                                        className="w-full justify-start gap-3"
+                                                    >
+                                                        <Icon className="h-5 w-5" />
+                                                        {link.label}
+                                                    </Button>
+                                                </Link>
+                                            )
+                                        })}
+                                    </div>
+                                </SheetContent>
+                            </Sheet>
+                        ) : (
+                            <Button variant="ghost" size="icon" className="md:hidden">
+                                <Menu className="h-5 w-5" />
+                            </Button>
+                        )}
                     </div>
                 </div>
             </div>
