@@ -59,7 +59,7 @@ const generateDemoData = () => {
         name: "Fast Learner",
         description: "Completed 10 questions",
         icon: "⚡",
-        rarity: "uncommon" as const,
+        rarity: "rare" as const,
         earnedAt: threeDaysAgo.toISOString(),
       },
       {

@@ -23,7 +23,7 @@ const navLinks = [
 
 export function Navbar() {
     const pathname = usePathname()
-    const { points, streak } = useUserProgress()
+    const { totalPoints, streak } = useUserProgress()
     const [isOpen, setIsOpen] = useState(false)
 
     return (
@@ -66,7 +66,7 @@ export function Navbar() {
                             <div className="flex items-center gap-1.5 rounded-full bg-secondary/50 px-3 py-1.5">
                                 <Trophy className="h-4 w-4 text-secondary-foreground" />
                                 <span className="text-sm font-semibold text-secondary-foreground">
-                                    {points}
+                                    {totalPoints}
                                 </span>
                             </div>
                             <div className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-orange-500 to-red-500 px-3 py-1.5">
@@ -96,7 +96,7 @@ export function Navbar() {
                                     <div className="mb-4 flex items-center justify-between rounded-lg bg-muted p-4">
                                         <div className="flex items-center gap-2">
                                             <Trophy className="h-5 w-5 text-primary" />
-                                            <span className="font-semibold">{points} Points</span>
+                                            <span className="font-semibold">{totalPoints} Points</span>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <Flame className="h-5 w-5 text-orange-500" />
