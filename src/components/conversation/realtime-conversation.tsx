@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Mic, MicOff, X, Volume2, VolumeX, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,6 +30,7 @@ export function RealtimeConversation({ scenario, onEnd }: RealtimeConversationPr
   const [connectionStatus, setConnectionStatus] = useState<"idle" | "connecting" | "connected" | "error">("idle");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const shouldProcessRef = useRef(false);
 
   const { state, startRecording, stopRecording, reset } = useVoiceRecorder();
 
@@ -37,118 +38,48 @@ export function RealtimeConversation({ scenario, onEnd }: RealtimeConversationPr
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+  const speakText = useCallback(async (text: string) => {
+    if (isMuted) return;
 
-  // Initialize conversation
-  useEffect(() => {
-    console.log("[RealtimeConversation] 🎬 Initializing conversation...");
-    console.log("[RealtimeConversation] Scenario:", scenario.title);
-
-    // Add initial system message with scenario context
-    setMessages([
-      {
-        role: "system",
-        content: `Scenario: ${scenario.title}. Context: ${scenario.context}. You are playing the role of: ${scenario.aiRole}. The user is: ${scenario.userRole}.`,
-        timestamp: new Date(),
-      },
-    ]);
-
-    handleConnect();
-
-    return () => {
-      handleDisconnect();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scenario]);
-
-  const handleConnect = async () => {
-    console.log("[RealtimeConversation] 🔌 Connecting to conversation server...");
-    setConnectionStatus("connecting");
-    toast.info("Preparing conversation...");
-
-    // Check microphone availability
     try {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error("Microphone not supported in this browser");
-      }
+      console.log("[RealtimeConversation] 🔊 Generating speech for:", text.substring(0, 50) + "...");
 
-      console.log("[RealtimeConversation] ✅ Microphone API available");
-      setIsConnected(true);
-      setConnectionStatus("connected");
-      toast.success("Ready! Click the microphone to speak.");
-
-      // Add AI's initial message
-      setMessages(prev => [
-        ...prev,
-        {
-          role: "assistant",
-          content: scenario.initialPrompt,
-          timestamp: new Date(),
+      const response = await fetch("/api/openai/tts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      ]);
-      setTurnCount(1);
-      console.log("[RealtimeConversation] Initial AI message added");
+        body: JSON.stringify({ text }),
+      });
 
-      // Speak AI's initial message if not muted
-      if (!isMuted) {
-        speakText(scenario.initialPrompt);
+      if (!response.ok) {
+        console.warn("[RealtimeConversation] ⚠️ TTS failed, skipping audio playback");
+        return;
       }
+
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+
+      const audio = new Audio(audioUrl);
+      audioRef.current = audio;
+
+      audio.onended = () => {
+        URL.revokeObjectURL(audioUrl);
+      };
+
+      await audio.play();
+      console.log("[RealtimeConversation] ✅ Playing AI speech");
     } catch (error) {
-      console.error("[RealtimeConversation] ❌ Connection failed:", error);
-      setConnectionStatus("error");
-      toast.error("Failed to access microphone. Please check permissions.");
+      console.warn("[RealtimeConversation] ⚠️ Failed to play speech:", error);
+      // Don't show error to user - text is still displayed
     }
-  };
+  }, [isMuted]);
 
-  const handleDisconnect = () => {
-    console.log("[RealtimeConversation] 🔌 Disconnecting...");
-    setIsConnected(false);
-    setConnectionStatus("idle");
-    if (state.isRecording) {
-      stopRecording();
-    }
-  };
-
-  const handleToggleListen = async () => {
-    console.log("[RealtimeConversation] 🎤 Toggle listen called. Connected:", isConnected, "Currently recording:", state.isRecording);
-
-    if (!isConnected) {
-      console.log("[RealtimeConversation] ❌ Not connected to server");
-      toast.error("Not connected");
-      return;
-    }
-
-    if (isProcessing) {
-      console.log("[RealtimeConversation] ⚠️ Already processing, please wait");
-      toast.error("Please wait for the current response to complete");
-      return;
-    }
-
-    if (state.isRecording) {
-      // Stop recording and process
-      console.log("[RealtimeConversation] ⏹️ Stopping recording...");
-      stopRecording();
-
-      // Wait a bit for the blob to be created
-      setTimeout(async () => {
-        await processUserSpeech();
-      }, 500);
-    } else {
-      // Start recording
-      console.log("[RealtimeConversation] ▶️ Starting recording...");
-      try {
-        await startRecording();
-        toast.success("Listening... Click again when done speaking");
-      } catch (error) {
-        console.error("[RealtimeConversation] ❌ Failed to start recording:", error);
-        toast.error("Failed to start recording. Please check microphone permissions.");
-      }
-    }
-  };
-
-  const processUserSpeech = async () => {
+  const processUserSpeech = useCallback(async () => {
     if (!state.audioBlob) {
       console.log("[RealtimeConversation] ⚠️ No audio blob to process");
       toast.error("No audio recorded. Please try again.");
@@ -262,46 +193,122 @@ Respond naturally as your character would. Keep responses conversational and app
     } finally {
       setIsProcessing(false);
     }
+  }, [state.audioBlob, messages, scenario, isMuted, reset, speakText]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  // Auto-process audio when recording stops
+  useEffect(() => {
+    if (shouldProcessRef.current && state.audioBlob && !state.isRecording) {
+      console.log("[RealtimeConversation] 🎯 Auto-processing new audio blob");
+      shouldProcessRef.current = false;
+      processUserSpeech();
+    }
+  }, [state.audioBlob, state.isRecording, processUserSpeech]);
+
+  // Initialize conversation
+  useEffect(() => {
+    console.log("[RealtimeConversation] 🎬 Initializing conversation...");
+    console.log("[RealtimeConversation] Scenario:", scenario.title);
+
+    // Add initial system message with scenario context
+    setMessages([
+      {
+        role: "system",
+        content: `Scenario: ${scenario.title}. Context: ${scenario.context}. You are playing the role of: ${scenario.aiRole}. The user is: ${scenario.userRole}.`,
+        timestamp: new Date(),
+      },
+    ]);
+
+    handleConnect();
+
+    return () => {
+      handleDisconnect();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scenario]);
+
+  const handleConnect = async () => {
+    console.log("[RealtimeConversation] 🔌 Connecting to conversation server...");
+    setConnectionStatus("connecting");
+    toast.info("Preparing conversation...");
+
+    // Check microphone availability
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("Microphone not supported in this browser");
+      }
+
+      console.log("[RealtimeConversation] ✅ Microphone API available");
+      setIsConnected(true);
+      setConnectionStatus("connected");
+      toast.success("Ready! Click the microphone to speak.");
+
+      // Add AI's initial message
+      setMessages(prev => [
+        ...prev,
+        {
+          role: "assistant",
+          content: scenario.initialPrompt,
+          timestamp: new Date(),
+        },
+      ]);
+      setTurnCount(1);
+      console.log("[RealtimeConversation] Initial AI message added");
+
+      // Speak AI's initial message if not muted
+      if (!isMuted) {
+        speakText(scenario.initialPrompt);
+      }
+    } catch (error) {
+      console.error("[RealtimeConversation] ❌ Connection failed:", error);
+      setConnectionStatus("error");
+      toast.error("Failed to access microphone. Please check permissions.");
+    }
   };
 
-  const speakText = async (text: string) => {
-    if (isMuted) return;
+  const handleDisconnect = () => {
+    console.log("[RealtimeConversation] 🔌 Disconnecting...");
+    setIsConnected(false);
+    setConnectionStatus("idle");
+    if (state.isRecording) {
+      stopRecording();
+    }
+  };
 
-    try {
-      console.log("[RealtimeConversation] 🔊 Generating speech for:", text.substring(0, 50) + "...");
+  const handleToggleListen = async () => {
+    console.log("[RealtimeConversation] 🎤 Toggle listen called. Connected:", isConnected, "Currently recording:", state.isRecording);
 
-      const response = await fetch("/api/openai/tts", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ text }),
-      });
+    if (!isConnected) {
+      console.log("[RealtimeConversation] ❌ Not connected to server");
+      toast.error("Not connected");
+      return;
+    }
 
-      if (!response.ok) {
-        console.warn("[RealtimeConversation] ⚠️ TTS failed, skipping audio playback");
-        return;
+    if (isProcessing) {
+      console.log("[RealtimeConversation] ⚠️ Already processing, please wait");
+      toast.error("Please wait for the current response to complete");
+      return;
+    }
+
+    if (state.isRecording) {
+      // Stop recording and mark for processing
+      console.log("[RealtimeConversation] ⏹️ Stopping recording...");
+      shouldProcessRef.current = true;
+      stopRecording();
+      // The useEffect will auto-process when audioBlob is ready
+    } else {
+      // Start recording
+      console.log("[RealtimeConversation] ▶️ Starting recording...");
+      try {
+        await startRecording();
+        toast.success("Listening... Click again when done speaking");
+      } catch (error) {
+        console.error("[RealtimeConversation] ❌ Failed to start recording:", error);
+        toast.error("Failed to start recording. Please check microphone permissions.");
       }
-
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
-
-      const audio = new Audio(audioUrl);
-      audioRef.current = audio;
-
-      audio.onended = () => {
-        URL.revokeObjectURL(audioUrl);
-      };
-
-      await audio.play();
-      console.log("[RealtimeConversation] ✅ Playing AI speech");
-    } catch (error) {
-      console.warn("[RealtimeConversation] ⚠️ Failed to play speech:", error);
-      // Don't show error to user - text is still displayed
     }
   };
 
