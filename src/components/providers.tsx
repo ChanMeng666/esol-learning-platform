@@ -8,7 +8,7 @@ import { CopilotActions } from "./copilot/copilot-actions";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <CopilotKit publicApiKey="ck_pub_885b3aef1f61a5335479cf0beb7e6922">
+    <CopilotKit publicApiKey={process.env.NEXT_PUBLIC_COPILOT_API_KEY || ""}>
       <CopilotContext>
         <CopilotActions>
           <CopilotSidebar

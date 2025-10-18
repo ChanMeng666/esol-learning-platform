@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { BookOpen, Brain, Trophy, Sparkles, ArrowRight, Target, Zap } from "lucide-react";
+import { BookOpen, Brain, Trophy, Sparkles, ArrowRight, Target, Zap, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -95,6 +95,15 @@ export default function HomePage() {
               <BookOpen className="mr-2 h-5 w-5" />
               Start Practice
               <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+            <Button
+              size="lg"
+              variant="secondary"
+              className="text-lg px-8 py-6 shadow-lg hover:shadow-xl transition-shadow"
+              onClick={() => router.push("/conversation")}
+            >
+              <MessageSquare className="mr-2 h-5 w-5" />
+              Live Conversation
             </Button>
             <Button
               size="lg"

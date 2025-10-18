@@ -1,6 +1,17 @@
+/**
+ * DEPRECATED: This file is kept for backward compatibility.
+ * Use the new comprehensive question bank from ./questions/index.ts instead.
+ *
+ * New structure provides 200+ questions organized by level and stream.
+ */
+export { ALL_QUESTIONS as SAMPLE_QUESTIONS } from "./questions/index";
+export * from "./questions/index";
+
+// Legacy exports below (commented out, kept for reference)
+/*
 import { Question } from "@/types";
 
-export const SAMPLE_QUESTIONS: Question[] = [
+export const SAMPLE_QUESTIONS_OLD: Question[] = [
   // Foundation Level Questions
   {
     id: "found-list-001",
@@ -196,35 +207,4 @@ export const SAMPLE_QUESTIONS: Question[] = [
     explanation: "Practice delivering formal academic presentations with complex analysis and sophisticated language.",
   },
 ];
-
-// Helper function to get questions by level
-export function getQuestionsByLevel(level: string): Question[] {
-  return SAMPLE_QUESTIONS.filter((q) => q.level === level);
-}
-
-// Helper function to get questions by skill
-export function getQuestionsBySkill(skill: string): Question[] {
-  return SAMPLE_QUESTIONS.filter((q) => q.skill === skill);
-}
-
-// Helper function to get questions by level and skill
-export function getQuestionsByLevelAndSkill(level: string, skill: string): Question[] {
-  return SAMPLE_QUESTIONS.filter((q) => q.level === level && q.skill === skill);
-}
-
-// Get a random question
-export function getRandomQuestion(level?: string, skill?: string): Question | undefined {
-  let questions = [...SAMPLE_QUESTIONS];
-
-  if (level) {
-    questions = questions.filter((q) => q.level === level);
-  }
-  if (skill) {
-    questions = questions.filter((q) => q.skill === skill);
-  }
-
-  if (questions.length === 0) return undefined;
-
-  const randomIndex = Math.floor(Math.random() * questions.length);
-  return questions[randomIndex];
-}
+*/

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Award, BookOpen, LayoutDashboard, Menu, Flame, Trophy } from 'lucide-react'
+import { Award, BookOpen, LayoutDashboard, Menu, Flame, Trophy, MessageSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useUserProgress } from '@/lib/store/user-progress'
 import {
@@ -18,6 +18,7 @@ import { useState } from 'react'
 const navLinks = [
     { href: '/', label: 'Home', icon: BookOpen },
     { href: '/practice', label: 'Practice', icon: Award },
+    { href: '/conversation', label: 'Conversation', icon: MessageSquare },
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
 ]
 
