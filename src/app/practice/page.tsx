@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
 import Confetti from "react-confetti";
 import { useWindowSize } from "@/hooks/use-window-size";
-import { Target, Sparkles } from "lucide-react";
+import { Sparkles, ArrowLeft, TrendingUp, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,13 +13,16 @@ import { useUserProgress } from "@/lib/store/user-progress";
 import { NZCEL_LEVELS } from "@/data/nzcel-levels";
 import { getRandomQuestion } from "@/data/questions";
 import { QuestionCard } from "@/components/practice/question-card";
+import { Breadcrumb } from "@/components/navigation/breadcrumb";
 import type { Question, SkillType } from "@/types";
 
 export default function PracticePage() {
-  const { currentLevel, skillProgress, submitAnswer } = useUserProgress();
+  const router = useRouter();
+  const { currentLevel, skillProgress, submitAnswer, completedQuestions } = useUserProgress();
   const [selectedSkill, setSelectedSkill] = useState<SkillType | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [questionCount, setQuestionCount] = useState(0);
   const { width, height } = useWindowSize();
 
   const currentLevelInfo = NZCEL_LEVELS.find((l) => l.id === currentLevel);
@@ -30,6 +33,9 @@ export default function PracticePage() {
 
     const question = getRandomQuestion(currentLevel, targetSkill);
     setCurrentQuestion(question || null);
+    if (question) {
+      setQuestionCount(prev => prev + 1);
+    }
   };
 
   const handleAnswerSubmit = (questionId: string, answer: string, isCorrect: boolean) => {
@@ -53,66 +59,94 @@ export default function PracticePage() {
 
   const handleSkillSelect = (skill: SkillType) => {
     setSelectedSkill(skill);
+    setQuestionCount(1);
     const question = getRandomQuestion(currentLevel, skill);
     setCurrentQuestion(question || null);
   };
 
   const skills: { id: SkillType; label: string; icon: string; color: string }[] = [
-    { id: "listening", label: "Listening", icon: "🎧", color: "bg-blue-100 text-blue-700" },
-    { id: "speaking", label: "Speaking", icon: "🗣️", color: "bg-green-100 text-green-700" },
-    { id: "reading", label: "Reading", icon: "📖", color: "bg-purple-100 text-purple-700" },
-    { id: "writing", label: "Writing", icon: "✍️", color: "bg-orange-100 text-orange-700" },
+    { id: "listening", label: "Listening", icon: "🎧", color: "bg-primary/10 text-primary border-primary/30" },
+    { id: "speaking", label: "Speaking", icon: "🗣️", color: "bg-secondary/10 text-secondary-foreground border-secondary/30" },
+    { id: "reading", label: "Reading", icon: "📖", color: "bg-destructive/10 text-destructive border-destructive/30" },
+    { id: "writing", label: "Writing", icon: "✍️", color: "bg-accent/20 text-accent-foreground border-accent-foreground/30" },
+  ];
+
+  const breadcrumbItems = [
+    { label: "Home", href: "/" },
+    { label: "Practice" },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-accent via-background to-muted/30 pb-20">
       {showConfetti && <Confetti width={width} height={height} recycle={false} numberOfPieces={200} />}
 
       <div className="container mx-auto px-4 py-8">
+        {/* Breadcrumb Navigation */}
+        <div className="mb-6">
+          <Breadcrumb items={breadcrumbItems} />
+        </div>
+
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
+        <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-4xl font-bold mb-2">Practice Zone</h1>
-              <p className="text-gray-600">
+              <h1 className="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-primary to-destructive">
+                Practice Zone
+              </h1>
+              <p className="text-muted-foreground">
                 Current Level:{" "}
                 <Badge variant="secondary" className="ml-2">
                   {currentLevelInfo?.name || currentLevel}
                 </Badge>
+                {selectedSkill && (
+                  <Badge variant="outline" className="ml-2">
+                    Question {questionCount} • {completedQuestions.length} Total
+                  </Badge>
+                )}
               </p>
             </div>
-            <Button variant="outline">
-              <Target className="mr-2 h-4 w-4" />
-              Change Level
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => router.push("/dashboard")}>
+                <TrendingUp className="mr-2 h-4 w-4" />
+                Dashboard
+              </Button>
+              <Button variant="ghost" onClick={() => router.push("/")}>
+                <Home className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
-        </motion.div>
+
+          {/* Quick Actions */}
+          {selectedSkill && (
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedSkill(null)}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Change Skill
+              </Button>
+            </div>
+          )}
+        </div>
 
         {/* Skill Progress Overview */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
-        >
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {skills.map((skill) => (
             <Card
               key={skill.id}
-              className={`cursor-pointer transition-all ${
+              className={`cursor-pointer transition-all border-2 ${
                 selectedSkill === skill.id
-                  ? "ring-2 ring-purple-500 shadow-lg"
-                  : "hover:shadow-md"
+                  ? "ring-2 ring-primary shadow-lg border-primary"
+                  : "hover:shadow-md hover:border-primary/30"
               }`}
               onClick={() => handleSkillSelect(skill.id)}
             >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <span className="text-3xl">{skill.icon}</span>
-                  <Badge variant="outline">{skillProgress[skill.id]}%</Badge>
+                  <Badge className={skill.color}>{skillProgress[skill.id]}%</Badge>
                 </div>
                 <CardTitle className="text-lg mt-2">{skill.label}</CardTitle>
               </CardHeader>
@@ -121,80 +155,57 @@ export default function PracticePage() {
               </CardContent>
             </Card>
           ))}
-        </motion.div>
+        </div>
 
         {/* Main Practice Area */}
-        <AnimatePresence mode="wait">
-          {!selectedSkill ? (
-            <motion.div
-              key="select-skill"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="text-center py-20"
-            >
-              <Sparkles className="w-16 h-16 mx-auto mb-4 text-purple-500" />
-              <h2 className="text-2xl font-bold mb-2">Select a Skill to Practice</h2>
-              <p className="text-gray-600">
-                Choose Listening, Speaking, Reading, or Writing to begin
-              </p>
-            </motion.div>
-          ) : currentQuestion ? (
-            <motion.div
-              key={currentQuestion.id}
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-            >
-              <QuestionCard
-                question={currentQuestion}
-                onSubmit={handleAnswerSubmit}
-                onSkip={() => loadNewQuestion()}
-              />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="no-questions"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-20"
-            >
-              <Card className="max-w-md mx-auto">
-                <CardHeader>
-                  <CardTitle>No Questions Available</CardTitle>
-                  <CardDescription>
-                    There are no questions for {selectedSkill} at {currentLevel} level yet.
-                    Try a different skill or level!
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button onClick={() => setSelectedSkill(null)}>
-                    Choose Different Skill
-                  </Button>
-                </CardContent>
-              </Card>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {!selectedSkill ? (
+          <div className="text-center py-20">
+            <Sparkles className="w-16 h-16 mx-auto mb-4 text-primary" />
+            <h2 className="text-2xl font-bold mb-2">Select a Skill to Practice</h2>
+            <p className="text-muted-foreground">
+              Choose Listening, Speaking, Reading, or Writing to begin
+            </p>
+          </div>
+        ) : currentQuestion ? (
+          <div key={currentQuestion.id}>
+            <QuestionCard
+              question={currentQuestion}
+              onSubmit={handleAnswerSubmit}
+              onSkip={() => loadNewQuestion()}
+            />
+          </div>
+        ) : (
+          <div className="text-center py-20">
+            <Card className="max-w-md mx-auto">
+              <CardHeader>
+                <CardTitle>No Questions Available</CardTitle>
+                <CardDescription>
+                  There are no questions for {selectedSkill} at {currentLevel} level yet.
+                  Try a different skill or level!
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button onClick={() => setSelectedSkill(null)}>
+                  Choose Different Skill
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* AI Hint */}
         {selectedSkill && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="mt-8"
-          >
-            <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+          <div className="mt-8">
+            <Card className="bg-gradient-to-r from-accent to-muted/50 border-2 border-primary/30">
               <CardContent className="p-4 flex items-center gap-3">
-                <Sparkles className="w-5 h-5 text-purple-500" />
-                <p className="text-sm">
+                <Sparkles className="w-5 h-5 text-primary" />
+                <p className="text-sm text-foreground">
                   <strong>Tip:</strong> Open the AI Study Assistant (sidebar) for personalized help
                   and explanations!
                 </p>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
         )}
       </div>
     </div>

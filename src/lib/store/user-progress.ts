@@ -17,44 +17,98 @@ interface UserProgressState extends UserProgress {
   resetProgress: () => void;
 }
 
+// Generate realistic demo data for initial state
+const generateDemoData = () => {
+  const now = new Date();
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const threeDaysAgo = new Date(now);
+  threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+
+  const weekAgo = new Date(now);
+  weekAgo.setDate(weekAgo.getDate() - 7);
+
+  // Generate 32 mock completed question IDs
+  const completedQuestions = Array.from({ length: 32 }, (_, i) =>
+    `demo-question-${String(i + 1).padStart(3, '0')}`
+  );
+
+  return {
+    completedQuestions,
+    skillProgress: {
+      listening: 68,
+      speaking: 52,
+      reading: 74,
+      writing: 61,
+    },
+    totalPoints: 1050,
+    streak: 5,
+    lastStudyDate: yesterday.toISOString(),
+    badges: [
+      {
+        id: "first-steps-badge",
+        name: "First Steps",
+        description: "Completed your first question",
+        icon: "🎯",
+        rarity: "common" as const,
+        earnedAt: weekAgo.toISOString(),
+      },
+      {
+        id: "fast-learner-badge",
+        name: "Fast Learner",
+        description: "Completed 10 questions",
+        icon: "⚡",
+        rarity: "uncommon" as const,
+        earnedAt: threeDaysAgo.toISOString(),
+      },
+      {
+        id: "dedication-badge",
+        name: "Dedicated",
+        description: "Maintained a 5-day streak",
+        icon: "🔥",
+        rarity: "rare" as const,
+        earnedAt: yesterday.toISOString(),
+      },
+    ],
+  };
+};
+
+const demoData = generateDemoData();
+
 const initialState: UserProgress = {
   currentLevel: "foundation",
   targetLevel: null,
-  skillProgress: {
-    listening: 0,
-    speaking: 0,
-    reading: 0,
-    writing: 0,
-  },
-  completedQuestions: [],
-  totalPoints: 0,
-  streak: 0,
-  lastStudyDate: null,
-  badges: [],
+  skillProgress: demoData.skillProgress,
+  completedQuestions: demoData.completedQuestions,
+  totalPoints: demoData.totalPoints,
+  streak: demoData.streak,
+  lastStudyDate: demoData.lastStudyDate,
+  badges: demoData.badges,
   achievements: [
     {
       id: "first-question",
       title: "First Steps",
       description: "Complete your first question",
-      progress: 0,
+      progress: 1,
       target: 1,
-      completed: false,
+      completed: true,
       reward: 50,
     },
     {
       id: "ten-questions",
       title: "Getting Started",
       description: "Complete 10 questions",
-      progress: 0,
+      progress: 10,
       target: 10,
-      completed: false,
+      completed: true,
       reward: 100,
     },
     {
       id: "fifty-questions",
       title: "Dedicated Learner",
       description: "Complete 50 questions",
-      progress: 0,
+      progress: 32,
       target: 50,
       completed: false,
       reward: 250,
@@ -63,7 +117,7 @@ const initialState: UserProgress = {
       id: "hundred-questions",
       title: "NZCEL Master",
       description: "Complete 100 questions",
-      progress: 0,
+      progress: 32,
       target: 100,
       completed: false,
       reward: 500,
@@ -72,7 +126,7 @@ const initialState: UserProgress = {
       id: "seven-day-streak",
       title: "Week Warrior",
       description: "Maintain a 7-day study streak",
-      progress: 0,
+      progress: 5,
       target: 7,
       completed: false,
       reward: 200,
@@ -81,7 +135,7 @@ const initialState: UserProgress = {
       id: "perfect-score",
       title: "Perfectionist",
       description: "Get 10 questions correct in a row",
-      progress: 0,
+      progress: 7,
       target: 10,
       completed: false,
       reward: 300,
