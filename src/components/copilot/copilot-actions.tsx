@@ -121,7 +121,7 @@ export function CopilotActions({ children }: { children: React.ReactNode }) {
       const skillProgress = progress.skillProgress;
 
       // Find the weakest skill
-      const weakestSkill = Object.entries(skillProgress).reduce((min, [skill, value]) =>
+      const weakestSkill = Object.entries(skillProgress).reduce<string>((min, [skill, value]) =>
         value < skillProgress[min as SkillType] ? skill : min
       , "listening") as SkillType;
 
