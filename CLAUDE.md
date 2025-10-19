@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-An AI-powered NZCEL (New Zealand Certificates in English Language) exam preparation platform built with Next.js 15, React 19, and CopilotKit. The app uses client-side state management with Zustand and LocalStorage, with no traditional backend—only Next.js API routes for OpenAI integrations.
+A full-stack AI-powered NZCEL (New Zealand Certificates in English Language) exam preparation platform built with Next.js 15, React 19, CopilotKit, Neon PostgreSQL, and Stack Auth. The app features a complete backend with database persistence, intelligent audio caching, user authentication, and cloud storage.
+
+**Architecture**: Full-stack with Next.js Server Actions, Neon PostgreSQL (14 tables), Stack Auth authentication, Vercel Blob storage, and OpenAI integrations (TTS, Whisper, GPT-4).
 
 ## Development Commands
 
@@ -16,22 +18,47 @@ npm run dev              # Start dev server at http://localhost:3000
 npm run build            # Create optimized production build
 npm start                # Run production server
 
+# Database
+npm run drizzle:generate # Generate migration files
+npm run drizzle:migrate  # Run migrations
+npm run drizzle:push     # Push schema directly (development)
+
 # Linting
 npm run lint             # Run ESLint (uses eslint.config.mjs)
 ```
 
 ## Architecture
 
-### State Management: Zustand with LocalStorage Persistence
+### Database Layer: Neon PostgreSQL with Drizzle ORM
 
-The entire application state lives in `src/lib/store/user-progress.ts`:
+The application uses a **Neon PostgreSQL** serverless database with **Drizzle ORM** for type-safe queries. All database operations are performed through **Next.js Server Actions** with **Stack Auth** authentication.
 
-- **Persistence**: Uses Zustand's `persist` middleware with `name: "nzcel-user-progress"` to automatically sync to localStorage
-- **Demo Data**: Initializes with realistic demo data (32 completed questions, skills at 52-74%, 3 badges, 1050 points, 5-day streak)
-- **Achievement Logic**: Automatically awards achievements and bonus points when thresholds are met (see `submitAnswer` action in user-progress.ts:241-298)
-- **State Actions**: All state mutations go through Zustand actions (setCurrentLevel, addPoints, updateSkillProgress, etc.)
+**Schema Location**: `src/lib/db/schema.ts` (460 lines, 14 tables)
 
-**Important**: When modifying user progress, always use the Zustand store actions. Never manipulate localStorage directly.
+**Key Tables**:
+1. **User Progress** (4 tables): `user_progress`, `completed_questions`, `badges`, `achievements`
+2. **CopilotKit Chat** (2 tables): `copilot_conversations`, `copilot_messages`
+3. **Audio Management** (4 tables): `audio_files`, `question_audio_cache`, `user_recordings`, `transcriptions`
+4. **Practice Sessions** (2 tables): `practice_sessions`, `session_answers`
+5. **Conversation Practice** (2 tables): `conversation_sessions`, `conversation_turns`
+
+**Authentication**: All Server Actions use `fetchWithDrizzle()` helper from `src/lib/db/index.ts` which:
+- Authenticates user via Stack Auth (`stackServerApp.getUser()`)
+- Extracts `userId` from session
+- Scopes all database queries to authenticated user
+
+**Important**: All database operations MUST go through Server Actions in `src/actions/`. Never query the database directly from client components.
+
+### State Management: Zustand with LocalStorage Cache
+
+`src/lib/store/user-progress.ts` provides **client-side caching** for performance:
+
+- **Purpose**: Fast UI updates without waiting for database queries
+- **Persistence**: Uses Zustand's `persist` middleware with localStorage
+- **Sync Strategy**: Server Actions update both database AND Zustand store
+- **Demo Data**: Initializes with realistic demo data for development
+
+**Important**: Server Actions are the source of truth. Zustand store is a cache only.
 
 ### CopilotKit AI Integration
 
@@ -48,6 +75,68 @@ The AI integration has two key components:
 - These actions enable the AI to interact with the app state and provide adaptive learning experiences
 
 **Setup**: CopilotKit is initialized in `src/app/layout.tsx` and wraps the entire app. The CopilotSidebar is always available.
+
+### Server Actions: Database Operations
+
+All database operations are performed through Next.js Server Actions located in `src/actions/`:
+
+**`src/actions/audio.ts`** (200 lines) - Audio management and intelligent caching
+- `getQuestionAudio()` - **CRITICAL FEATURE**: Caches OpenAI TTS audio to avoid repeated API calls
+  - First call: generates audio, uploads to Blob, saves to database (2-3s)
+  - Subsequent calls: returns cached URL (0.1s) ✨
+  - **Cost savings**: 90%+ reduction in TTS API calls
+- `generateTTS()` - Calls OpenAI Text-to-Speech API
+- `updateAudioAccessCount()` - Tracks cache hit statistics
+- `getAudioCacheStats()` - Provides cache performance monitoring
+
+**`src/actions/recordings.ts`** (177 lines) - User recording and transcription management
+- `saveUserRecording()` - Saves user voice recordings, transcriptions, and metadata
+- `getUserRecordings()` - Fetches user's recording history
+- `getRecordingById()` - Retrieves specific recording with full details
+- `getSessionRecordings()` - Gets all recordings for a practice session
+
+**`src/actions/copilot-chat.ts`** (254 lines) - CopilotKit chat history persistence
+- `getOrCreateConversation()` - Creates or retrieves conversation sessions with context
+- `saveChatMessage()` - Persists individual chat messages
+- `getChatHistory()` - Retrieves messages for a conversation
+- `getUserConversations()` - Lists all conversations for current user
+
+**`src/actions/sessions.ts`** (380 lines) - Practice and conversation session tracking
+- `createPracticeSession()` - Creates new practice session
+- `saveSessionAnswer()` - Records individual question answers
+- `completePracticeSession()` - Marks session as complete
+- `createConversationSession()` - Creates conversation practice session
+- `saveConversationTurn()` - Records individual conversation turns
+
+**`src/actions/user-progress.ts`** (407 lines) - User progress and gamification
+- `getUserProgress()` - Fetches current user's progress data
+- `updateSkillProgress()` - Updates skill progress (0-100)
+- `submitAnswer()` - Core action that records answers, updates points, streaks, achievements
+- `awardBadge()` - Awards a badge to user
+- `getAchievements()` - Fetches all achievements with progress
+
+**Important Patterns**:
+1. All Server Actions use `fetchWithDrizzle()` for authenticated database access
+2. Actions return user-specific data only (scoped by userId)
+3. Error handling with try/catch and appropriate error messages
+4. TypeScript types for all parameters and return values
+
+### Vercel Blob Storage: Audio File Management
+
+**Location**: `src/lib/blob/audio-storage.ts` (217 lines)
+
+Audio files are stored in Vercel Blob with organized directory structure:
+- `audio/questions/{questionId}_*.mp3` - Question audio (permanent)
+- `audio/user-recordings/{userId}/{sessionId}/*.webm` - User recordings (90-day expiry)
+- `audio/ai-responses/{sessionId}/*.mp3` - AI response audio (30-day expiry)
+
+**Key Functions**:
+- `uploadAudioFile()` - Uploads audio to Vercel Blob with organized directory structure
+- `deleteAudioFile()` - Removes audio file from Blob storage
+- `generateContentHash()` - Creates SHA256 hash for deduplication
+- `calculateExpiryDate()` - Calculates auto-cleanup dates based on file type
+
+**Important**: All audio URLs from Blob storage are CDN-accelerated and publicly accessible.
 
 ### Voice & Speaking Features
 
@@ -76,7 +165,9 @@ Located in `src/app/api/openai/`:
 - **`/conversation`**: Chat completions for conversation scenarios
 - **`/realtime`**: Realtime API integration (if used)
 
-**API Client**: All routes use `getOpenAIClient()` from `src/lib/openai.ts` (not shown but should exist). Ensure OPENAI_API_KEY is set in environment variables.
+**API Client**: All routes use `getOpenAIClient()` from `src/lib/openai.ts`. Ensure OPENAI_API_KEY is set in environment variables.
+
+**Important**: Most TTS calls should go through `getQuestionAudio()` Server Action instead of calling `/tts` directly, to take advantage of intelligent caching.
 
 ### NZCEL Data Structure
 
@@ -97,39 +188,73 @@ Located in `src/app/api/openai/`:
 ```
 src/
 ├── app/
-│   ├── layout.tsx              # Root layout with CopilotKit provider
-│   ├── page.tsx                # Landing page
-│   ├── practice/page.tsx       # Practice interface (questions by skill)
-│   ├── conversation/page.tsx   # Real-time voice conversation
-│   └── dashboard/page.tsx      # Progress tracking & achievements
+│   ├── (main)/                 # Main route group (protected)
+│   │   ├── page.tsx           # Landing page
+│   │   ├── practice/          # Practice interface (questions by skill)
+│   │   ├── conversation/      # Real-time voice conversation
+│   │   └── dashboard/         # Progress tracking & achievements
+│   ├── handler/[...stack]/    # Stack Auth routes (sign in, sign up, etc.)
+│   ├── api/openai/            # OpenAI API routes
+│   └── layout.tsx             # Root layout with Stack Auth + CopilotKit providers
+├── actions/                   # Server Actions (database operations)
+│   ├── audio.ts              # Audio caching & TTS
+│   ├── recordings.ts         # User recordings
+│   ├── copilot-chat.ts       # Chat history
+│   ├── sessions.ts           # Session tracking
+│   └── user-progress.ts      # Progress & gamification
 ├── components/
-│   ├── copilot/                # CopilotKit context & actions
-│   ├── practice/               # Question cards, voice recorder, audio player
-│   ├── conversation/           # Real-time conversation UI
-│   ├── ui/                     # shadcn/ui components
-│   └── providers.tsx           # App-level providers wrapper
-├── data/                       # NZCEL levels, questions, scenarios
-├── hooks/                      # Custom React hooks (voice recorder, audio playback)
+│   ├── copilot/              # CopilotKit context & actions
+│   ├── practice/             # Question cards, voice recorder, audio player
+│   ├── conversation/         # Real-time conversation UI
+│   ├── navigation/           # Navbar, footer
+│   ├── ui/                   # shadcn/ui components (20+)
+│   └── providers.tsx         # App-level providers wrapper
 ├── lib/
-│   └── store/                  # Zustand state management
-└── types/index.ts              # TypeScript definitions
+│   ├── db/
+│   │   ├── schema.ts         # Drizzle schema (14 tables, 460 lines)
+│   │   └── index.ts          # fetchWithDrizzle helper
+│   ├── blob/
+│   │   └── audio-storage.ts  # Vercel Blob utilities
+│   ├── store/                # Zustand state management
+│   ├── stack.ts              # Stack Auth config
+│   └── openai.ts             # OpenAI client
+├── data/                     # NZCEL levels, questions, scenarios
+├── hooks/                    # Custom React hooks
+│   ├── use-voice-recorder.ts
+│   ├── use-audio-playback.ts
+│   └── use-copilot-chat-history.ts
+└── types/index.ts            # TypeScript definitions
 ```
 
 ## Key Implementation Patterns
 
-### 1. Question Flow
+### 1. Question Flow with Database Persistence
 1. User selects skill on `/practice` page
-2. `getQuestionsByLevelAndSkill()` fetches questions for current level
-3. User answers → Submit → Update state via `submitAnswer()` action
-4. Achievement logic runs automatically, awards points/badges if thresholds met
-5. Confetti animation triggers on achievement completion
+2. `createPracticeSession()` creates session in database
+3. `getQuestionsByLevelAndSkill()` fetches questions for current level
+4. User answers → Call `saveSessionAnswer()` Server Action
+5. `submitAnswer()` in `user-progress.ts` updates:
+   - completed_questions table
+   - user_progress (points, streak, questions_completed)
+   - achievements progress
+   - Zustand store (client cache)
+6. Achievement logic runs automatically, awards points/badges if thresholds met
+7. Confetti animation triggers on achievement completion
+8. `completePracticeSession()` marks session as complete
 
-### 2. Voice Recording Flow
+### 2. Voice Recording Flow with Database Persistence
 1. User clicks mic → `startRecording()` → MediaRecorder starts
 2. User clicks stop → `stopRecording()` → Blob created
 3. Call `transcribe()` → POST to `/api/openai/transcribe` → Get text
 4. Call `assess(text, question, level)` → POST to `/api/openai/assess` → Get feedback
-5. Display results, update skill progress
+5. **NEW**: Call `saveUserRecording()` Server Action:
+   - Uploads audio to Vercel Blob
+   - Creates audio_files record
+   - Creates transcriptions record
+   - Creates user_recordings record
+   - Links to practice session
+6. Display results, update skill progress
+7. **NEW**: Call `saveSessionAnswer()` with recording and transcription IDs
 
 **Critical**: The transcription state must be set BEFORE processing the audio blob. See commit b5f2d01 for reference.
 
@@ -189,18 +314,44 @@ No formal test suite currently exists. Manual testing workflow:
 
 ## Environment Variables
 
-Required:
-- `OPENAI_API_KEY`: For Whisper, GPT-4, and TTS
-- Optional: `COPILOT_CLOUD_API_KEY` (if using CopilotKit Cloud instead of local)
+Required in `.env.local`:
+
+```bash
+# Database
+DATABASE_URL="postgresql://..."  # From Neon
+
+# Authentication
+STACK_SECRET_SERVER_KEY="..."
+NEXT_PUBLIC_STACK_PROJECT_ID="..."
+NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY="..."
+
+# Storage
+BLOB_READ_WRITE_TOKEN="..."  # From Vercel
+
+# AI APIs
+OPENAI_API_KEY="..."
+COPILOT_CLOUD_API_KEY="..."  # Optional, for CopilotKit Cloud
+```
+
+**Setup Steps**:
+1. Create Neon database → Copy DATABASE_URL
+2. Create Stack Auth project → Copy all STACK_* keys
+3. Create Vercel project → Enable Blob → Copy BLOB_READ_WRITE_TOKEN
+4. Get OpenAI API key from platform.openai.com
 
 ## Common Pitfalls
 
-1. **Don't bypass Zustand actions**: Always use store actions to modify state
-2. **Voice recording state management**: Use refs for async callback values
-3. **Achievement logic**: Already auto-runs on `submitAnswer()`, don't duplicate
-4. **CopilotKit context**: Changes to NZCEL data structure require updating `copilot-context.tsx`
-5. **API routes**: All OpenAI routes should use `getOpenAIClient()` helper
-6. **Transcription edge cases**: Handle empty/null audio blobs gracefully
+1. **Never query database directly from client**: Always use Server Actions in `src/actions/`
+2. **Always use fetchWithDrizzle**: Never create raw Drizzle client instances
+3. **Audio caching**: Use `getQuestionAudio()` instead of calling TTS API directly
+4. **User data isolation**: Server Actions automatically scope to authenticated user
+5. **Zustand is cache only**: Server Actions are the source of truth
+6. **Voice recording state management**: Use refs for async callback values
+7. **Achievement logic**: Already auto-runs on `submitAnswer()`, don't duplicate
+8. **CopilotKit context**: Changes to NZCEL data structure require updating `copilot-context.tsx`
+9. **API routes**: All OpenAI routes should use `getOpenAIClient()` helper
+10. **Transcription edge cases**: Handle empty/null audio blobs gracefully
+11. **Database migrations**: Use `drizzle:generate` + `drizzle:migrate`, not `drizzle:push` in production
 
 ## UI & Styling
 
@@ -212,11 +363,21 @@ Required:
 
 ## Additional Notes
 
-- The app is designed to work entirely client-side except for OpenAI API calls
-- No user authentication or database—all data in LocalStorage
+- The app is **full-stack** with complete backend (database, authentication, file storage)
+- User data persists across devices via cloud database
+- Audio caching reduces API costs by 90%+ for repeated questions
+- All user recordings and transcriptions are permanently stored
+- Complete session tracking enables learning analytics
 - NZCEL framework is complete and should not be modified without research
 - Voice features require HTTPS in production (browser security)
-- Consider adding tests for critical flows (voice recording, achievement logic)
+- Database migrations should be tested in development before production deployment
+
+## Database Documentation
+
+For comprehensive database architecture documentation, see:
+- **[DATABASE_ARCHITECTURE.md](DATABASE_ARCHITECTURE.md)** - Complete schema, ERD diagrams, Server Actions catalog, data flow, integration examples
+- **[DATABASE_SCHEMA_IMPLEMENTATION.md](DATABASE_SCHEMA_IMPLEMENTATION.md)** - Implementation guide with real-world integration examples
+- **[STACK_AUTH_INTEGRATION.md](STACK_AUTH_INTEGRATION.md)** - Stack Auth setup and migration guide
 
 ## Development Guidelines
 
