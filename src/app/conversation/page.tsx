@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { MessageSquare, Play, Home, TrendingUp, ArrowLeft } from "lucide-react";
+import { MessageSquare, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -47,76 +47,28 @@ export default function ConversationPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-4xl font-bold mb-2 text-primary">
-                Real-Time Conversation Practice
-              </h1>
-              <p className="text-muted-foreground">
-                Speak with AI in realistic scenarios •{" "}
-                <Badge variant="secondary" className="ml-2">
-                  {currentLevelInfo?.name || currentLevel}
-                </Badge>
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => router.push("/dashboard")}>
-                <TrendingUp className="mr-2 h-4 w-4" />
-                Dashboard
-              </Button>
-            </div>
-          </div>
+          <h1 className="text-4xl font-bold mb-2 text-primary">
+            Conversation Practice
+          </h1>
+          <p className="text-muted-foreground">
+            <Badge variant="secondary">
+              {currentLevelInfo?.name || currentLevel}
+            </Badge>
+          </p>
         </div>
-
-        {/* Info Card */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MessageSquare className="w-5 h-5 text-primary" />
-              How It Works
-            </CardTitle>
-            <CardDescription>
-              Practice speaking with AI
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-start gap-3">
-              <Badge className="mt-0.5">1</Badge>
-              <p className="text-sm">
-                <strong>Pick a scenario</strong>
-              </p>
-            </div>
-            <div className="flex items-start gap-3">
-              <Badge className="mt-0.5">2</Badge>
-              <p className="text-sm">
-                <strong>Speak naturally</strong>
-              </p>
-            </div>
-            <div className="flex items-start gap-3">
-              <Badge className="mt-0.5">3</Badge>
-              <p className="text-sm">
-                <strong>Get feedback</strong>
-              </p>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Scenarios */}
         <div>
-          <h2 className="text-2xl font-bold mb-4">Available Scenarios for {currentLevelInfo?.name}</h2>
+          <h2 className="text-2xl font-bold mb-4">Select a Scenario</h2>
 
           {scenarios.length === 0 ? (
             <Card>
               <CardContent className="p-8 text-center">
                 <MessageSquare className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="text-xl font-semibold mb-2">No scenarios available</h3>
-                <p className="text-muted-foreground mb-4">
-                  No scenarios for {currentLevel}. Try another level.
+                <p className="text-muted-foreground">
+                  Try practicing other skills first.
                 </p>
-                <Button onClick={() => router.push("/practice")}>
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Go to Practice
-                </Button>
               </CardContent>
             </Card>
           ) : (

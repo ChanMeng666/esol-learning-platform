@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Sparkles, ArrowLeft, TrendingUp, Home, Headphones, Mic, BookOpen, PenTool } from "lucide-react";
+import { Sparkles, ArrowLeft, Headphones, Mic, BookOpen, PenTool } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -184,37 +184,26 @@ export default function PracticePage() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-4xl font-bold mb-2 text-primary">
-                Practice Zone
-              </h1>
-              <p className="text-muted-foreground">
-                Current Level:{" "}
-                <Badge variant="secondary" className="ml-2">
-                  {currentLevelInfo?.name || currentLevel}
+          <h1 className="text-4xl font-bold mb-2 text-primary">
+            Practice
+          </h1>
+          <p className="text-muted-foreground mb-4">
+            <Badge variant="secondary">
+              {currentLevelInfo?.name || currentLevel}
+            </Badge>
+            {selectedSkill && (
+              <>
+                <Badge variant="outline" className="ml-2">
+                  Question {questionCount} • {sessionStats.questionsAttempted}/10
                 </Badge>
-                {selectedSkill && (
-                  <>
-                    <Badge variant="outline" className="ml-2">
-                      Question {questionCount} • Session: {sessionStats.questionsAttempted}/10
-                    </Badge>
-                    {sessionStats.questionsAttempted > 0 && (
-                      <Badge variant={sessionStats.questionsCorrect / sessionStats.questionsAttempted >= 0.7 ? "default" : "secondary"} className="ml-2">
-                        {Math.round((sessionStats.questionsCorrect / sessionStats.questionsAttempted) * 100)}% Accuracy
-                      </Badge>
-                    )}
-                  </>
+                {sessionStats.questionsAttempted > 0 && (
+                  <Badge variant={sessionStats.questionsCorrect / sessionStats.questionsAttempted >= 0.7 ? "default" : "secondary"} className="ml-2">
+                    {Math.round((sessionStats.questionsCorrect / sessionStats.questionsAttempted) * 100)}% Accuracy
+                  </Badge>
                 )}
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => router.push("/dashboard")}>
-                <TrendingUp className="mr-2 h-4 w-4" />
-                Dashboard
-              </Button>
-            </div>
-          </div>
+              </>
+            )}
+          </p>
 
           {/* Quick Actions */}
           {selectedSkill && (
@@ -281,10 +270,7 @@ export default function PracticePage() {
         {!selectedSkill ? (
           <div className="text-center py-20">
             <Sparkles className="w-16 h-16 mx-auto mb-4 text-primary" />
-            <h2 className="text-2xl font-bold mb-2">Select a Skill</h2>
-            <p className="text-muted-foreground">
-              Choose a skill to start
-            </p>
+            <h2 className="text-2xl font-bold">Select a Skill</h2>
           </div>
         ) : currentQuestion ? (
           <div key={currentQuestion.id}>
@@ -321,27 +307,13 @@ export default function PracticePage() {
               <CardHeader>
                 <CardTitle>No Questions Available</CardTitle>
                 <CardDescription>
-                  No questions available for {selectedSkill} at {currentLevel}. Try another skill or level.
+                  Try another skill.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button onClick={() => setSelectedSkill(null)}>
                   Choose Different Skill
                 </Button>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* AI Hint */}
-        {selectedSkill && (
-          <div className="mt-8">
-            <Card>
-              <CardContent className="p-4 flex items-center gap-3">
-                <Sparkles className="w-5 h-5 text-primary" />
-                <p className="text-sm">
-                  <strong>Tip:</strong> Ask the AI Study Assistant for help!
-                </p>
               </CardContent>
             </Card>
           </div>
