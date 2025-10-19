@@ -1,7 +1,7 @@
 "use client";
 
 import { CopilotKit } from "@copilotkit/react-core";
-import { CopilotPopup } from "@copilotkit/react-ui";
+import { CopilotSidebar } from "@copilotkit/react-ui";
 import "@copilotkit/react-ui/styles.css";
 import { CopilotContext } from "./copilot/copilot-context";
 import { CopilotActions } from "./copilot/copilot-actions";
@@ -18,13 +18,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <CopilotActions>
           {/* TODO: Re-enable CopilotChatMonitor after API investigation */}
           {/* <CopilotChatMonitor /> */}
-          <CopilotPopup
+          <CopilotSidebar
             labels={{
               title: "NZCEL Study Assistant",
               initial: "Hi! I'm your AI study companion. Ask me anything about NZCEL, or let me help you practice!",
             }}
-          />
-          {children}
+          >
+            {children}
+          </CopilotSidebar>
         </CopilotActions>
       </CopilotContext>
     </CopilotKit>
