@@ -4,42 +4,13 @@ import { use, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Calendar, Clock, Award, User, Bot, Mic, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { getConversationSessionWithTurns } from "@/actions/sessions";
-
-interface ConversationTurn {
-  id: bigint;
-  turnNumber: number;
-  speaker: "user" | "assistant";
-  audioUrl: string | null;
-  transcription: string | null;
-  aiFeedback: string | null;
-  pronunciationScore: string | null;
-  fluencyScore: string | null;
-  grammarScore: string | null;
-  vocabularyScore: string | null;
-  timestamp: Date;
-}
-
-interface SessionDetails {
-  id: bigint;
-  sessionId: string;
-  scenarioId: string;
-  scenarioTitle: string;
-  startedAt: Date;
-  endedAt: Date | null;
-  isCompleted: boolean;
-  targetTurns: number;
-  completedTurns: number;
-  totalPointsEarned: number;
-  averagePronunciationScore: string | null;
-  averageFluencyScore: string | null;
-  turns: ConversationTurn[];
-}
+import type { ConversationSessionWithDetails } from "@/types";
 
 export default function ConversationSessionDetailPage({
   params,
@@ -60,7 +31,7 @@ function ConversationSessionDetailPageContent({
 }) {
   const unwrappedParams = use(params);
   const router = useRouter();
-  const [session, setSession] = useState<SessionDetails | null>(null);
+  const [session, setSession] = useState<ConversationSessionWithDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
 
@@ -73,7 +44,7 @@ function ConversationSessionDetailPageContent({
     try {
       const sessionId = BigInt(unwrappedParams.sessionId);
       const data = await getConversationSessionWithTurns(sessionId);
-      setSession(data as SessionDetails);
+      setSession(data as ConversationSessionWithDetails);
     } catch (error) {
       console.error("[ConversationSessionDetail] Failed to load session:", error);
     } finally {

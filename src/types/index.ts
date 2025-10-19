@@ -303,7 +303,7 @@ export interface ConversationTurn {
   fluencyScore: string | null;
   grammarScore: string | null;
   vocabularyScore: string | null;
-  timestamp: Date;
+  createdAt: Date;
 }
 
 // Recording with full details
