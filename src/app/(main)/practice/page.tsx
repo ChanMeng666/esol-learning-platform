@@ -18,6 +18,11 @@ import { EssayQuestionCard } from "@/components/practice/essay-question-card";
 import { PracticeFilters, type PracticeFilters as Filters } from "@/components/practice/practice-filters";
 import { SessionSummary, type SessionStats } from "@/components/practice/session-summary";
 import { ProtectedRoute } from "@/components/auth/protected-route";
+import {
+  createPracticeSession,
+  saveSessionAnswer,
+  completePracticeSession,
+} from "@/actions/sessions";
 import type { Question, SkillType } from "@/types";
 
 export default function PracticePage() {
@@ -46,6 +51,10 @@ function PracticePageContent() {
     skillBreakdown: [],
   });
   const [sessionStartTime, setSessionStartTime] = useState<number>(Date.now());
+
+  // Database session tracking
+  const [dbSessionId, setDbSessionId] = useState<bigint | null>(null);
+  const [dbSessionUUID, setDbSessionUUID] = useState<string>("");
 
   const currentLevelInfo = NZCEL_LEVELS.find((l) => l.id === currentLevel);
 
@@ -77,7 +86,7 @@ function PracticePageContent() {
     }
   };
 
-  const handleAnswerSubmit = (questionId: string, answer: string, isCorrect: boolean) => {
+  const handleAnswerSubmit = async (questionId: string, answer: string, isCorrect: boolean) => {
     const currentQ = currentQuestion;
 
     submitAnswer({
@@ -86,6 +95,23 @@ function PracticePageContent() {
       timeSpent: 0,
       isCorrect,
     });
+
+    // Save answer to database session
+    if (dbSessionId) {
+      try {
+        await saveSessionAnswer(
+          dbSessionId,
+          questionId,
+          answer,
+          currentQ?.correctAnswer?.toString() || "",
+          isCorrect,
+          isCorrect ? (currentQ?.points || 10) : 0
+        );
+        console.log("[Practice] Answer saved to session");
+      } catch (error) {
+        console.error("[Practice] Failed to save answer:", error);
+      }
+    }
 
     // Update session stats
     setSessionStats((prev) => {
@@ -119,6 +145,16 @@ function PracticePageContent() {
 
     // Check if session should end (after 10 questions)
     if (sessionStats.questionsAttempted + 1 >= 10) {
+      // Complete database session
+      if (dbSessionId) {
+        try {
+          await completePracticeSession(dbSessionId);
+          console.log("[Practice] Session completed");
+        } catch (error) {
+          console.error("[Practice] Failed to complete session:", error);
+        }
+      }
+
       setTimeout(() => {
         setShowSessionSummary(true);
       }, 2000);
@@ -130,7 +166,7 @@ function PracticePageContent() {
     }
   };
 
-  const handleSkillSelect = (skill: SkillType) => {
+  const handleSkillSelect = async (skill: SkillType) => {
     setSelectedSkill(skill);
     setFilters({ ...filters, skill });
     setQuestionCount(1);
@@ -144,6 +180,17 @@ function PracticePageContent() {
       skillBreakdown: [],
     });
     setSessionStartTime(Date.now());
+
+    // Create database session
+    try {
+      const session = await createPracticeSession(skill, currentLevel);
+      setDbSessionId(session.id);
+      setDbSessionUUID(session.sessionId);
+      console.log("[Practice] Session created:", session.sessionId);
+    } catch (error) {
+      console.error("[Practice] Failed to create session:", error);
+    }
+
     const question = getFilteredRandomQuestion();
     setCurrentQuestion(question || null);
   };
@@ -300,6 +347,7 @@ function PracticePageContent() {
                 question={currentQuestion}
                 onSubmit={handleAnswerSubmit}
                 onSkip={() => loadNewQuestion()}
+                sessionId={dbSessionUUID}
               />
             ) : currentQuestion.type === "essay" ? (
               <EssayQuestionCard

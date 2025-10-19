@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { VoiceRecorder } from "./voice-recorder";
 import { SpeakingFeedback } from "./speaking-feedback";
 import { useVoiceRecorder } from "@/hooks/use-voice-recorder";
+import { saveUserRecording } from "@/actions/recordings";
 import type { Question } from "@/types";
 import { toast } from "sonner";
 
@@ -16,12 +17,14 @@ interface SpeakingQuestionCardProps {
   question: Question;
   onSubmit: (questionId: string, answer: string, isCorrect: boolean) => void;
   onSkip: () => void;
+  sessionId?: string;
 }
 
 export function SpeakingQuestionCard({
   question,
   onSubmit,
   onSkip,
+  sessionId,
 }: SpeakingQuestionCardProps) {
   const { state, startRecording, stopRecording, transcribe, assess, reset } = useVoiceRecorder();
   const [showFeedback, setShowFeedback] = useState(false);
@@ -57,6 +60,23 @@ export function SpeakingQuestionCard({
 
       // Calculate if "correct" based on overall score
       const isCorrect = assessment.overallScore >= 60; // 60% threshold for passing
+
+      // Save recording to database
+      if (state.audioBlob && sessionId) {
+        try {
+          console.log("[SpeakingQuestionCard] Saving recording to database...");
+          await saveUserRecording(
+            state.audioBlob,
+            transcription,
+            question.id,
+            sessionId,
+            "practice_answer"
+          );
+          console.log("[SpeakingQuestionCard] ✅ Recording saved");
+        } catch (error) {
+          console.error("[SpeakingQuestionCard] Failed to save recording:", error);
+        }
+      }
 
       // Show result toast
       if (assessment.overallScore >= 80) {
