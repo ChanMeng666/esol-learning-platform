@@ -29,13 +29,16 @@ export function RealtimeConversation({ scenario, onEnd }: RealtimeConversationPr
   const [isProcessing, setIsProcessing] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<"idle" | "connecting" | "connected" | "error">("idle");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const shouldProcessRef = useRef(false);
 
   const { state, startRecording, stopRecording, reset } = useVoiceRecorder();
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
   };
 
   const speakText = useCallback(async (text: string) => {
@@ -385,7 +388,7 @@ Respond naturally as your character would. Keep responses conversational and app
           </div>
         </CardHeader>
 
-        <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
+        <CardContent ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages
             .filter((m) => m.role !== "system")
             .map((message, idx) => (
