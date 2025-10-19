@@ -59,17 +59,18 @@ function PracticePageContent() {
   const currentLevelInfo = NZCEL_LEVELS.find((l) => l.id === currentLevel);
 
   // Filter available questions based on filters
-  const getFilteredQuestions = () => {
+  const getFilteredQuestions = (skillOverride?: SkillType | null) => {
+    const targetSkill = skillOverride !== undefined ? skillOverride : selectedSkill;
     return ALL_QUESTIONS.filter((q) => {
-      if (selectedSkill && q.skill !== selectedSkill) return false;
+      if (targetSkill && q.skill !== targetSkill) return false;
       if (filters.questionType && q.type !== filters.questionType) return false;
       if (filters.level && q.level !== filters.level) return false;
       return true;
     });
   };
 
-  const getFilteredRandomQuestion = () => {
-    const filtered = getFilteredQuestions();
+  const getFilteredRandomQuestion = (skillOverride?: SkillType | null) => {
+    const filtered = getFilteredQuestions(skillOverride);
     if (filtered.length === 0) return null;
     return filtered[Math.floor(Math.random() * filtered.length)];
   };
@@ -78,8 +79,8 @@ function PracticePageContent() {
     const targetSkill = skill || selectedSkill;
     if (!targetSkill) return;
 
-    // Use filtered question selection
-    const question = getFilteredRandomQuestion();
+    // Use filtered question selection, pass targetSkill to ensure correct filtering
+    const question = getFilteredRandomQuestion(targetSkill);
     setCurrentQuestion(question || null);
     if (question) {
       setQuestionCount(prev => prev + 1);
@@ -191,7 +192,8 @@ function PracticePageContent() {
       console.error("[Practice] Failed to create session:", error);
     }
 
-    const question = getFilteredRandomQuestion();
+    // Pass skill parameter to avoid using stale selectedSkill state
+    const question = getFilteredRandomQuestion(skill);
     setCurrentQuestion(question || null);
   };
 
