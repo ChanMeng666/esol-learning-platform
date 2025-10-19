@@ -39,10 +39,10 @@ export function Navbar() {
                 <div className="flex h-16 items-center justify-between">
                     {/* Logo */}
                     <Link href="/" className="flex items-center gap-2">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-destructive">
-                            <BookOpen className="h-6 w-6 text-primary-foreground" />
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-black dark:bg-white">
+                            <BookOpen className="h-6 w-6 text-white dark:text-black" />
                         </div>
-                        <span className="hidden font-bold text-xl bg-gradient-to-r from-primary to-destructive bg-clip-text text-transparent sm:inline-block">
+                        <span className="hidden font-bold text-xl text-black dark:text-white sm:inline-block">
                             NZCEL Prep
                         </span>
                     </Link>
@@ -56,7 +56,7 @@ export function Navbar() {
                                 <Link key={link.href} href={link.href}>
                                     <Button
                                         variant={isActive ? "default" : "ghost"}
-                                        className={`relative gap-2 ${isActive ? 'bg-primary text-primary-foreground' : ''}`}
+                                        className={`relative gap-2 ${isActive ? 'bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90' : 'text-black dark:text-white'}`}
                                     >
                                         <Icon className="h-4 w-4" />
                                         {link.label}
@@ -70,9 +70,9 @@ export function Navbar() {
                     <div className="flex items-center gap-3">
                         {/* User Stats */}
                         <div className="hidden sm:flex items-center gap-3">
-                            <div className="flex items-center gap-1.5 rounded-full bg-secondary/50 px-3 py-1.5">
-                                <Trophy className="h-4 w-4 text-secondary-foreground" />
-                                <span className="text-sm font-semibold text-secondary-foreground">
+                            <div className="flex items-center gap-1.5 rounded-full bg-black/5 dark:bg-white/10 px-3 py-1.5 border border-black/10 dark:border-white/20">
+                                <Trophy className="h-4 w-4 text-black dark:text-white" />
+                                <span className="text-sm font-semibold text-black dark:text-white">
                                     {totalPoints}
                                 </span>
                             </div>
@@ -103,12 +103,12 @@ export function Navbar() {
                                         {/* Mobile Stats */}
                                         <div className="mb-4 flex items-center justify-between rounded-lg bg-muted p-4">
                                             <div className="flex items-center gap-2">
-                                                <Trophy className="h-5 w-5 text-primary" />
-                                                <span className="font-semibold">{totalPoints} Points</span>
+                                                <Trophy className="h-5 w-5 text-black dark:text-white" />
+                                                <span className="font-semibold text-black dark:text-white">{totalPoints} Points</span>
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <Flame className="h-5 w-5 text-orange-500" />
-                                                <span className="font-semibold">{streak} Days</span>
+                                                <span className="font-semibold text-orange-500">{streak} Days</span>
                                             </div>
                                         </div>
 
@@ -120,7 +120,7 @@ export function Navbar() {
                                                 <Link key={link.href} href={link.href} onClick={() => setIsOpen(false)}>
                                                     <Button
                                                         variant={isActive ? "default" : "ghost"}
-                                                        className="w-full justify-start gap-3"
+                                                        className={`w-full justify-start gap-3 ${isActive ? 'bg-black dark:bg-white text-white dark:text-black' : 'text-black dark:text-white'}`}
                                                     >
                                                         <Icon className="h-5 w-5" />
                                                         {link.label}
