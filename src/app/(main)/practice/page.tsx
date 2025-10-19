@@ -17,9 +17,18 @@ import { SpeakingQuestionCard } from "@/components/practice/speaking-question-ca
 import { EssayQuestionCard } from "@/components/practice/essay-question-card";
 import { PracticeFilters, type PracticeFilters as Filters } from "@/components/practice/practice-filters";
 import { SessionSummary, type SessionStats } from "@/components/practice/session-summary";
+import { ProtectedRoute } from "@/components/auth/protected-route";
 import type { Question, SkillType } from "@/types";
 
 export default function PracticePage() {
+  return (
+    <ProtectedRoute>
+      <PracticePageContent />
+    </ProtectedRoute>
+  );
+}
+
+function PracticePageContent() {
   const router = useRouter();
   const { currentLevel, skillProgress, submitAnswer } = useUserProgress();
   const [selectedSkill, setSelectedSkill] = useState<SkillType | null>(null);

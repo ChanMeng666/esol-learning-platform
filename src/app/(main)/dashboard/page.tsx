@@ -12,8 +12,17 @@ import { useUserProgress } from "@/lib/store/user-progress";
 import { NZCEL_LEVELS } from "@/data/nzcel-levels";
 import { SkillRadarChart } from "@/components/dashboard/skill-radar-chart";
 import { ProgressLineChart } from "@/components/dashboard/progress-line-chart";
+import { ProtectedRoute } from "@/components/auth/protected-route";
 
 export default function DashboardPage() {
+  return (
+    <ProtectedRoute>
+      <DashboardPageContent />
+    </ProtectedRoute>
+  );
+}
+
+function DashboardPageContent() {
   const router = useRouter();
   const userProgress = useUserProgress();
   const currentLevelInfo = NZCEL_LEVELS.find((l) => l.id === userProgress.currentLevel);

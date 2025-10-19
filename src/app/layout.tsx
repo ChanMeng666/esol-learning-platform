@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
+import { StackProvider, StackTheme } from "@stackframe/stack";
+import { stackServerApp } from "@/lib/stack";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
-import { Navbar } from "@/components/navigation/navbar";
-import { Footer } from "@/components/footer/footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,12 +36,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex min-h-screen flex-col`}
       >
-        <Providers>
-          <Navbar />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </Providers>
-        <Toaster />
+        <StackProvider app={stackServerApp}>
+          <StackTheme>
+            <Providers>
+              {children}
+            </Providers>
+            <Toaster />
+          </StackTheme>
+        </StackProvider>
       </body>
     </html>
   );

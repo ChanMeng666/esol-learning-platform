@@ -3,9 +3,10 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Menu, Flame, Trophy } from 'lucide-react'
+import { Menu, Flame, Trophy, User, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useUserProgress } from '@/lib/store/user-progress'
+import { useUser, useStackApp } from '@stackframe/stack'
 import {
     Sheet,
     SheetContent,
@@ -14,6 +15,14 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { useState, useEffect } from 'react'
 
 const navLinks = [
@@ -31,7 +40,12 @@ export function Navbar() {
     const [isVisible, setIsVisible] = useState(true)
     const [lastScrollY, setLastScrollY] = useState(0)
 
-    // Ensure Sheet only renders on client to prevent hydration mismatch
+    // Use Stack Auth hooks at top level
+    // No redirect - allow unauthenticated users to access public pages
+    const user = useUser()
+    const app = useStackApp()
+
+    // Ensure client-only rendering for certain features
     useEffect(() => {
         setMounted(true)
     }, [])
@@ -95,23 +109,71 @@ export function Navbar() {
                         })}
                     </div>
 
-                    {/* User Stats & Mobile Menu */}
+                    {/* User Stats & Auth & Mobile Menu */}
                     <div className="flex items-center gap-3">
-                        {/* User Stats */}
-                        <div className="hidden sm:flex items-center gap-3">
-                            <div className="flex items-center gap-1.5 rounded-full bg-black/5 dark:bg-white/10 px-3 py-1.5 border border-black/10 dark:border-white/20">
-                                <Trophy className="h-4 w-4 text-black dark:text-white" />
-                                <span className="text-sm font-semibold text-black dark:text-white">
-                                    {totalPoints}
-                                </span>
+                        {/* User Stats - only show if logged in */}
+                        {user && (
+                            <div className="hidden sm:flex items-center gap-3">
+                                <div className="flex items-center gap-1.5 rounded-full bg-black/5 dark:bg-white/10 px-3 py-1.5 border border-black/10 dark:border-white/20">
+                                    <Trophy className="h-4 w-4 text-black dark:text-white" />
+                                    <span className="text-sm font-semibold text-black dark:text-white">
+                                        {totalPoints}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-orange-500 to-red-500 px-3 py-1.5">
+                                    <Flame className="h-4 w-4 text-white" />
+                                    <span className="text-sm font-semibold text-white">
+                                        {streak}
+                                    </span>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-orange-500 to-red-500 px-3 py-1.5">
-                                <Flame className="h-4 w-4 text-white" />
-                                <span className="text-sm font-semibold text-white">
-                                    {streak}
-                                </span>
+                        )}
+
+                        {/* Auth Buttons - Desktop */}
+                        {mounted && (
+                            <div className="hidden md:flex items-center gap-2">
+                                {user ? (
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="rounded-full">
+                                                <User className="h-5 w-5" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end" className="w-48">
+                                            <DropdownMenuLabel>
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-medium">{user.displayName || "User"}</span>
+                                                    <span className="text-xs text-muted-foreground">{user.primaryEmail}</span>
+                                                </div>
+                                            </DropdownMenuLabel>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem asChild>
+                                                <Link href={app.urls.accountSettings}>
+                                                    <User className="mr-2 h-4 w-4" />
+                                                    Account Settings
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem asChild>
+                                                <Link href={app.urls.signOut}>
+                                                    <LogOut className="mr-2 h-4 w-4" />
+                                                    Sign Out
+                                                </Link>
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                ) : (
+                                    <>
+                                        <Link href={app.urls.signIn}>
+                                            <Button variant="ghost">Sign In</Button>
+                                        </Link>
+                                        <Link href={app.urls.signUp}>
+                                            <Button>Sign Up</Button>
+                                        </Link>
+                                    </>
+                                )}
                             </div>
-                        </div>
+                        )}
 
                         {/* Mobile Menu */}
                         {mounted ? (
@@ -138,17 +200,52 @@ export function Navbar() {
                                         </SheetDescription>
                                     </SheetHeader>
                                     <div className="mt-6 flex flex-col gap-2">
-                                        {/* Mobile Stats */}
-                                        <div className="mb-4 flex items-center justify-between rounded-lg bg-muted p-4">
-                                            <div className="flex items-center gap-2">
-                                                <Trophy className="h-5 w-5 text-black dark:text-white" />
-                                                <span className="font-semibold text-black dark:text-white">{totalPoints} Points</span>
+                                        {/* Mobile Stats - only show if logged in */}
+                                        {user && (
+                                            <div className="mb-4 flex items-center justify-between rounded-lg bg-muted p-4">
+                                                <div className="flex items-center gap-2">
+                                                    <Trophy className="h-5 w-5 text-black dark:text-white" />
+                                                    <span className="font-semibold text-black dark:text-white">{totalPoints} Points</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <Flame className="h-5 w-5 text-orange-500" />
+                                                    <span className="font-semibold text-orange-500">{streak} Days</span>
+                                                </div>
                                             </div>
-                                            <div className="flex items-center gap-2">
-                                                <Flame className="h-5 w-5 text-orange-500" />
-                                                <span className="font-semibold text-orange-500">{streak} Days</span>
-                                            </div>
-                                        </div>
+                                        )}
+
+                                        {/* Mobile Auth */}
+                                        {user ? (
+                                            <>
+                                                <div className="mb-2 p-3 rounded-lg bg-muted">
+                                                    <p className="text-sm font-medium">{user.displayName || "User"}</p>
+                                                    <p className="text-xs text-muted-foreground">{user.primaryEmail}</p>
+                                                </div>
+                                                <Link href={app.urls.accountSettings} onClick={() => setIsOpen(false)}>
+                                                    <Button variant="ghost" className="w-full justify-start">
+                                                        <User className="mr-2 h-4 w-4" />
+                                                        Account Settings
+                                                    </Button>
+                                                </Link>
+                                                <Link href={app.urls.signOut} onClick={() => setIsOpen(false)}>
+                                                    <Button variant="ghost" className="w-full justify-start text-red-600">
+                                                        <LogOut className="mr-2 h-4 w-4" />
+                                                        Sign Out
+                                                    </Button>
+                                                </Link>
+                                                <div className="my-2 border-t" />
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Link href={app.urls.signIn} onClick={() => setIsOpen(false)}>
+                                                    <Button variant="ghost" className="w-full">Sign In</Button>
+                                                </Link>
+                                                <Link href={app.urls.signUp} onClick={() => setIsOpen(false)}>
+                                                    <Button className="w-full">Sign Up</Button>
+                                                </Link>
+                                                <div className="my-2 border-t" />
+                                            </>
+                                        )}
 
                                         {/* Mobile Nav Links */}
                                         {navLinks.map((link) => {

@@ -11,9 +11,18 @@ import { useUserProgress } from "@/lib/store/user-progress";
 import { NZCEL_LEVELS } from "@/data/nzcel-levels";
 import { getScenariosByLevel } from "@/data/conversation-scenarios";
 import { RealtimeConversation } from "@/components/conversation/realtime-conversation";
+import { ProtectedRoute } from "@/components/auth/protected-route";
 import type { ConversationScenario } from "@/types";
 
 export default function ConversationPage() {
+  return (
+    <ProtectedRoute>
+      <ConversationPageContent />
+    </ProtectedRoute>
+  );
+}
+
+function ConversationPageContent() {
   const router = useRouter();
   const { currentLevel } = useUserProgress();
   const [selectedScenario, setSelectedScenario] = useState<ConversationScenario | null>(null);
