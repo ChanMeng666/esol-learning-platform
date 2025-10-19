@@ -5,6 +5,7 @@ import { CopilotPopup } from "@copilotkit/react-ui";
 import "@copilotkit/react-ui/styles.css";
 import { CopilotContext } from "./copilot/copilot-context";
 import { CopilotActions } from "./copilot/copilot-actions";
+import { CopilotChatMonitor } from "./copilot/copilot-chat-monitor";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   // Use environment variable or fallback to default public key
@@ -14,6 +15,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <CopilotKit publicApiKey={copilotApiKey}>
       <CopilotContext>
         <CopilotActions>
+          <CopilotChatMonitor />
           <CopilotPopup
             labels={{
               title: "NZCEL Study Assistant",
