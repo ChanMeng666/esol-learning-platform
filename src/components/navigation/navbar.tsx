@@ -27,14 +27,40 @@ export function Navbar() {
     const { totalPoints, streak } = useUserProgress()
     const [isOpen, setIsOpen] = useState(false)
     const [mounted, setMounted] = useState(false)
+    const [isVisible, setIsVisible] = useState(true)
+    const [lastScrollY, setLastScrollY] = useState(0)
 
     // Ensure Sheet only renders on client to prevent hydration mismatch
     useEffect(() => {
         setMounted(true)
     }, [])
 
+    // Handle scroll to show/hide navbar
+    useEffect(() => {
+        const handleScroll = () => {
+            const currentScrollY = window.scrollY
+
+            // Show navbar when scrolling up or at the top
+            if (currentScrollY < lastScrollY || currentScrollY < 10) {
+                setIsVisible(true)
+            }
+            // Hide navbar when scrolling down (but only after scrolling past 100px)
+            else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+                setIsVisible(false)
+            }
+
+            setLastScrollY(currentScrollY)
+        }
+
+        window.addEventListener('scroll', handleScroll, { passive: true })
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll)
+        }
+    }, [lastScrollY])
+
     return (
-        <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <nav className={`sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
             <div className="container mx-auto px-4">
                 <div className="flex h-16 items-center justify-between">
                     {/* Logo */}
