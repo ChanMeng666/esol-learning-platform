@@ -21,7 +21,7 @@ import { SessionSummary, type SessionStats } from "@/components/practice/session
 import { PracticeHistoryList } from "@/components/practice/practice-history-list";
 import { RecordingHistoryList } from "@/components/practice/recording-history-list";
 import { QuestionAudioList } from "@/components/practice/question-audio-list";
-import { DiagnosticPanel } from "@/components/diagnostics/diagnostic-panel";
+// import { DiagnosticPanel } from "@/components/diagnostics/diagnostic-panel";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import {
   createPracticeSession,
@@ -412,7 +412,7 @@ function PracticePageContent() {
 
             {/* History Tab */}
             <TabsContent value="history" className="space-y-6">
-              <DiagnosticPanel />
+              {/* <DiagnosticPanel /> */}
               <PracticeHistoryList />
             </TabsContent>
 
