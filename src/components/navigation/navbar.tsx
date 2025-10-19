@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Award, BookOpen, LayoutDashboard, Menu, Flame, Trophy, MessageSquare } from 'lucide-react'
+import { BookOpen, Menu, Flame, Trophy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useUserProgress } from '@/lib/store/user-progress'
 import {
@@ -16,10 +16,10 @@ import {
 import { useState, useEffect } from 'react'
 
 const navLinks = [
-    { href: '/', label: 'Home', icon: BookOpen },
-    { href: '/practice', label: 'Practice', icon: Award },
-    { href: '/conversation', label: 'Conversation', icon: MessageSquare },
-    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/', label: 'Home' },
+    { href: '/practice', label: 'Practice' },
+    { href: '/conversation', label: 'Conversation' },
+    { href: '/dashboard', label: 'Dashboard' },
 ]
 
 export function Navbar() {
@@ -50,15 +50,13 @@ export function Navbar() {
                     {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center gap-1">
                         {navLinks.map((link) => {
-                            const Icon = link.icon
                             const isActive = pathname === link.href
                             return (
                                 <Link key={link.href} href={link.href}>
                                     <Button
                                         variant={isActive ? "default" : "ghost"}
-                                        className={`relative gap-2 ${isActive ? 'bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90' : 'text-black dark:text-white'}`}
+                                        className={`relative ${isActive ? 'bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90' : 'text-black dark:text-white'}`}
                                     >
-                                        <Icon className="h-4 w-4" />
                                         {link.label}
                                     </Button>
                                 </Link>
@@ -114,15 +112,13 @@ export function Navbar() {
 
                                         {/* Mobile Nav Links */}
                                         {navLinks.map((link) => {
-                                            const Icon = link.icon
                                             const isActive = pathname === link.href
                                             return (
                                                 <Link key={link.href} href={link.href} onClick={() => setIsOpen(false)}>
                                                     <Button
                                                         variant={isActive ? "default" : "ghost"}
-                                                        className={`w-full justify-start gap-3 ${isActive ? 'bg-black dark:bg-white text-white dark:text-black' : 'text-black dark:text-white'}`}
+                                                        className={`w-full justify-start ${isActive ? 'bg-black dark:bg-white text-white dark:text-black' : 'text-black dark:text-white'}`}
                                                     >
-                                                        <Icon className="h-5 w-5" />
                                                         {link.label}
                                                     </Button>
                                                 </Link>
