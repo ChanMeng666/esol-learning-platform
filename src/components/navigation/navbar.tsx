@@ -25,8 +25,13 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useState, useEffect } from 'react'
 
-const navLinks = [
+// Public links - visible to all users
+const publicNavLinks = [
     { href: '/', label: 'Home' },
+]
+
+// Protected links - only visible to authenticated users
+const protectedNavLinks = [
     { href: '/practice', label: 'Practice' },
     { href: '/conversation', label: 'Conversation' },
     { href: '/dashboard', label: 'Dashboard' },
@@ -44,6 +49,9 @@ export function Navbar() {
     // No redirect - allow unauthenticated users to access public pages
     const user = useUser()
     const app = useStackApp()
+
+    // Determine which nav links to show based on authentication status
+    const visibleNavLinks = user ? [...publicNavLinks, ...protectedNavLinks] : publicNavLinks
 
     // Ensure client-only rendering for certain features
     useEffect(() => {
@@ -94,7 +102,7 @@ export function Navbar() {
 
                     {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center gap-1">
-                        {navLinks.map((link) => {
+                        {visibleNavLinks.map((link) => {
                             const isActive = pathname === link.href
                             return (
                                 <Link key={link.href} href={link.href}>
@@ -248,7 +256,7 @@ export function Navbar() {
                                         )}
 
                                         {/* Mobile Nav Links */}
-                                        {navLinks.map((link) => {
+                                        {visibleNavLinks.map((link) => {
                                             const isActive = pathname === link.href
                                             return (
                                                 <Link key={link.href} href={link.href} onClick={() => setIsOpen(false)}>

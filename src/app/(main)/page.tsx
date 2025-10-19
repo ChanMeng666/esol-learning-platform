@@ -5,9 +5,13 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { BackgroundCircles } from "@/components/ui/background-circles";
 import { WelcomeTour } from "@/components/onboarding/welcome-tour";
+import { useUser, useStackApp } from "@stackframe/stack";
+import Link from "next/link";
 
 export default function HomePage() {
   const router = useRouter();
+  const user = useUser();
+  const app = useStackApp();
 
   return (
     <div className="min-h-screen">
@@ -32,13 +36,37 @@ export default function HomePage() {
             AI-powered NZCEL exam preparation platform
           </p>
 
-          <Button
-            onClick={() => router.push("/practice")}
-            size="lg"
-            className="mt-4 bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90 transition-transform hover:scale-105 active:scale-95"
-          >
-            Start Practice
-          </Button>
+          {user ? (
+            // Logged in user - show Go to Dashboard
+            <Button
+              onClick={() => router.push("/dashboard")}
+              size="lg"
+              className="mt-4 bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90 transition-transform hover:scale-105 active:scale-95"
+            >
+              Go to Dashboard
+            </Button>
+          ) : (
+            // Guest user - show Sign Up and Sign In
+            <div className="mt-4 flex flex-col sm:flex-row gap-3">
+              <Link href={app.urls.signUp}>
+                <Button
+                  size="lg"
+                  className="bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90 transition-transform hover:scale-105 active:scale-95"
+                >
+                  Sign Up
+                </Button>
+              </Link>
+              <Link href={app.urls.signIn}>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="border-black dark:border-white text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-transform hover:scale-105 active:scale-95"
+                >
+                  Sign In
+                </Button>
+              </Link>
+            </div>
+          )}
         </motion.div>
       </BackgroundCircles>
     </div>
