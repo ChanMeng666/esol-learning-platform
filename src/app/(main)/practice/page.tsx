@@ -29,6 +29,7 @@ import {
   completePracticeSession,
 } from "@/actions/sessions";
 import type { Question, SkillType } from "@/types";
+import { toast } from "sonner";
 
 export default function PracticePage() {
   return (
@@ -64,34 +65,38 @@ function PracticePageContent() {
   const currentLevelInfo = NZCEL_LEVELS.find((l) => l.id === currentLevel);
 
   // Filter available questions based on filters
-  const getFilteredQuestions = (skillOverride?: SkillType | null) => {
+  const getFilteredQuestions = (skillOverride?: SkillType | null, filtersOverride?: Filters) => {
     const targetSkill = skillOverride !== undefined ? skillOverride : selectedSkill;
+    const activeFilters = filtersOverride || filters;
+
     return ALL_QUESTIONS.filter((q) => {
       // Always filter by skill
       if (targetSkill && q.skill !== targetSkill) return false;
 
       // Filter by level - use filters.level if set, otherwise use currentLevel
-      const targetLevel = filters.level || currentLevel;
+      const targetLevel = activeFilters.level || currentLevel;
       if (targetLevel && q.level !== targetLevel) return false;
 
       // Filter by question type if specified
-      if (filters.questionType && q.type !== filters.questionType) return false;
+      if (activeFilters.questionType && q.type !== activeFilters.questionType) return false;
 
       return true;
     });
   };
 
-  const getFilteredRandomQuestion = (skillOverride?: SkillType | null) => {
-    const filtered = getFilteredQuestions(skillOverride);
+  const getFilteredRandomQuestion = (skillOverride?: SkillType | null, filtersOverride?: Filters) => {
+    const filtered = getFilteredQuestions(skillOverride, filtersOverride);
+    const activeFilters = filtersOverride || filters;
+
     console.log("[Practice] getFilteredRandomQuestion:", {
       skillOverride,
       currentLevel,
-      filters,
+      filters: activeFilters,
       filteredCount: filtered.length,
       filteredQuestions: filtered.map(q => ({ id: q.id, skill: q.skill, type: q.type, level: q.level }))
     });
     if (filtered.length === 0) {
-      console.error("[Practice] No questions found! Skill:", skillOverride || selectedSkill, "Level:", currentLevel, "Filters:", filters);
+      console.error("[Practice] No questions found! Skill:", skillOverride || selectedSkill, "Level:", currentLevel, "Filters:", activeFilters);
       return null;
     }
     const selected = filtered[Math.floor(Math.random() * filtered.length)];
@@ -205,19 +210,23 @@ function PracticePageContent() {
 
     console.log("[Practice] ✅ Proceeding with skill selection:", skill);
 
-    setSelectedSkill(skill);
-    setFilters({ ...filters, skill });
-    setQuestionCount(1);
-    // Reset session stats
-    setSessionStats({
-      questionsAttempted: 0,
-      questionsCorrect: 0,
-      totalPoints: 0,
-      pointsEarned: 0,
-      timeSpent: 0,
-      skillBreakdown: [],
-    });
-    setSessionStartTime(Date.now());
+    // Clear filters when selecting a new skill to avoid filtering conflicts
+    // This ensures we get questions for the current level, not filtered by old level settings
+    const cleanFilters: Filters = { skill };
+
+    // IMPORTANT: Get question FIRST before updating any state
+    // This prevents the UI from showing "No Questions Available" during state updates
+    console.log("[Practice] 🔍 Getting random question for skill:", skill, "with clean filters");
+    const question = getFilteredRandomQuestion(skill, cleanFilters);
+
+    if (!question) {
+      console.error("[Practice] ❌ No questions found for skill:", skill, "with currentLevel:", currentLevel, "cleanFilters:", cleanFilters);
+      toast.error(`No questions available for ${skill} at ${currentLevel} level. Please try another skill.`);
+      // Don't update state if no question is available
+      return;
+    }
+
+    console.log("[Practice] ✅ Question found:", question.id);
 
     // Create database session
     try {
@@ -229,17 +238,22 @@ function PracticePageContent() {
       console.error("[Practice] ❌ Failed to create session:", error);
     }
 
-    // Pass skill parameter to avoid using stale selectedSkill state
-    console.log("[Practice] 🔍 Getting random question for skill:", skill);
-    const question = getFilteredRandomQuestion(skill);
-    if (question) {
-      console.log("[Practice] ✅ Question found, setting currentQuestion:", question.id);
-      setCurrentQuestion(question);
-    } else {
-      console.error("[Practice] ❌ No questions found for skill:", skill, "with currentLevel:", currentLevel, "filters:", filters);
-      // Keep current question if new one is not found, or set to null if this is first selection
-      setCurrentQuestion(null);
-    }
+    // Update all state together to avoid intermediate renders
+    setSelectedSkill(skill);
+    setCurrentQuestion(question);
+    setFilters(cleanFilters);  // Use clean filters to avoid conflicts
+    setQuestionCount(1);
+    setSessionStats({
+      questionsAttempted: 0,
+      questionsCorrect: 0,
+      totalPoints: 0,
+      pointsEarned: 0,
+      timeSpent: 0,
+      skillBreakdown: [],
+    });
+    setSessionStartTime(Date.now());
+
+    console.log("[Practice] ✅ State updated successfully");
   };
 
   const handleContinueSession = () => {
