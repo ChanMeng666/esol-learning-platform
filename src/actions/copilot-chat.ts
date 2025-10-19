@@ -69,7 +69,7 @@ export async function saveChatMessage(
   role: "user" | "assistant" | "system",
   content: string,
   contentType: "text" | "code" | "audio_transcript" = "text",
-  metadata?: Record<string, any>,
+  metadata?: Record<string, unknown>,
   audioUrl?: string
 ) {
   return fetchWithDrizzle(async (db) => {
@@ -81,7 +81,7 @@ export async function saveChatMessage(
         role,
         content,
         contentType,
-        metadata: metadata as any,
+        metadata: metadata as Record<string, unknown> | undefined,
         audioUrl,
       })
       .returning();

@@ -114,7 +114,7 @@ export async function getUserRecordings(limit: number = 50) {
  * @returns Recording details with audio and transcription
  */
 export async function getRecordingById(recordingId: bigint) {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db) => {
     return await db.query.userRecordings.findFirst({
       where: eq(schema.userRecordings.id, recordingId),
       with: {
@@ -132,7 +132,7 @@ export async function getRecordingById(recordingId: bigint) {
  * @returns All recordings in the session
  */
 export async function getSessionRecordings(sessionId: string) {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db) => {
     return await db.query.userRecordings.findMany({
       where: eq(schema.userRecordings.contextId, sessionId),
       orderBy: (recordings, { asc }) => [asc(recordings.recordedAt)],
@@ -157,7 +157,7 @@ export async function saveTranscription(
   audioFileId: bigint,
   transcribedText: string,
   model: string = "whisper-1",
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 ) {
   return fetchWithDrizzle(async (db, { userId }) => {
     const [transcription] = await db
@@ -168,7 +168,7 @@ export async function saveTranscription(
         transcribedText,
         model,
         wordCount: transcribedText.split(/\s+/).filter(Boolean).length,
-        metadata: metadata as any,
+        metadata: metadata as Record<string, unknown> | undefined,
       })
       .returning();
 

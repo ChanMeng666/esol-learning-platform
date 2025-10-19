@@ -11,7 +11,7 @@ export interface UploadAudioOptions {
   questionId?: string;
   userId?: string;
   sessionId?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface AudioFileInfo {
@@ -199,26 +199,19 @@ export function calculateExpiryDate(fileType: string): Date | null {
  */
 export async function cleanupExpiredFiles(): Promise<number> {
   try {
-    const { blobs } = await list({ limit: 1000 });
-    let deletedCount = 0;
+    // Placeholder for future implementation
+    // const { blobs } = await list({ limit: 1000 });
+    const deletedCount = 0;
 
-    const now = new Date();
-
-    for (const blob of blobs) {
-      // Check if blob has metadata indicating expiry
-      // This is a placeholder - actual implementation would query database
-      // to check the expires_at field
-
-      // For now, we'll just list the files
-      // Actual cleanup logic would involve:
-      // 1. Query database for files where expires_at < now
-      // 2. Delete those files from blob storage
-      // 3. Delete database records
-    }
+    // Note: Future implementation will:
+    // 1. Query database for files where expires_at < now
+    // 2. Delete those files from blob storage
+    // 3. Delete database records
+    // 4. Return count of deleted files
 
     return deletedCount;
-  } catch (error) {
-    console.error('Failed to cleanup expired files:', error);
+  } catch {
+    console.error('Failed to cleanup expired files');
     return 0;
   }
 }
