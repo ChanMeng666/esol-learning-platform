@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { MessageSquare, Play } from "lucide-react";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -55,6 +56,16 @@ export default function ConversationPage() {
               {currentLevelInfo?.name || currentLevel}
             </Badge>
           </p>
+        </div>
+
+        {/* Lottie Animation */}
+        <div className="flex justify-center mb-8">
+          <DotLottieReact
+            src="/speaking.lottie"
+            autoplay
+            loop
+            style={{ width: 200, height: 200 }}
+          />
         </div>
 
         {/* Scenarios */}

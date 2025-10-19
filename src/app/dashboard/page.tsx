@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { Trophy, Flame, Target, BookOpen, Award, Calendar, PlayCircle, Home, Headphones, Mic, PenTool, CheckCircle } from "lucide-react";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -71,6 +72,16 @@ export default function DashboardPage() {
               </Button>
             </div>
           </div>
+        </div>
+
+        {/* Dashboard Animation */}
+        <div className="flex justify-center mb-8">
+          <DotLottieReact
+            src="/dashboard.lottie"
+            autoplay
+            loop
+            style={{ width: 250, height: 250 }}
+          />
         </div>
 
         {/* Stats Grid */}

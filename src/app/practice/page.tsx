@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Sparkles, ArrowLeft, Headphones, Mic, BookOpen, PenTool } from "lucide-react";
+import { ArrowLeft, Headphones, Mic, BookOpen, PenTool } from "lucide-react";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -269,8 +270,12 @@ export default function PracticePage() {
         {/* Main Practice Area */}
         {!selectedSkill ? (
           <div className="text-center py-20">
-            <Sparkles className="w-16 h-16 mx-auto mb-4 text-primary" />
-            <h2 className="text-2xl font-bold">Select a Skill</h2>
+            <DotLottieReact
+              src="/learning.lottie"
+              autoplay
+              loop
+              style={{ width: 300, height: 300, margin: '0 auto' }}
+            />
           </div>
         ) : currentQuestion ? (
           <div key={currentQuestion.id}>

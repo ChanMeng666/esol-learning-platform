@@ -487,21 +487,6 @@ Respond naturally as your character would. Keep responses conversational and app
           )}
         </CardContent>
       </Card>
-
-      {/* Tips */}
-      <Card className="mt-6">
-        <CardContent className="p-4">
-          <h4 className="font-semibold mb-2 text-sm">Tips for Success:</h4>
-          <ul className="text-sm space-y-1 text-muted-foreground">
-            <li>• Click the microphone button and speak your response</li>
-            <li>• Click again when you finish speaking to send your message</li>
-            <li>• The AI will transcribe, respond, and speak back to you</li>
-            <li>• Stay in character for your assigned role</li>
-            <li>• Aim for {scenario.targetTurns} meaningful exchanges</li>
-            <li>• Focus on: {scenario.topics.join(", ")}</li>
-          </ul>
-        </CardContent>
-      </Card>
     </div>
   );
 }
