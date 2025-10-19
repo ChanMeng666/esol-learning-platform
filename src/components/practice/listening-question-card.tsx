@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AudioPlayer } from "./audio-player";
-import { generateAudioFromText } from "@/lib/audio-generator";
+import { getQuestionAudio } from "@/actions/audio";
+import { VOICE_PROFILES } from "@/lib/openai";
 import type { Question } from "@/types";
 import { toast } from "sonner";
 
@@ -28,22 +29,30 @@ export function ListeningQuestionCard({
   const [showFeedback, setShowFeedback] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
 
-  // Generate audio from script if needed
+  // Generate audio from script with intelligent caching
   useEffect(() => {
     if (!question.audioUrl && question.audioScript) {
       setIsGeneratingAudio(true);
-      generateAudioFromText(question.audioScript, question.voiceProfile)
+
+      // Get voice name from profile
+      const voiceProfile = question.voiceProfile || "academic";
+      const voiceName = VOICE_PROFILES[voiceProfile]?.voice || "alloy";
+
+      // Use intelligent caching Server Action
+      // First call: generates audio -> uploads to Blob -> saves to DB (2-3s)
+      // Subsequent calls: returns cached URL from DB (0.1s) ✨
+      getQuestionAudio(question.id, question.audioScript, voiceName, "tts-1")
         .then((url) => {
           setAudioUrl(url);
           setIsGeneratingAudio(false);
         })
         .catch((error) => {
-          console.error("Failed to generate audio:", error);
-          toast.error("Failed to generate audio. Please try again.");
+          console.error("Failed to get question audio:", error);
+          toast.error("Failed to load audio. Please try again.");
           setIsGeneratingAudio(false);
         });
     }
-  }, [question.audioScript, question.audioUrl, question.voiceProfile]);
+  }, [question.id, question.audioScript, question.audioUrl, question.voiceProfile]);
 
   const handleSubmit = () => {
     if (!selectedAnswer.trim()) {
