@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { CheckCircle2, XCircle, Lightbulb, SkipForward } from "lucide-react";
+import { CheckCircle2, XCircle, Lightbulb, SkipForward, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -50,13 +50,12 @@ export function QuestionCard({ question, onSubmit, onSkip }: QuestionCardProps) 
     } else {
       toast.error("Not quite right. Keep practicing!");
     }
+  };
 
-    // Call parent handler
-    setTimeout(() => {
-      onSubmit(question.id, selectedAnswer, correct);
-      setShowFeedback(false);
-      setSelectedAnswer("");
-    }, 2000);
+  const handleNextQuestion = () => {
+    onSubmit(question.id, selectedAnswer, isCorrect);
+    setShowFeedback(false);
+    setSelectedAnswer("");
   };
 
   return (
@@ -83,6 +82,18 @@ export function QuestionCard({ question, onSubmit, onSkip }: QuestionCardProps) 
         </CardHeader>
 
         <CardContent>
+          {/* Reading Passage */}
+          {question.passage && (
+            <div className="mb-6 p-4 bg-muted/30 rounded-lg border">
+              <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                <BookOpen className="h-5 w-5 text-primary" />
+                Reading Passage
+              </h3>
+              <div className="prose prose-sm max-w-none whitespace-pre-line text-foreground/90 leading-relaxed">
+                {question.passage}
+              </div>
+            </div>
+          )}
           {/* Multiple Choice Options */}
           {question.type === "multiple-choice" && question.options && (
             <div className="space-y-3">
@@ -172,23 +183,34 @@ export function QuestionCard({ question, onSubmit, onSkip }: QuestionCardProps) 
           )}
 
           {/* Action Buttons */}
-          {!showFeedback && (
-            <div className="flex gap-3 mt-6">
+          <div className="flex gap-3 mt-6">
+            {!showFeedback ? (
+              <>
+                <Button
+                  onClick={handleSubmit}
+                  className="flex-1"
+                  size="lg"
+                  disabled={!selectedAnswer.trim()}
+                >
+                  <CheckCircle2 className="mr-2 h-5 w-5" />
+                  Submit Answer
+                </Button>
+                <Button onClick={onSkip} variant="outline" size="lg">
+                  <SkipForward className="mr-2 h-5 w-5" />
+                  Skip
+                </Button>
+              </>
+            ) : (
               <Button
-                onClick={handleSubmit}
+                onClick={handleNextQuestion}
                 className="flex-1"
                 size="lg"
-                disabled={!selectedAnswer.trim()}
               >
-                <CheckCircle2 className="mr-2 h-5 w-5" />
-                Submit Answer
-              </Button>
-              <Button onClick={onSkip} variant="outline" size="lg">
                 <SkipForward className="mr-2 h-5 w-5" />
-                Skip
+                Next Question
               </Button>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Hint */}
           <div className="mt-4 p-3 border rounded-lg flex items-start gap-2">

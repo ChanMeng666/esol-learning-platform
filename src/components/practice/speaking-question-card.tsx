@@ -86,17 +86,18 @@ export function SpeakingQuestionCard({
       } else {
         toast.info(`Keep practicing! Score: ${assessment.overallScore}/100`);
       }
-
-      // Call parent handler after delay
-      setTimeout(() => {
-        onSubmit(question.id, transcription, isCorrect);
-        setShowFeedback(false);
-        reset();
-      }, 10000); // Give user 10 seconds to read feedback
     } catch (error) {
       console.error("Error getting feedback:", error);
       toast.error(error instanceof Error ? error.message : "Failed to process your response");
     }
+  };
+
+  const handleNextQuestion = () => {
+    const transcription = state.transcription || "";
+    const isCorrect = (state.assessment?.overallScore || 0) >= 60;
+    onSubmit(question.id, transcription, isCorrect);
+    setShowFeedback(false);
+    reset();
   };
 
   return (
@@ -171,13 +172,27 @@ export function SpeakingQuestionCard({
             </>
           ) : (
             /* Feedback Display */
-            state.assessment && state.transcription && (
-              <SpeakingFeedback
-                assessment={state.assessment}
-                transcription={state.transcription}
-                showTranscription={true}
-              />
-            )
+            <>
+              {state.assessment && state.transcription && (
+                <SpeakingFeedback
+                  assessment={state.assessment}
+                  transcription={state.transcription}
+                  showTranscription={true}
+                />
+              )}
+
+              {/* Next Question Button */}
+              <div className="flex gap-3 mt-6">
+                <Button
+                  onClick={handleNextQuestion}
+                  className="flex-1"
+                  size="lg"
+                >
+                  <SkipForward className="mr-2 h-5 w-5" />
+                  Next Question
+                </Button>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

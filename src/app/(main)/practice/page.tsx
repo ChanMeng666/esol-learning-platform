@@ -161,14 +161,11 @@ function PracticePageContent() {
         }
       }
 
-      setTimeout(() => {
-        setShowSessionSummary(true);
-      }, 2000);
+      // Show session summary immediately
+      setShowSessionSummary(true);
     } else {
-      // Load next question after a short delay
-      setTimeout(() => {
-        loadNewQuestion();
-      }, 2000);
+      // Load next question immediately (user clicked "Next Question" button)
+      loadNewQuestion();
     }
   };
 

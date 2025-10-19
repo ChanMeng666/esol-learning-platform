@@ -72,13 +72,12 @@ export function ListeningQuestionCard({
     } else {
       toast.error("Not quite right. Keep practicing!");
     }
+  };
 
-    // Call parent handler
-    setTimeout(() => {
-      onSubmit(question.id, selectedAnswer, correct);
-      setShowFeedback(false);
-      setSelectedAnswer("");
-    }, 2500);
+  const handleNextQuestion = () => {
+    onSubmit(question.id, selectedAnswer, isCorrect);
+    setShowFeedback(false);
+    setSelectedAnswer("");
   };
 
   return (
@@ -177,23 +176,34 @@ export function ListeningQuestionCard({
           )}
 
           {/* Action Buttons */}
-          {!showFeedback && (
-            <div className="flex gap-3">
+          <div className="flex gap-3">
+            {!showFeedback ? (
+              <>
+                <Button
+                  onClick={handleSubmit}
+                  className="flex-1"
+                  size="lg"
+                  disabled={!selectedAnswer.trim() || isGeneratingAudio}
+                >
+                  <CheckCircle2 className="mr-2 h-5 w-5" />
+                  Submit Answer
+                </Button>
+                <Button onClick={onSkip} variant="outline" size="lg">
+                  <SkipForward className="mr-2 h-5 w-5" />
+                  Skip
+                </Button>
+              </>
+            ) : (
               <Button
-                onClick={handleSubmit}
+                onClick={handleNextQuestion}
                 className="flex-1"
                 size="lg"
-                disabled={!selectedAnswer.trim() || isGeneratingAudio}
               >
-                <CheckCircle2 className="mr-2 h-5 w-5" />
-                Submit Answer
-              </Button>
-              <Button onClick={onSkip} variant="outline" size="lg">
                 <SkipForward className="mr-2 h-5 w-5" />
-                Skip
+                Next Question
               </Button>
-            </div>
-          )}
+            )}
+          </div>
         </CardContent>
       </Card>
     </motion.div>

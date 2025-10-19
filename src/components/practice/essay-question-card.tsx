@@ -100,23 +100,20 @@ export function EssayQuestionCard({
       } else {
         toast.info(`Keep practicing! Score: ${result.overallScore}/100`);
       }
-
-      // Calculate if "correct" based on overall score
-      const isCorrect = result.overallScore >= 60;
-
-      // Call parent handler after delay
-      setTimeout(() => {
-        onSubmit(question.id, essayText, isCorrect);
-        setShowFeedback(false);
-        setEssayText("");
-        setAssessment(null);
-      }, 12000); // Give user 12 seconds to read feedback
     } catch (error) {
       console.error("Error grading essay:", error);
       toast.error("Failed to grade essay. Please try again.");
     } finally {
       setIsGrading(false);
     }
+  };
+
+  const handleNextQuestion = () => {
+    const isCorrect = (assessment?.overallScore || 0) >= 60;
+    onSubmit(question.id, essayText, isCorrect);
+    setShowFeedback(false);
+    setEssayText("");
+    setAssessment(null);
   };
 
   return (
@@ -196,13 +193,27 @@ export function EssayQuestionCard({
             </>
           ) : (
             /* Feedback Display */
-            assessment && (
-              <SpeakingFeedback
-                assessment={assessment}
-                transcription={essayText}
-                showTranscription={true}
-              />
-            )
+            <>
+              {assessment && (
+                <SpeakingFeedback
+                  assessment={assessment}
+                  transcription={essayText}
+                  showTranscription={true}
+                />
+              )}
+
+              {/* Next Question Button */}
+              <div className="flex gap-3 mt-6">
+                <Button
+                  onClick={handleNextQuestion}
+                  className="flex-1"
+                  size="lg"
+                >
+                  <SkipForward className="mr-2 h-5 w-5" />
+                  Next Question
+                </Button>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
