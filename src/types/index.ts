@@ -222,3 +222,129 @@ export interface TranscriptionResponse {
   text: string;
   duration?: number;
 }
+
+// ============================================================================
+// HISTORY & FILTERING TYPES
+// ============================================================================
+
+// History filter options
+export interface HistoryFilters {
+  skill?: SkillType;
+  level?: NZCELLevel;
+  recordingType?: "practice_answer" | "conversation_turn" | "pronunciation_test";
+  scenarioId?: string;
+  questionId?: string;
+  dateRange?: "7d" | "30d" | "all";
+}
+
+// Practice session with full details
+export interface PracticeSessionWithDetails {
+  id: bigint;
+  userId: string;
+  sessionId: string;
+  skill: string;
+  level: string;
+  startedAt: Date;
+  endedAt: Date | null;
+  duration: number | null;
+  questionsAttempted: number;
+  questionsCorrect: number;
+  totalPointsEarned: number;
+  isCompleted: boolean;
+  answers: SessionAnswer[];
+}
+
+// Session answer details
+export interface SessionAnswer {
+  id: bigint;
+  sessionId: bigint;
+  questionId: string;
+  userAnswer: string;
+  correctAnswer: string;
+  isCorrect: boolean;
+  pointsEarned: number;
+  timeSpent: number | null;
+  audioRecordingId: bigint | null;
+  transcriptionId: bigint | null;
+  aiFeedback: string | null;
+  answeredAt: Date;
+}
+
+// Conversation session with full details
+export interface ConversationSessionWithDetails {
+  id: bigint;
+  userId: string;
+  sessionId: string;
+  scenarioId: string;
+  scenarioTitle: string;
+  startedAt: Date;
+  endedAt: Date | null;
+  isCompleted: boolean;
+  targetTurns: number;
+  completedTurns: number;
+  totalPointsEarned: number;
+  averagePronunciationScore: string | null;
+  averageFluencyScore: string | null;
+  turns: ConversationTurn[];
+}
+
+// Conversation turn details
+export interface ConversationTurn {
+  id: bigint;
+  sessionId: bigint;
+  turnNumber: number;
+  speaker: "user" | "assistant";
+  audioUrl: string | null;
+  audioFileId: bigint | null;
+  transcription: string | null;
+  transcriptionId: bigint | null;
+  aiFeedback: string | null;
+  pronunciationScore: string | null;
+  fluencyScore: string | null;
+  grammarScore: string | null;
+  vocabularyScore: string | null;
+  timestamp: Date;
+}
+
+// Recording with full details
+export interface RecordingWithDetails {
+  id: bigint;
+  userId: string;
+  audioFileId: bigint;
+  recordingType: string;
+  contextId: string;
+  questionId: string | null;
+  transcriptionId: bigint | null;
+  recordedAt: Date;
+  audioFile: AudioFile;
+  transcription: Transcription | null;
+}
+
+// Audio file metadata
+export interface AudioFile {
+  id: bigint;
+  fileId: string;
+  blobUrl: string;
+  fileType: string;
+  contentHash: string;
+  fileSize: number;
+  format: string;
+  duration: number | null;
+  expiresAt: Date | null;
+  accessCount: number;
+  lastAccessedAt: Date | null;
+  createdAt: Date;
+}
+
+// Transcription metadata
+export interface Transcription {
+  id: bigint;
+  audioFileId: bigint;
+  userId: string;
+  transcribedText: string;
+  model: string;
+  wordCount: number;
+  confidence: number | null;
+  metadata: Record<string, unknown> | null;
+  transcribedAt: Date;
+}

@@ -2,7 +2,7 @@
 
 import { fetchWithDrizzle } from "@/lib/db";
 import * as schema from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray, desc } from "drizzle-orm";
 import { uploadAudioFile, calculateExpiryDate } from "@/lib/blob/audio-storage";
 import { getOpenAIClient } from "@/lib/openai";
 import { createHash } from "crypto";
@@ -196,5 +196,108 @@ export async function getAudioCacheStats() {
       totalSize,
       averageHitsPerAudio: totalCached > 0 ? totalHits / totalCached : 0,
     };
+  });
+}
+
+/**
+ * Get all question audio from cache
+ * Returns all available TTS audio for questions
+ *
+ * @param filters - Filter options
+ * @param limit - Number of audio files to fetch
+ * @returns List of question audio with metadata
+ */
+export async function getAllQuestionAudio(
+  filters: {
+    dateRange?: "7d" | "30d" | "all";
+  } = {},
+  limit: number = 50
+) {
+  return fetchWithDrizzle(async (db) => {
+    // Get all active audio cache entries
+    const audioEntries = await db.query.questionAudioCache.findMany({
+      where: eq(schema.questionAudioCache.isActive, true),
+      with: {
+        audioFile: true,
+      },
+      orderBy: desc(schema.questionAudioCache.lastAccessedAt),
+      limit,
+    });
+
+    console.log("[getAllQuestionAudio] Found audio entries:", audioEntries.length);
+
+    return audioEntries;
+  });
+}
+
+/**
+ * Get question audio history for current user
+ * Returns audio for questions the user has practiced
+ *
+ * @param filters - Filter options
+ * @param filters.skill - Filter by skill
+ * @param filters.dateRange - Filter by date range
+ * @param limit - Number of audio files to fetch
+ * @returns List of question audio with metadata
+ */
+export async function getUserQuestionAudioHistory(
+  filters: {
+    skill?: string;
+    dateRange?: "7d" | "30d" | "all";
+  } = {},
+  limit: number = 50
+) {
+  return fetchWithDrizzle(async (db, { userId }) => {
+    // 1. Get all unique question IDs from user's practice sessions
+    const sessions = await db.query.practiceSessions.findMany({
+      where: eq(schema.practiceSessions.userId, userId),
+      with: {
+        answers: true,
+      },
+    });
+
+    console.log("[getUserQuestionAudioHistory] Found sessions:", sessions.length);
+
+    // 2. Extract unique question IDs
+    const questionIds = new Set<string>();
+    sessions.forEach((session) => {
+      session.answers.forEach((answer) => {
+        if (answer.questionId) {
+          questionIds.add(answer.questionId);
+        }
+      });
+    });
+
+    console.log("[getUserQuestionAudioHistory] Unique question IDs:", questionIds.size);
+
+    if (questionIds.size === 0) {
+      // If user has no practice history, return all audio
+      console.log("[getUserQuestionAudioHistory] No practice history, returning all audio");
+      return await db.query.questionAudioCache.findMany({
+        where: eq(schema.questionAudioCache.isActive, true),
+        with: {
+          audioFile: true,
+        },
+        orderBy: desc(schema.questionAudioCache.lastAccessedAt),
+        limit,
+      });
+    }
+
+    // 3. Get audio cache entries for these questions
+    const audioEntries = await db.query.questionAudioCache.findMany({
+      where: and(
+        inArray(schema.questionAudioCache.questionId, Array.from(questionIds)),
+        eq(schema.questionAudioCache.isActive, true)
+      ),
+      with: {
+        audioFile: true,
+      },
+      orderBy: desc(schema.questionAudioCache.lastAccessedAt),
+      limit,
+    });
+
+    console.log("[getUserQuestionAudioHistory] Found audio entries:", audioEntries.length);
+
+    return audioEntries;
   });
 }

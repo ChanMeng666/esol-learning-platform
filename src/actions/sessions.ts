@@ -378,3 +378,116 @@ export async function getRecentConversationSessions(limit: number = 20) {
     });
   });
 }
+
+// ============================================================================
+// FILTERED QUERIES (FOR HISTORY VIEWS)
+// ============================================================================
+
+/**
+ * Get practice sessions with filtering
+ *
+ * @param filters - Filter options
+ * @param filters.skill - Filter by skill (listening, speaking, reading, writing)
+ * @param filters.level - Filter by NZCEL level
+ * @param filters.dateRange - Filter by date range (7d, 30d, all)
+ * @param limit - Number of sessions to fetch
+ * @returns Filtered list of practice sessions with answers
+ */
+export async function getPracticeSessionsWithFilters(
+  filters: {
+    skill?: string;
+    level?: string;
+    dateRange?: "7d" | "30d" | "all";
+  },
+  limit: number = 20
+) {
+  return fetchWithDrizzle(async (db, { userId }) => {
+    console.log("[getPracticeSessionsWithFilters] Current userId:", userId);
+    console.log("[getPracticeSessionsWithFilters] Filters:", filters);
+
+    const conditions = [eq(schema.practiceSessions.userId, userId)];
+
+    // Apply skill filter
+    if (filters.skill) {
+      conditions.push(eq(schema.practiceSessions.skill, filters.skill));
+    }
+
+    // Apply level filter
+    if (filters.level) {
+      conditions.push(eq(schema.practiceSessions.level, filters.level));
+    }
+
+    // Apply date range filter
+    if (filters.dateRange && filters.dateRange !== "all") {
+      const now = new Date();
+      const daysAgo = filters.dateRange === "7d" ? 7 : 30;
+      const startDate = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
+
+      // We need to use gt (greater than) from drizzle-orm
+      const { gt } = await import("drizzle-orm");
+      conditions.push(gt(schema.practiceSessions.startedAt, startDate));
+    }
+
+    const results = await db.query.practiceSessions.findMany({
+      where: and(...conditions),
+      orderBy: desc(schema.practiceSessions.startedAt),
+      limit,
+      with: {
+        answers: {
+          orderBy: (answers, { asc }) => [asc(answers.answeredAt)],
+        },
+      },
+    });
+
+    console.log("[getPracticeSessionsWithFilters] Found sessions:", results.length);
+
+    return results;
+  });
+}
+
+/**
+ * Get conversation sessions with filtering
+ *
+ * @param filters - Filter options
+ * @param filters.scenarioId - Filter by scenario ID
+ * @param filters.dateRange - Filter by date range (7d, 30d, all)
+ * @param limit - Number of sessions to fetch
+ * @returns Filtered list of conversation sessions with turns
+ */
+export async function getConversationSessionsWithFilters(
+  filters: {
+    scenarioId?: string;
+    dateRange?: "7d" | "30d" | "all";
+  },
+  limit: number = 20
+) {
+  return fetchWithDrizzle(async (db, { userId }) => {
+    const conditions = [eq(schema.conversationSessions.userId, userId)];
+
+    // Apply scenario filter
+    if (filters.scenarioId) {
+      conditions.push(eq(schema.conversationSessions.scenarioId, filters.scenarioId));
+    }
+
+    // Apply date range filter
+    if (filters.dateRange && filters.dateRange !== "all") {
+      const now = new Date();
+      const daysAgo = filters.dateRange === "7d" ? 7 : 30;
+      const startDate = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
+
+      const { gt } = await import("drizzle-orm");
+      conditions.push(gt(schema.conversationSessions.startedAt, startDate));
+    }
+
+    return await db.query.conversationSessions.findMany({
+      where: and(...conditions),
+      orderBy: desc(schema.conversationSessions.startedAt),
+      limit,
+      with: {
+        turns: {
+          orderBy: (turns, { asc }) => [asc(turns.turnNumber)],
+        },
+      },
+    });
+  });
+}

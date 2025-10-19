@@ -175,3 +175,120 @@ export async function saveTranscription(
     return transcription;
   });
 }
+
+// ============================================================================
+// FILTERED QUERIES & DELETION (FOR HISTORY VIEWS)
+// ============================================================================
+
+/**
+ * Get user recordings with filtering
+ *
+ * @param filters - Filter options
+ * @param filters.recordingType - Filter by type (practice_answer, conversation_turn, etc.)
+ * @param filters.questionId - Filter by question ID
+ * @param filters.dateRange - Filter by date range (7d, 30d, all)
+ * @param limit - Number of recordings to fetch
+ * @returns Filtered list of user recordings with metadata
+ */
+export async function getUserRecordingsWithFilters(
+  filters: {
+    recordingType?: string;
+    questionId?: string;
+    dateRange?: "7d" | "30d" | "all";
+  },
+  limit: number = 50
+) {
+  return fetchWithDrizzle(async (db, { userId }) => {
+    const { and, eq, desc, gt } = await import("drizzle-orm");
+    const conditions = [eq(schema.userRecordings.userId, userId)];
+
+    // Apply recording type filter
+    if (filters.recordingType) {
+      conditions.push(eq(schema.userRecordings.recordingType, filters.recordingType));
+    }
+
+    // Apply question ID filter
+    if (filters.questionId) {
+      conditions.push(eq(schema.userRecordings.questionId, filters.questionId));
+    }
+
+    // Apply date range filter
+    if (filters.dateRange && filters.dateRange !== "all") {
+      const now = new Date();
+      const daysAgo = filters.dateRange === "7d" ? 7 : 30;
+      const startDate = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
+      conditions.push(gt(schema.userRecordings.recordedAt, startDate));
+    }
+
+    return await db.query.userRecordings.findMany({
+      where: and(...conditions),
+      limit,
+      orderBy: desc(schema.userRecordings.recordedAt),
+      with: {
+        audioFile: true,
+        transcription: true,
+      },
+    });
+  });
+}
+
+/**
+ * Delete user recording
+ *
+ * Deletes recording from database and removes audio file from Blob storage
+ *
+ * @param recordingId - Recording ID to delete
+ * @returns Success status
+ */
+export async function deleteUserRecording(recordingId: bigint) {
+  return fetchWithDrizzle(async (db, { userId }) => {
+    const { deleteAudioFile } = await import("@/lib/blob/audio-storage");
+    const { and, eq } = await import("drizzle-orm");
+
+    // Get recording with audio file info
+    const recording = await db.query.userRecordings.findFirst({
+      where: and(
+        eq(schema.userRecordings.id, recordingId),
+        eq(schema.userRecordings.userId, userId)
+      ),
+      with: {
+        audioFile: true,
+      },
+    });
+
+    if (!recording) {
+      throw new Error("Recording not found");
+    }
+
+    // Delete from Blob storage
+    if (recording.audioFile?.blobUrl) {
+      try {
+        await deleteAudioFile(recording.audioFile.blobUrl);
+      } catch (error) {
+        console.error("[DeleteRecording] Failed to delete from Blob:", error);
+        // Continue with database deletion even if Blob deletion fails
+      }
+    }
+
+    // Delete transcription if exists
+    if (recording.transcriptionId) {
+      await db
+        .delete(schema.transcriptions)
+        .where(eq(schema.transcriptions.id, recording.transcriptionId));
+    }
+
+    // Delete audio file record
+    if (recording.audioFileId) {
+      await db
+        .delete(schema.audioFiles)
+        .where(eq(schema.audioFiles.id, recording.audioFileId));
+    }
+
+    // Delete user recording
+    await db
+      .delete(schema.userRecordings)
+      .where(eq(schema.userRecordings.id, recordingId));
+
+    return { success: true };
+  });
+}
