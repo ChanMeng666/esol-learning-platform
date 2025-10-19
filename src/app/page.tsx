@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BackgroundCircles } from "@/components/ui/background-circles";
 import { WelcomeTour } from "@/components/onboarding/welcome-tour";
@@ -36,9 +35,8 @@ export default function HomePage() {
           <Button
             onClick={() => router.push("/practice")}
             size="lg"
-            className="mt-4 bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90"
+            className="mt-4 bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90 transition-transform hover:scale-105 active:scale-95"
           >
-            <BookOpen className="mr-2 h-5 w-5" />
             Start Practice
           </Button>
         </motion.div>

@@ -14,7 +14,6 @@ import { QuestionCard } from "@/components/practice/question-card";
 import { ListeningQuestionCard } from "@/components/practice/listening-question-card";
 import { SpeakingQuestionCard } from "@/components/practice/speaking-question-card";
 import { EssayQuestionCard } from "@/components/practice/essay-question-card";
-import { Breadcrumb } from "@/components/navigation/breadcrumb";
 import { PracticeFilters, type PracticeFilters as Filters } from "@/components/practice/practice-filters";
 import { SessionSummary, type SessionStats } from "@/components/practice/session-summary";
 import type { Question, SkillType } from "@/types";
@@ -170,11 +169,6 @@ export default function PracticePage() {
     { id: "writing", label: "Writing", icon: PenTool },
   ];
 
-  const breadcrumbItems = [
-    { label: "Home", href: "/" },
-    { label: "Practice" },
-  ];
-
   return (
     <>
       {showSessionSummary && (
@@ -188,11 +182,6 @@ export default function PracticePage() {
 
       <div className="min-h-screen bg-background pb-20">
       <div className="container mx-auto px-4 py-8">
-        {/* Breadcrumb Navigation */}
-        <div className="mb-6">
-          <Breadcrumb items={breadcrumbItems} />
-        </div>
-
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
@@ -223,9 +212,6 @@ export default function PracticePage() {
               <Button variant="outline" onClick={() => router.push("/dashboard")}>
                 <TrendingUp className="mr-2 h-4 w-4" />
                 Dashboard
-              </Button>
-              <Button variant="ghost" onClick={() => router.push("/")}>
-                <Home className="h-4 w-4" />
               </Button>
             </div>
           </div>

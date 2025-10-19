@@ -16,12 +16,12 @@ export function Footer() {
                     {/* Developer Brand */}
                     <div className="flex flex-col items-start space-y-4">
                         <div className="flex items-center gap-3">
-                            <div className="relative h-12 w-12 rounded-lg overflow-hidden bg-card shadow-md">
+                            <div className="relative h-12 w-12">
                                 <Image
                                     src="/chan_logo.svg"
                                     alt="Chan Meng Logo"
                                     fill
-                                    className="object-cover"
+                                    className="object-contain"
                                 />
                             </div>
                             <div>

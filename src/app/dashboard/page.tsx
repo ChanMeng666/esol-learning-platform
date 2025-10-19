@@ -9,7 +9,6 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUserProgress } from "@/lib/store/user-progress";
 import { NZCEL_LEVELS } from "@/data/nzcel-levels";
-import { Breadcrumb } from "@/components/navigation/breadcrumb";
 import { SkillRadarChart } from "@/components/dashboard/skill-radar-chart";
 import { ProgressLineChart } from "@/components/dashboard/progress-line-chart";
 
@@ -17,11 +16,6 @@ export default function DashboardPage() {
   const router = useRouter();
   const userProgress = useUserProgress();
   const currentLevelInfo = NZCEL_LEVELS.find((l) => l.id === userProgress.currentLevel);
-
-  const breadcrumbItems = [
-    { label: "Home", href: "/" },
-    { label: "Dashboard" },
-  ];
 
   const skills = [
     { id: "listening", label: "Listening", icon: Headphones },
@@ -59,11 +53,6 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="container mx-auto px-4 py-8">
-        {/* Breadcrumb */}
-        <div className="mb-6">
-          <Breadcrumb items={breadcrumbItems} />
-        </div>
-
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -79,9 +68,6 @@ export default function DashboardPage() {
               <Button onClick={() => router.push("/practice")}>
                 <PlayCircle className="mr-2 h-4 w-4" />
                 Practice
-              </Button>
-              <Button variant="ghost" onClick={() => router.push("/")}>
-                <Home className="h-4 w-4" />
               </Button>
             </div>
           </div>

@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { useUserProgress } from "@/lib/store/user-progress";
 import { NZCEL_LEVELS } from "@/data/nzcel-levels";
 import { getScenariosByLevel } from "@/data/conversation-scenarios";
-import { Breadcrumb } from "@/components/navigation/breadcrumb";
 import { RealtimeConversation } from "@/components/conversation/realtime-conversation";
 import type { ConversationScenario } from "@/types";
 
@@ -21,11 +20,6 @@ export default function ConversationPage() {
 
   const currentLevelInfo = NZCEL_LEVELS.find((l) => l.id === currentLevel);
   const scenarios = getScenariosByLevel(currentLevel);
-
-  const breadcrumbItems = [
-    { label: "Home", href: "/" },
-    { label: "Conversation Practice" },
-  ];
 
   const handleStartConversation = (scenario: ConversationScenario) => {
     setSelectedScenario(scenario);
@@ -51,11 +45,6 @@ export default function ConversationPage() {
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="container mx-auto px-4 py-8">
-        {/* Breadcrumb Navigation */}
-        <div className="mb-6">
-          <Breadcrumb items={breadcrumbItems} />
-        </div>
-
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
@@ -74,9 +63,6 @@ export default function ConversationPage() {
               <Button variant="outline" onClick={() => router.push("/dashboard")}>
                 <TrendingUp className="mr-2 h-4 w-4" />
                 Dashboard
-              </Button>
-              <Button variant="ghost" onClick={() => router.push("/")}>
-                <Home className="h-4 w-4" />
               </Button>
             </div>
           </div>
