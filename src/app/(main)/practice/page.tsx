@@ -67,17 +67,36 @@ function PracticePageContent() {
   const getFilteredQuestions = (skillOverride?: SkillType | null) => {
     const targetSkill = skillOverride !== undefined ? skillOverride : selectedSkill;
     return ALL_QUESTIONS.filter((q) => {
+      // Always filter by skill
       if (targetSkill && q.skill !== targetSkill) return false;
+
+      // Filter by level - use filters.level if set, otherwise use currentLevel
+      const targetLevel = filters.level || currentLevel;
+      if (targetLevel && q.level !== targetLevel) return false;
+
+      // Filter by question type if specified
       if (filters.questionType && q.type !== filters.questionType) return false;
-      if (filters.level && q.level !== filters.level) return false;
+
       return true;
     });
   };
 
   const getFilteredRandomQuestion = (skillOverride?: SkillType | null) => {
     const filtered = getFilteredQuestions(skillOverride);
-    if (filtered.length === 0) return null;
-    return filtered[Math.floor(Math.random() * filtered.length)];
+    console.log("[Practice] getFilteredRandomQuestion:", {
+      skillOverride,
+      currentLevel,
+      filters,
+      filteredCount: filtered.length,
+      filteredQuestions: filtered.map(q => ({ id: q.id, skill: q.skill, type: q.type, level: q.level }))
+    });
+    if (filtered.length === 0) {
+      console.error("[Practice] No questions found! Skill:", skillOverride || selectedSkill, "Level:", currentLevel, "Filters:", filters);
+      return null;
+    }
+    const selected = filtered[Math.floor(Math.random() * filtered.length)];
+    console.log("[Practice] Selected question:", { id: selected.id, skill: selected.skill, type: selected.type });
+    return selected;
   };
 
   const loadNewQuestion = (skill?: SkillType) => {
@@ -170,6 +189,22 @@ function PracticePageContent() {
   };
 
   const handleSkillSelect = async (skill: SkillType) => {
+    console.log("[Practice] handleSkillSelect called:", {
+      skill,
+      currentSkill: selectedSkill,
+      hasCurrentQuestion: !!currentQuestion,
+      currentLevel,
+      filters
+    });
+
+    // Prevent re-selecting the same skill to avoid resetting questions
+    if (selectedSkill === skill && currentQuestion) {
+      console.log("[Practice] ⚠️ Skill already selected, ignoring duplicate selection");
+      return;
+    }
+
+    console.log("[Practice] ✅ Proceeding with skill selection:", skill);
+
     setSelectedSkill(skill);
     setFilters({ ...filters, skill });
     setQuestionCount(1);
@@ -189,14 +224,22 @@ function PracticePageContent() {
       const session = await createPracticeSession(skill, currentLevel);
       setDbSessionId(session.id);
       setDbSessionUUID(session.sessionId);
-      console.log("[Practice] Session created:", session.sessionId);
+      console.log("[Practice] ✅ Session created:", session.sessionId);
     } catch (error) {
-      console.error("[Practice] Failed to create session:", error);
+      console.error("[Practice] ❌ Failed to create session:", error);
     }
 
     // Pass skill parameter to avoid using stale selectedSkill state
+    console.log("[Practice] 🔍 Getting random question for skill:", skill);
     const question = getFilteredRandomQuestion(skill);
-    setCurrentQuestion(question || null);
+    if (question) {
+      console.log("[Practice] ✅ Question found, setting currentQuestion:", question.id);
+      setCurrentQuestion(question);
+    } else {
+      console.error("[Practice] ❌ No questions found for skill:", skill, "with currentLevel:", currentLevel, "filters:", filters);
+      // Keep current question if new one is not found, or set to null if this is first selection
+      setCurrentQuestion(null);
+    }
   };
 
   const handleContinueSession = () => {
@@ -329,27 +372,29 @@ function PracticePageContent() {
                 </div>
               )}
 
-              {/* Skill Progress Overview */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {skills.map((skill) => (
-                  <Card
-                    key={skill.id}
-                    className="cursor-pointer hover:border-primary transition-colors"
-                    onClick={() => handleSkillSelect(skill.id)}
-                  >
-                    <CardHeader className="pb-3">
-                      <div className="flex items-center justify-between">
-                        <skill.icon className="h-8 w-8 text-primary" />
-                        <Badge variant={selectedSkill === skill.id ? "default" : "secondary"}>{skillProgress[skill.id]}%</Badge>
-                      </div>
-                      <CardTitle className="text-lg mt-2">{skill.label}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <Progress value={skillProgress[skill.id]} className="h-2" />
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+              {/* Skill Progress Overview - Hide when skill is selected */}
+              {!selectedSkill && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {skills.map((skill) => (
+                    <Card
+                      key={skill.id}
+                      className="cursor-pointer hover:border-primary transition-colors"
+                      onClick={() => handleSkillSelect(skill.id)}
+                    >
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center justify-between">
+                          <skill.icon className="h-8 w-8 text-primary" />
+                          <Badge variant={selectedSkill === skill.id ? "default" : "secondary"}>{skillProgress[skill.id]}%</Badge>
+                        </div>
+                        <CardTitle className="text-lg mt-2">{skill.label}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <Progress value={skillProgress[skill.id]} className="h-2" />
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
 
               {/* Main Practice Area */}
               {!selectedSkill ? (
