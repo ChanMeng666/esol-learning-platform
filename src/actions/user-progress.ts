@@ -189,7 +189,12 @@ export async function getBadges() {
 /**
  * Submit an answer and update progress
  */
-export async function submitAnswer(questionId: string, isCorrect: boolean, points: number) {
+export async function submitAnswer(
+  questionId: string,
+  isCorrect: boolean,
+  points: number,
+  skill: "listening" | "speaking" | "reading" | "writing" = "reading"
+) {
   return fetchWithDrizzle(async (db, { userId }) => {
     // Record completed question
     await db.insert(schema.completedQuestions).values({
@@ -197,6 +202,7 @@ export async function submitAnswer(questionId: string, isCorrect: boolean, point
       questionId,
       isCorrect,
       pointsEarned: isCorrect ? points : 0,
+      skill,
     });
 
     // Get current progress
@@ -350,6 +356,7 @@ export async function awardBadge(
   badgeId: string,
   name: string,
   description: string,
+  icon: string,
   rarity: "common" | "rare" | "epic" | "legendary"
 ) {
   return fetchWithDrizzle(async (db, { userId }) => {
@@ -365,6 +372,7 @@ export async function awardBadge(
       badgeId,
       name,
       description,
+      icon,
       rarity,
     }).returning();
 
