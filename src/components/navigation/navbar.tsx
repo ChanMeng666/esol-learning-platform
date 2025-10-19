@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { BookOpen, Menu, Flame, Trophy } from 'lucide-react'
+import { Menu, Flame, Trophy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useUserProgress } from '@/lib/store/user-progress'
 import {
@@ -65,9 +66,13 @@ export function Navbar() {
                 <div className="flex h-16 items-center justify-between">
                     {/* Logo */}
                     <Link href="/" className="flex items-center gap-2">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-black dark:bg-white">
-                            <BookOpen className="h-6 w-6 text-white dark:text-black" />
-                        </div>
+                        <Image
+                            src="/nzcel-prep-logo.svg"
+                            alt="NZCEL Prep Logo"
+                            width={40}
+                            height={40}
+                            className="h-10 w-10"
+                        />
                         <span className="hidden font-bold text-xl text-black dark:text-white sm:inline-block">
                             NZCEL Prep
                         </span>
@@ -118,7 +123,16 @@ export function Navbar() {
                                 </SheetTrigger>
                                 <SheetContent>
                                     <SheetHeader>
-                                        <SheetTitle className="text-left">Navigation</SheetTitle>
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <Image
+                                                src="/nzcel-prep-logo.svg"
+                                                alt="NZCEL Prep Logo"
+                                                width={32}
+                                                height={32}
+                                                className="h-8 w-8"
+                                            />
+                                            <SheetTitle className="text-left">Navigation</SheetTitle>
+                                        </div>
                                         <SheetDescription className="text-left">
                                             Navigate through the NZCEL Prep platform
                                         </SheetDescription>
