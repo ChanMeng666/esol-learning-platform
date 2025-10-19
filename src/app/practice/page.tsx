@@ -2,9 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Confetti from "react-confetti";
-import { useWindowSize } from "@/hooks/use-window-size";
-import { Sparkles, ArrowLeft, TrendingUp, Home } from "lucide-react";
+import { Sparkles, ArrowLeft, TrendingUp, Home, Headphones, Mic, BookOpen, PenTool } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +24,6 @@ export default function PracticePage() {
   const { currentLevel, skillProgress, submitAnswer } = useUserProgress();
   const [selectedSkill, setSelectedSkill] = useState<SkillType | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
-  const [showConfetti, setShowConfetti] = useState(false);
   const [questionCount, setQuestionCount] = useState(0);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<Filters>({});
@@ -40,7 +37,6 @@ export default function PracticePage() {
     skillBreakdown: [],
   });
   const [sessionStartTime, setSessionStartTime] = useState<number>(Date.now());
-  const { width, height } = useWindowSize();
 
   const currentLevelInfo = NZCEL_LEVELS.find((l) => l.id === currentLevel);
 
@@ -112,11 +108,6 @@ export default function PracticePage() {
       };
     });
 
-    if (isCorrect) {
-      setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 3000);
-    }
-
     // Check if session should end (after 10 questions)
     if (sessionStats.questionsAttempted + 1 >= 10) {
       setTimeout(() => {
@@ -172,11 +163,11 @@ export default function PracticePage() {
     }
   };
 
-  const skills: { id: SkillType; label: string; icon: string; color: string }[] = [
-    { id: "listening", label: "Listening", icon: "🎧", color: "bg-primary/10 text-primary border-primary/30" },
-    { id: "speaking", label: "Speaking", icon: "🗣️", color: "bg-secondary/10 text-secondary-foreground border-secondary/30" },
-    { id: "reading", label: "Reading", icon: "📖", color: "bg-destructive/10 text-destructive border-destructive/30" },
-    { id: "writing", label: "Writing", icon: "✍️", color: "bg-accent/20 text-accent-foreground border-accent-foreground/30" },
+  const skills: { id: SkillType; label: string; icon: React.ElementType }[] = [
+    { id: "listening", label: "Listening", icon: Headphones },
+    { id: "speaking", label: "Speaking", icon: Mic },
+    { id: "reading", label: "Reading", icon: BookOpen },
+    { id: "writing", label: "Writing", icon: PenTool },
   ];
 
   const breadcrumbItems = [
@@ -195,9 +186,7 @@ export default function PracticePage() {
         />
       )}
 
-      <div className="min-h-screen bg-gradient-to-br from-accent via-background to-muted/30 pb-20">
-        {showConfetti && <Confetti width={width} height={height} recycle={false} numberOfPieces={200} />}
-
+      <div className="min-h-screen bg-background pb-20">
       <div className="container mx-auto px-4 py-8">
         {/* Breadcrumb Navigation */}
         <div className="mb-6">
@@ -208,7 +197,7 @@ export default function PracticePage() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-primary to-destructive">
+              <h1 className="text-4xl font-bold mb-2 text-primary">
                 Practice Zone
               </h1>
               <p className="text-muted-foreground">
@@ -285,17 +274,13 @@ export default function PracticePage() {
           {skills.map((skill) => (
             <Card
               key={skill.id}
-              className={`cursor-pointer transition-all border-2 ${
-                selectedSkill === skill.id
-                  ? "ring-2 ring-primary shadow-lg border-primary"
-                  : "hover:shadow-md hover:border-primary/30"
-              }`}
+              className="cursor-pointer"
               onClick={() => handleSkillSelect(skill.id)}
             >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-3xl">{skill.icon}</span>
-                  <Badge className={skill.color}>{skillProgress[skill.id]}%</Badge>
+                  <skill.icon className="h-8 w-8 text-primary" />
+                  <Badge variant={selectedSkill === skill.id ? "default" : "secondary"}>{skillProgress[skill.id]}%</Badge>
                 </div>
                 <CardTitle className="text-lg mt-2">{skill.label}</CardTitle>
               </CardHeader>
@@ -310,9 +295,9 @@ export default function PracticePage() {
         {!selectedSkill ? (
           <div className="text-center py-20">
             <Sparkles className="w-16 h-16 mx-auto mb-4 text-primary" />
-            <h2 className="text-2xl font-bold mb-2">Select a Skill to Practice</h2>
+            <h2 className="text-2xl font-bold mb-2">Select a Skill</h2>
             <p className="text-muted-foreground">
-              Choose Listening, Speaking, Reading, or Writing to begin
+              Choose a skill to start
             </p>
           </div>
         ) : currentQuestion ? (
@@ -350,8 +335,7 @@ export default function PracticePage() {
               <CardHeader>
                 <CardTitle>No Questions Available</CardTitle>
                 <CardDescription>
-                  There are no questions for {selectedSkill} at {currentLevel} level yet.
-                  Try a different skill or level!
+                  No questions available for {selectedSkill} at {currentLevel}. Try another skill or level.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -366,12 +350,11 @@ export default function PracticePage() {
         {/* AI Hint */}
         {selectedSkill && (
           <div className="mt-8">
-            <Card className="bg-gradient-to-r from-accent to-muted/50 border-2 border-primary/30">
+            <Card>
               <CardContent className="p-4 flex items-center gap-3">
                 <Sparkles className="w-5 h-5 text-primary" />
-                <p className="text-sm text-foreground">
-                  <strong>Tip:</strong> Open the AI Study Assistant (sidebar) for personalized help
-                  and explanations!
+                <p className="text-sm">
+                  <strong>Tip:</strong> Ask the AI Study Assistant for help!
                 </p>
               </CardContent>
             </Card>

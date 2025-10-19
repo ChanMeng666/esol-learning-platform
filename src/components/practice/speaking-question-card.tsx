@@ -60,9 +60,7 @@ export function SpeakingQuestionCard({
 
       // Show result toast
       if (assessment.overallScore >= 80) {
-        toast.success(`Excellent! Score: ${assessment.overallScore}/100`, {
-          icon: "✨",
-        });
+        toast.success(`Excellent! Score: ${assessment.overallScore}/100`);
       } else if (assessment.overallScore >= 60) {
         toast.success(`Good work! Score: ${assessment.overallScore}/100`);
       } else {
@@ -87,10 +85,10 @@ export function SpeakingQuestionCard({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
     >
-      <Card className="max-w-3xl mx-auto shadow-lg">
+      <Card className="max-w-3xl mx-auto">
         <CardHeader>
           <div className="flex items-center justify-between mb-2">
-            <Badge className="bg-green-100 text-green-700">
+            <Badge variant="secondary">
               <Mic className="w-3 h-3 mr-1" />
               SPEAKING
             </Badge>
@@ -98,11 +96,9 @@ export function SpeakingQuestionCard({
           </div>
           <CardTitle className="text-2xl">{question.question}</CardTitle>
           <CardDescription>
-            Record your spoken response. You can re-record as many times as you like before
-            submitting.
+            Record your response. Re-record anytime.
             {question.expectedDuration && (
-              <> Expected duration: {Math.floor(question.expectedDuration / 60)} minute
-              {Math.floor(question.expectedDuration / 60) !== 1 ? 's' : ''}.</>
+              <> Target: {Math.floor(question.expectedDuration / 60)} min</>
             )}
           </CardDescription>
         </CardHeader>
@@ -121,10 +117,10 @@ export function SpeakingQuestionCard({
 
               {/* Explanation/Tips */}
               {question.explanation && (
-                <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                <div className="border rounded-lg p-4">
                   <p className="text-sm">
-                    <strong className="text-blue-900 dark:text-blue-100">Tip:</strong>{" "}
-                    <span className="text-blue-800 dark:text-blue-200">{question.explanation}</span>
+                    <strong>Tip:</strong>{" "}
+                    <span className="text-muted-foreground">{question.explanation}</span>
                   </p>
                 </div>
               )}

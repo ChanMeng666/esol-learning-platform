@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Trophy,
@@ -18,8 +17,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import Confetti from "react-confetti";
-import { useWindowSize } from "@/hooks/use-window-size";
 
 export interface SessionStats {
   questionsAttempted: number;
@@ -47,9 +44,6 @@ export function SessionSummary({
   onGoHome,
   onViewDashboard,
 }: SessionSummaryProps) {
-  const [showConfetti, setShowConfetti] = useState(false);
-  const { width, height } = useWindowSize();
-
   const accuracy = stats.questionsAttempted > 0
     ? Math.round((stats.questionsCorrect / stats.questionsAttempted) * 100)
     : 0;
@@ -74,20 +68,12 @@ export function SessionSummary({
 
   const performance = getPerformanceLevel();
 
-  useEffect(() => {
-    if (accuracy >= 75) {
-      setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 4000);
-    }
-  }, [accuracy]);
-
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
     >
-      {showConfetti && <Confetti width={width} height={height} recycle={false} numberOfPieces={300} />}
 
       <Card className="w-full max-w-2xl mx-4 shadow-2xl border-2 border-primary/20">
         <CardHeader className="text-center pb-4">

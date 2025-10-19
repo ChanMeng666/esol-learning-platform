@@ -1,5 +1,6 @@
 "use client";
 
+import { Info } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -92,12 +93,13 @@ export function EssayEditor({
         </div>
 
         {/* Writing tips */}
-        <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-md p-3">
-          <p className="text-xs text-blue-900 dark:text-blue-100">
-            💡 <strong>Tips:</strong> Write clearly and organize your ideas into paragraphs.
-            For academic essays, include an introduction, body paragraphs with evidence, and a conclusion.
-            Check your spelling and grammar before submitting.
-          </p>
+        <div className="bg-muted/50 border rounded-md p-3">
+          <div className="flex items-start gap-2 text-xs">
+            <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
+            <p>
+              <strong>Tips:</strong> Write clearly in paragraphs. Include introduction, body, and conclusion. Check spelling and grammar.
+            </p>
+          </div>
         </div>
       </CardContent>
     </Card>

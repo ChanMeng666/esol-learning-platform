@@ -241,13 +241,13 @@ export function CopilotActions({ children }: { children: React.ReactNode }) {
         id: `badge-${Date.now()}`,
         name: badgeName,
         description: reason,
-        icon: "🏆",
+        icon: "",
         earnedAt: new Date().toISOString(),
         rarity: rarity as "common" | "rare" | "epic" | "legendary",
       };
 
       addBadge(badge);
-      toast.success(`🎉 You earned the "${badgeName}" badge!`);
+      toast.success(`You earned the "${badgeName}" badge!`);
 
       return {
         success: true,

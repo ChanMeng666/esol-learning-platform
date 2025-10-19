@@ -13,17 +13,17 @@ interface WelcomeTourProps {
 const tourSteps = [
     {
         title: 'Welcome to NZCEL Prep!',
-        description: 'Your comprehensive platform for NZCEL exam preparation. Let us show you around.',
+        description: 'AI-powered NZCEL exam preparation.',
         icon: BookOpen,
     },
     {
         title: 'Practice Your Skills',
-        description: 'Access practice questions for Listening, Speaking, Reading, and Writing.',
+        description: 'Practice all 4 skills.',
         icon: Award,
     },
     {
         title: 'Track Your Progress',
-        description: 'Monitor your performance with detailed dashboards and analytics.',
+        description: 'Monitor your performance.',
         icon: LayoutDashboard,
     },
 ]

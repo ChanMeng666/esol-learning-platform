@@ -59,9 +59,7 @@ export function ListeningQuestionCard({
 
     // Show feedback toast
     if (correct) {
-      toast.success(`Correct! +${question.points} points`, {
-        icon: "✨",
-      });
+      toast.success(`Correct! +${question.points} points`);
     } else {
       toast.error("Not quite right. Keep practicing!");
     }
@@ -80,10 +78,10 @@ export function ListeningQuestionCard({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
     >
-      <Card className="max-w-3xl mx-auto shadow-lg">
+      <Card className="max-w-3xl mx-auto">
         <CardHeader>
           <div className="flex items-center justify-between mb-2">
-            <Badge className="bg-blue-100 text-blue-700">
+            <Badge variant="secondary">
               <Headphones className="w-3 h-3 mr-1" />
               LISTENING
             </Badge>
@@ -91,7 +89,7 @@ export function ListeningQuestionCard({
           </div>
           <CardTitle className="text-2xl">{question.question}</CardTitle>
           <CardDescription>
-            Listen to the audio carefully before answering. You can replay it as many times as needed.
+            Listen and answer. Replay as needed.
           </CardDescription>
         </CardHeader>
 
@@ -139,20 +137,20 @@ export function ListeningQuestionCard({
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
             >
-              <Card className={isCorrect ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"}>
+              <Card>
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
                     {isCorrect ? (
-                      <CheckCircle2 className="w-6 h-6 text-green-600 mt-0.5 flex-shrink-0" />
+                      <CheckCircle2 className="w-6 h-6 text-primary mt-0.5 flex-shrink-0" />
                     ) : (
-                      <XCircle className="w-6 h-6 text-red-600 mt-0.5 flex-shrink-0" />
+                      <XCircle className="w-6 h-6 text-primary mt-0.5 flex-shrink-0" />
                     )}
                     <div className="flex-1">
                       <h4 className="font-semibold mb-1">
                         {isCorrect ? "Excellent!" : "Not Quite"}
                       </h4>
                       {question.explanation && (
-                        <p className="text-sm text-gray-700">{question.explanation}</p>
+                        <p className="text-sm text-muted-foreground">{question.explanation}</p>
                       )}
                       {!isCorrect && question.correctAnswer && (
                         <p className="text-sm mt-2">

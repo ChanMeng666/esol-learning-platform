@@ -151,9 +151,7 @@ export function SpeakingFeedback({
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            Great effort! Review the feedback above and try speaking on this topic again.
-            Focus on the areas for improvement, and you&apos;ll see progress quickly.
-            Consider practicing with the AI Study Assistant in the sidebar for additional support.
+            Great effort! Focus on the areas for improvement and try again.
           </p>
         </CardContent>
       </Card>

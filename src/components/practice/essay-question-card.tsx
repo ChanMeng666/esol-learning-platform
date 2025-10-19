@@ -51,7 +51,7 @@ export function EssayQuestionCard({
     }
 
     if (minWords && wordCount < minWords) {
-      toast.error(`Your essay is too short. Minimum ${minWords} words required.`);
+      toast.error(`Min. ${minWords} words required`);
       return;
     }
 
@@ -67,7 +67,7 @@ export function EssayQuestionCard({
       const rubric = question.rubric || getRubric(question.level, "writing");
       const rubricText = rubric ? generateRubricPrompt(rubric) : undefined;
 
-      toast.info("AI is grading your essay. This may take a moment...");
+      toast.info("Grading your essay...");
 
       // Call assessment API
       const response = await fetch("/api/openai/assess", {
@@ -94,9 +94,7 @@ export function EssayQuestionCard({
 
       // Show result toast
       if (result.overallScore >= 80) {
-        toast.success(`Excellent essay! Score: ${result.overallScore}/100`, {
-          icon: "✨",
-        });
+        toast.success(`Excellent essay! Score: ${result.overallScore}/100`);
       } else if (result.overallScore >= 60) {
         toast.success(`Good work! Score: ${result.overallScore}/100`);
       } else {
@@ -127,10 +125,10 @@ export function EssayQuestionCard({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
     >
-      <Card className="max-w-4xl mx-auto shadow-lg">
+      <Card className="max-w-4xl mx-auto">
         <CardHeader>
           <div className="flex items-center justify-between mb-2">
-            <Badge className="bg-orange-100 text-orange-700">
+            <Badge variant="secondary">
               <FileText className="w-3 h-3 mr-1" />
               WRITING
             </Badge>
@@ -157,10 +155,10 @@ export function EssayQuestionCard({
 
               {/* Explanation/Guidance */}
               {question.explanation && (
-                <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                <div className="border rounded-lg p-4">
                   <p className="text-sm">
-                    <strong className="text-blue-900 dark:text-blue-100">Guidance:</strong>{" "}
-                    <span className="text-blue-800 dark:text-blue-200">{question.explanation}</span>
+                    <strong>Guidance:</strong>{" "}
+                    <span className="text-muted-foreground">{question.explanation}</span>
                   </p>
                 </div>
               )}

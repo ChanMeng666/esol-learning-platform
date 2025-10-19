@@ -46,9 +46,7 @@ export function QuestionCard({ question, onSubmit, onSkip }: QuestionCardProps) 
 
     // Show feedback toast
     if (correct) {
-      toast.success(`Correct! +${question.points} points`, {
-        icon: "✨",
-      });
+      toast.success(`Correct! +${question.points} points`);
     } else {
       toast.error("Not quite right. Keep practicing!");
     }
@@ -61,23 +59,16 @@ export function QuestionCard({ question, onSubmit, onSkip }: QuestionCardProps) 
     }, 2000);
   };
 
-  const skillColors = {
-    listening: "bg-blue-100 text-blue-700",
-    speaking: "bg-green-100 text-green-700",
-    reading: "bg-purple-100 text-purple-700",
-    writing: "bg-orange-100 text-orange-700",
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
     >
-      <Card className="max-w-3xl mx-auto shadow-lg">
+      <Card className="max-w-3xl mx-auto">
         <CardHeader>
           <div className="flex items-center justify-between mb-2">
-            <Badge className={skillColors[question.skill]}>
+            <Badge variant="secondary">
               {question.skill.toUpperCase()}
             </Badge>
             <Badge variant="outline">{question.points} points</Badge>
@@ -150,20 +141,20 @@ export function QuestionCard({ question, onSubmit, onSkip }: QuestionCardProps) 
               animate={{ opacity: 1, height: "auto" }}
               className="mt-6"
             >
-              <Card className={isCorrect ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"}>
+              <Card>
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
                     {isCorrect ? (
-                      <CheckCircle2 className="w-6 h-6 text-green-600 mt-0.5" />
+                      <CheckCircle2 className="w-6 h-6 text-primary mt-0.5" />
                     ) : (
-                      <XCircle className="w-6 h-6 text-red-600 mt-0.5" />
+                      <XCircle className="w-6 h-6 text-primary mt-0.5" />
                     )}
                     <div className="flex-1">
                       <h4 className="font-semibold mb-1">
                         {isCorrect ? "Excellent!" : "Not Quite"}
                       </h4>
                       {question.explanation && (
-                        <p className="text-sm text-gray-700">{question.explanation}</p>
+                        <p className="text-sm text-muted-foreground">{question.explanation}</p>
                       )}
                       {!isCorrect && question.correctAnswer && (
                         <p className="text-sm mt-2">
@@ -200,9 +191,9 @@ export function QuestionCard({ question, onSubmit, onSkip }: QuestionCardProps) 
           )}
 
           {/* Hint */}
-          <div className="mt-4 p-3 bg-blue-50 rounded-lg flex items-start gap-2">
-            <Lightbulb className="w-5 h-5 text-blue-600 mt-0.5" />
-            <p className="text-sm text-gray-700">
+          <div className="mt-4 p-3 border rounded-lg flex items-start gap-2">
+            <Lightbulb className="w-5 h-5 text-primary mt-0.5" />
+            <p className="text-sm text-muted-foreground">
               Ask the AI Study Assistant for help if you&apos;re stuck!
             </p>
           </div>

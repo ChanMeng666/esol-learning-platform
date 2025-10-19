@@ -1,6 +1,6 @@
 "use client";
 
-import { Play, Pause, RotateCcw, Volume2, Loader2 } from "lucide-react";
+import { Play, Pause, RotateCcw, Volume2, Loader2, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useAudioPlayback } from "@/hooks/use-audio-playback";
@@ -152,9 +152,10 @@ export function AudioPlayer({
       {/* Hint to play audio first */}
       {showTranscript && transcript && !state.hasPlayed && (
         <div className="border-t pt-4">
-          <p className="text-xs text-muted-foreground italic">
-            💡 Play the audio first. The transcript will appear after you&apos;ve listened.
-          </p>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground italic">
+            <Info className="h-4 w-4 flex-shrink-0" />
+            <span>Play audio first to view transcript</span>
+          </div>
         </div>
       )}
     </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Mic, Square, RotateCcw, Loader2, Volume2 } from "lucide-react";
+import { Mic, Square, RotateCcw, Loader2, Volume2, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -89,11 +89,11 @@ export function VoiceRecorder({
             ) : state.audioBlob ? (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Volume2 className="h-5 w-5" />
-                Recording saved ({formatTime(state.recordingDuration)})
+                Saved ({formatTime(state.recordingDuration)})
               </div>
             ) : (
               <div className="text-sm text-muted-foreground">
-                Click the microphone to start recording
+                Click to record
               </div>
             )}
           </div>
@@ -149,9 +149,9 @@ export function VoiceRecorder({
           )}
 
           {/* Tips */}
-          <div className="text-xs text-muted-foreground text-center max-w-md">
-            💡 <strong>Tip:</strong> Speak clearly and at a natural pace. You can record multiple times
-            until you&apos;re satisfied with your response.
+          <div className="flex items-center gap-2 text-xs text-muted-foreground text-center max-w-md">
+            <Info className="h-4 w-4 flex-shrink-0" />
+            <span><strong>Tip:</strong> Speak clearly. Record multiple times if needed.</span>
           </div>
         </div>
       </CardContent>

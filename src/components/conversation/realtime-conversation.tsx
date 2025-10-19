@@ -92,7 +92,7 @@ export function RealtimeConversation({ scenario, onEnd }: RealtimeConversationPr
 
     try {
       // 1. Transcribe user's speech
-      toast.info("Transcribing your speech...");
+      toast.info("Transcribing...");
       console.log("[RealtimeConversation] 📝 Transcribing audio...");
 
       const audioFile = new File([state.audioBlob], "recording.webm", {
@@ -348,7 +348,7 @@ Respond naturally as your character would. Keep responses conversational and app
         </div>
 
         {/* Progress */}
-        <Card className="bg-gradient-to-r from-primary/10 to-secondary/10">
+        <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2 text-sm">
               <span className="font-medium">Conversation Progress</span>
@@ -475,12 +475,12 @@ Respond naturally as your character would. Keep responses conversational and app
 
           {/* Recording indicator */}
           {state.isRecording && (
-            <div className="mt-4 flex items-center justify-center gap-3 p-3 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-md">
+            <div className="mt-4 flex items-center justify-center gap-3 p-3 border rounded-md">
               <div className="relative">
-                <div className="h-3 w-3 rounded-full bg-red-500 animate-pulse" />
-                <div className="absolute inset-0 h-3 w-3 rounded-full bg-red-500 opacity-75 animate-ping" />
+                <div className="h-3 w-3 rounded-full bg-primary animate-pulse" />
+                <div className="absolute inset-0 h-3 w-3 rounded-full bg-primary opacity-75 animate-ping" />
               </div>
-              <span className="text-sm font-medium text-red-600 dark:text-red-400">
+              <span className="text-sm font-medium">
                 Recording... ({state.recordingDuration}s)
               </span>
             </div>
@@ -489,7 +489,7 @@ Respond naturally as your character would. Keep responses conversational and app
       </Card>
 
       {/* Tips */}
-      <Card className="mt-6 bg-gradient-to-r from-accent to-muted/50 border-2 border-primary/30">
+      <Card className="mt-6">
         <CardContent className="p-4">
           <h4 className="font-semibold mb-2 text-sm">Tips for Success:</h4>
           <ul className="text-sm space-y-1 text-muted-foreground">

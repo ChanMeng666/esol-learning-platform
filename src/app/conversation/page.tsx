@@ -37,24 +37,9 @@ export default function ConversationPage() {
     setSelectedScenario(null);
   };
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case "beginner":
-        return "bg-green-100 text-green-700 border-green-300";
-      case "intermediate":
-        return "bg-blue-100 text-blue-700 border-blue-300";
-      case "intermediate-advanced":
-        return "bg-purple-100 text-purple-700 border-purple-300";
-      case "advanced":
-        return "bg-red-100 text-red-700 border-red-300";
-      default:
-        return "bg-gray-100 text-gray-700 border-gray-300";
-    }
-  };
-
   if (isInConversation && selectedScenario) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-accent via-background to-muted/30">
+      <div className="min-h-screen bg-background">
         <RealtimeConversation
           scenario={selectedScenario}
           onEnd={handleEndConversation}
@@ -64,7 +49,7 @@ export default function ConversationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-accent via-background to-muted/30 pb-20">
+    <div className="min-h-screen bg-background pb-20">
       <div className="container mx-auto px-4 py-8">
         {/* Breadcrumb Navigation */}
         <div className="mb-6">
@@ -75,11 +60,11 @@ export default function ConversationPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-primary to-destructive">
+              <h1 className="text-4xl font-bold mb-2 text-primary">
                 Real-Time Conversation Practice
               </h1>
               <p className="text-muted-foreground">
-                Practice speaking with AI in realistic scenarios •{" "}
+                Speak with AI in realistic scenarios •{" "}
                 <Badge variant="secondary" className="ml-2">
                   {currentLevelInfo?.name || currentLevel}
                 </Badge>
@@ -98,33 +83,33 @@ export default function ConversationPage() {
         </div>
 
         {/* Info Card */}
-        <Card className="mb-8 border-primary/30">
+        <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <MessageSquare className="w-5 h-5 text-primary" />
               How It Works
             </CardTitle>
             <CardDescription>
-              Have natural, real-time conversations with an AI tutor to improve your speaking skills
+              Practice speaking with AI
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex items-start gap-3">
               <Badge className="mt-0.5">1</Badge>
               <p className="text-sm">
-                <strong>Choose a scenario</strong> that matches your interests and goals
+                <strong>Pick a scenario</strong>
               </p>
             </div>
             <div className="flex items-start gap-3">
               <Badge className="mt-0.5">2</Badge>
               <p className="text-sm">
-                <strong>Start the conversation</strong> and speak naturally with the AI
+                <strong>Speak naturally</strong>
               </p>
             </div>
             <div className="flex items-start gap-3">
               <Badge className="mt-0.5">3</Badge>
               <p className="text-sm">
-                <strong>Get instant feedback</strong> and practice multiple times
+                <strong>Get feedback</strong>
               </p>
             </div>
           </CardContent>
@@ -140,8 +125,7 @@ export default function ConversationPage() {
                 <MessageSquare className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="text-xl font-semibold mb-2">No scenarios available</h3>
                 <p className="text-muted-foreground mb-4">
-                  There are no conversation scenarios for {currentLevel} yet.
-                  Try changing your level or check back later!
+                  No scenarios for {currentLevel}. Try another level.
                 </p>
                 <Button onClick={() => router.push("/practice")}>
                   <ArrowLeft className="mr-2 h-4 w-4" />
@@ -152,18 +136,15 @@ export default function ConversationPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {scenarios.map((scenario) => (
-                <Card
-                  key={scenario.id}
-                  className="hover:shadow-lg transition-all border-2 hover:border-primary/50 cursor-pointer group"
-                >
+                <Card key={scenario.id}>
                   <CardHeader>
                     <div className="flex items-start justify-between mb-2">
-                      <Badge className={getDifficultyColor(scenario.difficulty)}>
+                      <Badge variant="secondary">
                         {scenario.difficulty}
                       </Badge>
                       <Badge variant="outline">{scenario.targetTurns} turns</Badge>
                     </div>
-                    <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                    <CardTitle className="text-xl">
                       {scenario.title}
                     </CardTitle>
                     <CardDescription className="line-clamp-2">
@@ -173,10 +154,10 @@ export default function ConversationPage() {
                   <CardContent className="space-y-4">
                     <div className="space-y-2 text-sm">
                       <div>
-                        <strong className="text-primary">Your Role:</strong> {scenario.userRole}
+                        <strong>Your Role:</strong> {scenario.userRole}
                       </div>
                       <div>
-                        <strong className="text-primary">AI Role:</strong> {scenario.aiRole}
+                        <strong>AI Role:</strong> {scenario.aiRole}
                       </div>
                     </div>
 
