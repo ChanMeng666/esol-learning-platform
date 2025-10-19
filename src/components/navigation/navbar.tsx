@@ -25,11 +25,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useState, useEffect } from 'react'
 
-// Public links - visible to all users
-const publicNavLinks = [
-    { href: '/', label: 'Home' },
-]
-
 // Protected links - only visible to authenticated users
 const protectedNavLinks = [
     { href: '/practice', label: 'Practice' },
@@ -51,7 +46,7 @@ export function Navbar() {
     const app = useStackApp()
 
     // Determine which nav links to show based on authentication status
-    const visibleNavLinks = user ? [...publicNavLinks, ...protectedNavLinks] : publicNavLinks
+    const visibleNavLinks = user ? protectedNavLinks : []
 
     // Ensure client-only rendering for certain features
     useEffect(() => {
@@ -86,8 +81,8 @@ export function Navbar() {
         <nav className={`sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
             <div className="container mx-auto px-4">
                 <div className="flex h-16 items-center justify-between">
-                    {/* Logo */}
-                    <Link href="/" className="flex items-center gap-2">
+                    {/* Logo - Clickable to navigate to homepage */}
+                    <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
                         <Image
                             src="/nzcel-prep-logo.svg"
                             alt="NZCEL Prep Logo"
@@ -137,7 +132,7 @@ export function Navbar() {
                             </div>
                         )}
 
-                        {/* Auth Buttons - Desktop */}
+                        {/* Auth Button - Desktop */}
                         {mounted && (
                             <div className="hidden md:flex items-center gap-2">
                                 {user ? (
@@ -171,14 +166,9 @@ export function Navbar() {
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 ) : (
-                                    <>
-                                        <Link href={app.urls.signIn}>
-                                            <Button variant="ghost">Sign In</Button>
-                                        </Link>
-                                        <Link href={app.urls.signUp}>
-                                            <Button>Sign Up</Button>
-                                        </Link>
-                                    </>
+                                    <Link href={app.urls.signIn}>
+                                        <Button>Sign In</Button>
+                                    </Link>
                                 )}
                             </div>
                         )}
@@ -246,10 +236,7 @@ export function Navbar() {
                                         ) : (
                                             <>
                                                 <Link href={app.urls.signIn} onClick={() => setIsOpen(false)}>
-                                                    <Button variant="ghost" className="w-full">Sign In</Button>
-                                                </Link>
-                                                <Link href={app.urls.signUp} onClick={() => setIsOpen(false)}>
-                                                    <Button className="w-full">Sign Up</Button>
+                                                    <Button className="w-full">Sign In</Button>
                                                 </Link>
                                                 <div className="my-2 border-t" />
                                             </>

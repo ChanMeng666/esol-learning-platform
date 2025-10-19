@@ -46,26 +46,15 @@ export default function HomePage() {
               Go to Dashboard
             </Button>
           ) : (
-            // Guest user - show Sign Up and Sign In
-            <div className="mt-4 flex flex-col sm:flex-row gap-3">
-              <Link href={app.urls.signUp}>
-                <Button
-                  size="lg"
-                  className="bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90 transition-transform hover:scale-105 active:scale-95"
-                >
-                  Sign Up
-                </Button>
-              </Link>
-              <Link href={app.urls.signIn}>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="border-black dark:border-white text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-transform hover:scale-105 active:scale-95"
-                >
-                  Sign In
-                </Button>
-              </Link>
-            </div>
+            // Guest user - show Get Started (leads to sign-up)
+            <Link href={app.urls.signUp}>
+              <Button
+                size="lg"
+                className="mt-4 bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90 transition-transform hover:scale-105 active:scale-95"
+              >
+                Get Started
+              </Button>
+            </Link>
           )}
         </motion.div>
       </BackgroundCircles>
