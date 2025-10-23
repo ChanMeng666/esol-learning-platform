@@ -335,7 +335,10 @@ export function AISpeakingCoach() {
                 {isSessionActive ? "Connected" : "Not Connected"}
               </Badge>
               {isSpeaking && (
-                <Badge variant="outline" className="animate-pulse text-sm">
+                <Badge
+                  className="animate-pulse text-sm font-semibold bg-green-500 hover:bg-green-500 text-white border-green-600 shadow-lg shadow-green-500/50"
+                >
+                  <Mic className="h-3.5 w-3.5 mr-1.5" />
                   Listening...
                 </Badge>
               )}
