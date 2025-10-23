@@ -1,4 +1,4 @@
-# 🎓 NZCEL Exam Prep - AI-Powered Interactive Learning Platform
+# 🌍 AI-Powered ESOL Learning Platform
 
 <div align="center">
 
@@ -8,9 +8,9 @@
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.0-06B6D4?logo=tailwindcss)](https://tailwindcss.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-A full-stack, AI-powered web application that revolutionizes NZCEL exam preparation through adaptive learning, intelligent audio caching, real-time feedback, persistent progress tracking, and engaging gamification.
+A comprehensive, AI-powered ESOL learning platform featuring **real-time voice conversation**, **CEFR-aligned practice**, **NZCEL exam prep**, and **multi-module progress tracking**. Built with Next.js 15, OpenAI Realtime API, CopilotKit, and Neon PostgreSQL.
 
-[Features](#-features) • [Architecture](#-architecture) • [Getting Started](#-getting-started) • [Tech Stack](#-tech-stack) • [Database](#-database) • [Documentation](#-documentation)
+[Features](#-features) • [Learning Paths](#-learning-paths) • [Architecture](#-architecture) • [Getting Started](#-getting-started) • [Tech Stack](#-tech-stack) • [Database](#-database) • [Documentation](#-documentation)
 
 </div>
 
@@ -35,15 +35,17 @@ A full-stack, AI-powered web application that revolutionizes NZCEL exam preparat
 
 ## 🌟 Overview
 
-The **NZCEL Exam Prep Platform** is a comprehensive learning solution designed to help students master the New Zealand Certificates in English Language (NZCEL) examinations. By combining artificial intelligence, gamification, and modern web technologies, we provide an engaging and effective study experience.
+The **AI-Powered ESOL Learning Platform** is a comprehensive solution for English language learners, offering multiple integrated learning paths. From real-time AI conversation practice to structured exam preparation, the platform combines cutting-edge AI technology with proven language learning methodologies.
 
 ### Key Highlights
 
+- 🎤 **Real-Time AI Speaking Coach** - Natural voice conversations using OpenAI Realtime API (GA)
+- 📚 **Multiple Learning Paths** - CEFR practice, NZCEL exam prep, scenario-based learning
 - 🤖 **AI-Powered Study Companion** - Intelligent tutoring with CopilotKit
-- 🎯 **Adaptive Learning** - Personalized difficulty adjustment based on performance
+- 🎯 **Dual Progress Tracking** - Separate CEFR and NZCEL progress systems
 - 🏆 **Gamification System** - Points, badges, streaks, and progressive achievements
-- 📊 **Persistent Progress Tracking** - Cloud-based progress with Stack Auth
-- 🗄️ **Full Database Integration** - Neon PostgreSQL with 14 tables for complete data tracking
+- 📊 **Multi-Module Dashboard** - Unified view of progress across all learning paths
+- 🗄️ **Full Database Integration** - Neon PostgreSQL with **16 tables** for complete data tracking
 - 💾 **Intelligent Audio Caching** - 90%+ cost savings on TTS API calls
 - 🔐 **Secure Authentication** - Stack Auth with route protection
 - ☁️ **Cloud Storage** - Vercel Blob for audio files with CDN acceleration
@@ -115,13 +117,78 @@ graph TD
 - 🎖️ **Badges**: Collectible rewards with rarity tiers
 - 🎉 **Celebrations**: Confetti animations for major wins
 
-### 📊 Progress Dashboard
+### 📊 Multi-Module Progress Dashboard
 
+- **Overview Tab**: Aggregated stats across all learning modules
+- **NZCEL Tab**: Detailed NZCEL progress (13 levels, 4 skills)
+- **General Practice Tab**: CEFR progress tracking (A1-C2)
+- **Speaking Tab**: AI Speaking Coach statistics
 - Real-time skill progress visualization
 - Comprehensive statistics (points, streak, questions completed)
 - Achievement tracking (in-progress vs. completed)
 - Badge showcase and collection
 - Study calendar with streak history
+
+---
+
+## 🚀 Learning Paths
+
+The platform offers multiple integrated learning paths to suit different goals and preferences:
+
+### 1. 🎤 AI Speaking Coach (Featured)
+
+**Real-time voice conversation practice with AI-powered ESOL coach**
+
+- Uses OpenAI Realtime API (GA) for natural two-way dialogue
+- Automatic Voice Activity Detection (VAD) for seamless interaction
+- Real-time transcription display
+- Instant pronunciation and fluency feedback
+- CEFR-aligned scenarios (A1-C2)
+- Practice natural conversation flow without button clicks
+
+**Route**: `/speaking`
+
+### 2. 📚 General English Practice
+
+**CEFR-aligned practice for all four skills**
+
+- Six CEFR levels: A1 (Elementary) → A2 → B1 → B2 → C1 → C2 (Proficiency)
+- Comprehensive skill coverage: Listening, Speaking, Reading, Writing
+- Adaptive question difficulty
+- Independent progress tracking
+- Equivalent to IELTS, TOEFL, PTE, Duolingo English Test
+
+**Route**: `/practice/general`
+
+### 3. 🎓 NZCEL Exam Preparation
+
+**Comprehensive prep for New Zealand Certificates in English Language**
+
+- 13 NZCEL levels: Foundation → Level 1-6 (General/Applied/Academic/Employment)
+- All four skills aligned with NZCEL graduate outcomes
+- University pathway preparation (Level 4/5 Academic)
+- Authentic exam-style questions
+- Strategic purpose and pathway guidance
+
+**Route**: `/practice/nzcel`
+
+### 4. 🌍 Scenario-Based Learning (Coming Soon)
+
+**Practice English in real-world contexts**
+
+- Workplace communication
+- Travel and hospitality
+- Academic settings
+- Social situations
+- Business English
+
+**Route**: `/practice/scenarios` *(In Development)*
+
+### 5. 📝 IELTS/TOEFL Preparation (Planned)
+
+**Targeted preparation for major English proficiency exams**
+
+- Coming soon to complement existing learning paths
 
 ---
 
@@ -448,11 +515,12 @@ graph LR
     style F fill:#f59e0b,stroke:#d97706,color:#fff
 ```
 
-### Database Tables (14 Total)
+### Database Tables (16 Total)
 
 | Category | Tables | Purpose |
 |----------|--------|---------|
-| **User Progress** | `user_progress`, `completed_questions`, `badges`, `achievements` | Track learning progress and gamification |
+| **User Progress - NZCEL** | `user_progress`, `completed_questions`, `badges`, `achievements` | Track NZCEL learning progress and gamification |
+| **User Progress - CEFR & Modules** | `cefr_progress`, `module_progress` | Track CEFR progress and module statistics |
 | **CopilotKit Chat** | `copilot_conversations`, `copilot_messages` | Persist AI chat history |
 | **Audio Management** | `audio_files`, `question_audio_cache`, `user_recordings`, `transcriptions` | Manage audio files and TTS caching |
 | **Practice Sessions** | `practice_sessions`, `session_answers` | Track practice sessions |
@@ -493,16 +561,21 @@ nzcel-prep/
 ├── src/
 │   ├── app/
 │   │   ├── (main)/                  # Main route group
-│   │   │   ├── page.tsx            # Landing page
-│   │   │   ├── practice/           # Practice interface
-│   │   │   ├── conversation/       # Voice conversation
-│   │   │   └── dashboard/          # Progress dashboard
+│   │   │   ├── page.tsx            # Landing page (Multi-path entry)
+│   │   │   ├── speaking/           # AI Speaking Coach ✨
+│   │   │   ├── practice/
+│   │   │   │   ├── general/        # CEFR-aligned practice ✨
+│   │   │   │   ├── nzcel/          # NZCEL exam prep ✨
+│   │   │   │   └── scenarios/      # Scenario learning (coming soon)
+│   │   │   ├── conversation/       # Voice conversation (redirect)
+│   │   │   └── dashboard/          # Multi-module dashboard ✨
 │   │   ├── handler/[...stack]/     # Stack Auth routes
 │   │   ├── api/openai/             # OpenAI API routes
 │   │   │   ├── transcribe/         # Whisper STT
 │   │   │   ├── assess/             # GPT-4 assessment
 │   │   │   ├── tts/                # Text-to-speech
-│   │   │   └── conversation/       # Chat completions
+│   │   │   ├── conversation/       # Chat completions
+│   │   │   └── realtime/           # Realtime API ✨
 │   │   └── layout.tsx              # Root layout
 │   │
 │   ├── actions/                     # Server Actions
@@ -510,32 +583,41 @@ nzcel-prep/
 │   │   ├── recordings.ts           # User recordings
 │   │   ├── copilot-chat.ts         # Chat history
 │   │   ├── sessions.ts             # Session tracking
-│   │   └── user-progress.ts        # Progress & gamification
+│   │   ├── user-progress.ts        # NZCEL progress & gamification
+│   │   ├── cefr-progress.ts        # CEFR progress tracking ✨
+│   │   ├── module-stats.ts         # Module statistics ✨
+│   │   └── diagnostics.ts          # Diagnostic tools ✨
 │   │
 │   ├── lib/
 │   │   ├── db/
-│   │   │   ├── schema.ts           # Drizzle schema (14 tables)
+│   │   │   ├── schema.ts           # Drizzle schema (16 tables) ✨
 │   │   │   └── index.ts            # Database client
 │   │   ├── blob/
 │   │   │   └── audio-storage.ts    # Vercel Blob utilities
 │   │   ├── store/
-│   │   │   └── user-progress.ts    # Zustand store
+│   │   │   ├── user-progress.ts    # NZCEL progress store
+│   │   │   └── cefr-progress.ts    # CEFR progress store ✨
 │   │   ├── stack.ts                # Stack Auth config
 │   │   ├── openai.ts               # OpenAI client
 │   │   └── utils.ts                # Utilities
 │   │
 │   ├── components/
-│   │   ├── ui/                     # shadcn/ui (20+ components)
+│   │   ├── ui/                     # shadcn/ui (25+ components)
 │   │   ├── copilot/                # CopilotKit integration
 │   │   ├── practice/               # Practice components
 │   │   ├── conversation/           # Conversation components
+│   │   ├── speaking/               # AI Speaking Coach components ✨
+│   │   ├── dashboard/              # Dashboard tab components ✨
 │   │   ├── navigation/             # Navbar, footer
 │   │   └── providers.tsx           # App providers
 │   │
 │   ├── data/
 │   │   ├── nzcel-levels.ts         # 13 NZCEL levels
-│   │   ├── questions.ts            # Question bank
-│   │   └── conversation-scenarios.ts # Conversation scenarios
+│   │   ├── questions.ts            # NZCEL question bank
+│   │   ├── conversation-scenarios.ts # NZCEL scenarios
+│   │   ├── cefr-levels.ts          # 6 CEFR levels ✨
+│   │   ├── cefr-questions.ts       # CEFR question bank ✨
+│   │   └── learning-modules.ts     # Module configuration ✨
 │   │
 │   ├── hooks/
 │   │   ├── use-voice-recorder.ts   # Voice recording
@@ -543,7 +625,7 @@ nzcel-prep/
 │   │   └── use-copilot-chat-history.ts # Chat persistence
 │   │
 │   └── types/
-│       └── index.ts                # TypeScript definitions
+│       └── index.ts                # TypeScript definitions (LearningModule, etc.) ✨
 │
 ├── drizzle/                        # Database migrations
 ├── public/                         # Static assets

@@ -10,8 +10,9 @@ This document provides a comprehensive overview of the NZCEL Prep Platform's dat
 - **ORM**: Drizzle ORM v0.44.6
 - **Authentication**: Stack Auth v2.8.43
 - **File Storage**: Vercel Blob v2.0.0
-- **Total Tables**: 14 tables across 5 categories
+- **Total Tables**: **16 tables** across 6 categories
 - **Key Feature**: Intelligent audio caching system to minimize TTS API costs
+- **Multi-Module Support**: Parallel progress tracking for NZCEL and CEFR learning paths
 
 ---
 
@@ -33,12 +34,15 @@ This document provides a comprehensive overview of the NZCEL Prep Platform's dat
 
 ```mermaid
 mindmap
-  root((NZCEL Database))
-    User Progress
+  root((ESOL Platform Database))
+    User Progress - NZCEL
       user_progress
       completed_questions
       badges
       achievements
+    User Progress - CEFR & Modules
+      cefr_progress
+      module_progress
     CopilotKit Chat
       copilot_conversations
       copilot_messages
@@ -59,7 +63,8 @@ mindmap
 
 | Category | Tables | Primary Purpose |
 |----------|--------|-----------------|
-| **User Progress & Gamification** | `user_progress`, `completed_questions`, `badges`, `achievements` | Track user learning progress, points, streaks, and achievements |
+| **User Progress - NZCEL** | `user_progress`, `completed_questions`, `badges`, `achievements` | Track NZCEL learning progress, points, streaks, and achievements |
+| **User Progress - CEFR & Modules** | `cefr_progress`, `module_progress` | Track CEFR progress and multi-module statistics |
 | **CopilotKit Chat History** | `copilot_conversations`, `copilot_messages` | Persist AI chat conversations across all contexts |
 | **Audio File Management** | `audio_files`, `question_audio_cache`, `user_recordings`, `transcriptions` | Manage audio files, TTS caching, and speech-to-text |
 | **Practice Sessions** | `practice_sessions`, `session_answers` | Track individual practice sessions and answers |
@@ -292,6 +297,34 @@ erDiagram
     conversation_sessions ||--o{ conversation_turns : "has many"
     conversation_turns ||--o| audio_files : "references"
     conversation_turns ||--o| transcriptions : "references"
+
+    %% CEFR & Multi-Module Support
+    cefr_progress {
+        bigint id PK
+        text user_id UK "Stack Auth ID"
+        text current_level "A1-C2"
+        text target_level
+        int listening_progress
+        int speaking_progress
+        int reading_progress
+        int writing_progress
+        int total_points
+        int questions_completed
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    module_progress {
+        bigint id PK
+        text user_id FK
+        text module_type "general, nzcel, ielts, toefl, scenario"
+        int total_time "seconds"
+        int questions_completed
+        int points_earned
+        timestamp last_accessed
+        timestamp created_at
+        timestamp updated_at
+    }
 ```
 
 ---
@@ -538,6 +571,43 @@ Individual turns in a conversation session.
 
 ---
 
+### 6. CEFR Progress & Multi-Module Support
+
+#### `cefr_progress`
+Tracks user progress for CEFR-based general English practice (parallel to NZCEL progress).
+
+**Key Fields:**
+- `user_id` (text, unique): Stack Auth user identifier
+- `current_level` / `target_level`: CEFR level (A1/A2/B1/B2/C1/C2)
+- Skill progress (0-100): `listening_progress`, `speaking_progress`, `reading_progress`, `writing_progress`
+- Stats: `total_points`, `questions_completed`
+- Timestamps: `created_at`, `updated_at`
+
+**Purpose:** Enables independent progress tracking for General English Practice module, separate from NZCEL progress.
+
+**Indexes:** `user_id`
+
+---
+
+#### `module_progress`
+Tracks overall usage statistics for each learning module/path.
+
+**Key Fields:**
+- `user_id`, `module_type`: User and module identifiers
+- `module_type`: 'general' | 'nzcel' | 'ielts' | 'toefl' | 'scenario'
+- Aggregated stats:
+  - `total_time` (seconds): Total time spent in module
+  - `questions_completed`: Questions completed in module
+  - `points_earned`: Points earned in module
+- `last_accessed`: Last activity timestamp
+- Timestamps: `created_at`, `updated_at`
+
+**Purpose:** Provides dashboard overview of activity across all learning paths.
+
+**Indexes:** `user_id + module_type` (composite)
+
+---
+
 ## Server Actions
 
 ### Overview
@@ -608,7 +678,10 @@ graph TB
 | **`actions/recordings.ts`** | `saveUserRecording()`, `getUserRecordings()`, `getRecordingById()`, `getSessionRecordings()` | User voice recording management and retrieval |
 | **`actions/copilot-chat.ts`** | `getOrCreateConversation()`, `saveChatMessage()`, `getChatHistory()`, `getUserConversations()` | CopilotKit chat history persistence |
 | **`actions/sessions.ts`** | `createPracticeSession()`, `saveSessionAnswer()`, `completePracticeSession()`, `createConversationSession()`, `saveConversationTurn()` | Practice and conversation session tracking |
-| **`actions/user-progress.ts`** | `getUserProgress()`, `updateSkillProgress()`, `submitAnswer()`, `awardBadge()`, `getAchievements()` | User progress, gamification, achievements |
+| **`actions/user-progress.ts`** | `getUserProgress()`, `updateSkillProgress()`, `submitAnswer()`, `awardBadge()`, `getAchievements()` | NZCEL user progress, gamification, achievements |
+| **`actions/cefr-progress.ts`** | `getCEFRProgress()`, `updateCEFRSkillProgress()`, `setCEFRLevel()`, `setCEFRTargetLevel()`, `incrementCEFRStats()`, `resetCEFRProgress()` | CEFR progress tracking and management |
+| **`actions/module-stats.ts`** | `getModuleStats()`, `updateModuleStats()`, `getAllModuleStats()` | Multi-module statistics and dashboard data |
+| **`actions/diagnostics.ts`** | System diagnostic and debugging utilities | Development and troubleshooting tools |
 
 ### Authentication Flow
 
@@ -954,11 +1027,14 @@ COPILOT_CLOUD_API_KEY="..." # Optional
 This database architecture provides:
 
 ✅ **Complete data persistence** for all user activities
-✅ **Intelligent audio caching** to minimize API costs
+✅ **Multi-module support** for parallel learning paths (NZCEL, CEFR, Speaking)
+✅ **Dual progress tracking** with independent NZCEL and CEFR systems
+✅ **Intelligent audio caching** to minimize API costs (90%+ savings)
 ✅ **Full chat history** for CopilotKit conversations
-✅ **Comprehensive session tracking** for analytics
-✅ **Scalable design** with proper indexes and relations
+✅ **Comprehensive session tracking** for analytics across all modules
+✅ **Scalable design** with proper indexes and relations (16 tables, 6 categories)
 ✅ **Security** through Stack Auth integration
+✅ **Flexible architecture** for adding new learning modules (IELTS, TOEFL planned)
 
 For implementation details and integration examples, see:
 - `DATABASE_SCHEMA_IMPLEMENTATION.md` - Detailed implementation guide
@@ -967,6 +1043,6 @@ For implementation details and integration examples, see:
 
 ---
 
-**Last Updated**: 2025-10-19
-**Version**: 1.0
-**Author**: NZCEL Prep Development Team
+**Last Updated**: 2025-10-24
+**Version**: 2.0
+**Author**: ESOL Platform Development Team
