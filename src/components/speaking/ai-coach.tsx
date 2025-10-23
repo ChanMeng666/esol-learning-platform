@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { RealtimeAgent, RealtimeSession } from "@openai/agents/realtime";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -410,8 +411,14 @@ export function AISpeakingCoach() {
           <CardContent>
             <ScrollArea className="h-[500px] pr-4">
               {messages.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <p className="text-sm">Start a practice session to begin</p>
+                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                  <DotLottieReact
+                    src="/realtime-speaking.lottie"
+                    loop
+                    autoplay
+                    style={{ width: 200, height: 200 }}
+                  />
+                  <p className="text-sm mt-4">Start a practice session to begin</p>
                 </div>
               ) : (
                 <div className="space-y-4">
