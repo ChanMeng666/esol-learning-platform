@@ -1,14 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { BackgroundCircles } from "@/components/ui/background-circles";
 import { WelcomeTour } from "@/components/onboarding/welcome-tour";
 import { Timeline } from "@/components/ui/timeline";
 import { useUser, useStackApp } from "@stackframe/stack";
-import { Sparkles } from "lucide-react";
 import Link from "next/link";
 
 export default function HomePage() {
@@ -153,27 +150,13 @@ export default function HomePage() {
       <WelcomeTour />
       {/* Hero Section with Background Circles */}
       <BackgroundCircles variant="octonary">
-        <motion.div
-          initial={{ opacity: 0.0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{
-            delay: 0.3,
-            duration: 0.8,
-            ease: "easeInOut",
-          }}
-          className="flex flex-col gap-4 items-center justify-center px-4"
-        >
-          <Badge variant="secondary" className="mb-2">
-            <Sparkles className="h-3 w-3 mr-1" />
-            AI-Powered ESOL Learning Platform
-          </Badge>
-
+        <div className="flex flex-col gap-4 items-center justify-center px-4">
           <h1 className="text-5xl md:text-7xl font-bold text-black dark:text-white text-center">
             Master English with AI
           </h1>
 
           <p className="text-xl md:text-2xl text-black/70 dark:text-white/70 py-4 text-center max-w-3xl">
-            CEFR-aligned practice, NZCEL exam prep, real-time speaking coach, and adaptive learning for ESOL students
+            AI-powered practice, exam prep, and speaking coaching for all levels
           </p>
 
           {user ? (
@@ -196,7 +179,7 @@ export default function HomePage() {
               </Button>
             </Link>
           )}
-        </motion.div>
+        </div>
       </BackgroundCircles>
 
       {/* Learning Paths Section - Timeline Design */}
