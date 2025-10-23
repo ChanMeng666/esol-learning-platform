@@ -2,7 +2,7 @@
 
 import { fetchWithDrizzle } from "@/lib/db";
 import * as schema from "@/lib/db/schema";
-import { eq, and, desc, count, sum, sql } from "drizzle-orm";
+import { eq, and, desc, count, sql } from "drizzle-orm";
 import type { LearningPath } from "@/types";
 
 // ============================================================================
@@ -192,7 +192,6 @@ export async function getAggregatedStats() {
     const speakingStats = await getSpeakingStats();
 
     // Calculate totals
-    const totalModulePoints = modules.reduce((sum, m) => sum + m.pointsEarned, 0);
     const totalModuleTime = modules.reduce((sum, m) => sum + m.totalTime, 0);
     const totalModuleQuestions = modules.reduce((sum, m) => sum + m.questionsCompleted, 0);
 

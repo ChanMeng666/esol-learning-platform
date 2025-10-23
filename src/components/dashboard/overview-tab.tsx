@@ -7,26 +7,35 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { getAggregatedStats } from "@/actions/module-stats";
 
+interface ModuleProgressData {
+  moduleType: string;
+  totalTime: number;
+  questionsCompleted: number;
+  pointsEarned: number;
+  lastAccessed: Date | null;
+}
+
+interface ProgressData {
+  currentLevel: string;
+  targetLevel: string | null;
+  totalPoints: number;
+  questionsCompleted?: number;
+}
+
 interface AggregatedStats {
   totalPoints: number;
   totalTime: number;
   totalQuestions: number;
-  modules: Array<{
-    moduleType: string;
-    totalTime: number;
-    questionsCompleted: number;
-    pointsEarned: number;
-    lastAccessed: Date | null;
-  }>;
-  nzcel: any;
-  cefr: any;
+  modules: ModuleProgressData[];
+  nzcel: ProgressData | null;
+  cefr: ProgressData | null;
   speaking: {
     totalSessions: number;
     completedSessions: number;
     totalTurns: number;
     averageDuration: number;
   };
-  mostActiveModule: any;
+  mostActiveModule: ModuleProgressData | null;
 }
 
 export function OverviewTab() {
@@ -111,7 +120,6 @@ export function OverviewTab() {
 
   const generalModule = getModuleData("general");
   const nzcelModule = getModuleData("nzcel");
-  const speakingModule = getModuleData("speaking");
 
   // Calculate total possible points for progress bar
   const totalPossiblePoints = Math.max(stats.totalPoints, 1000);

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Trophy, Target, BookOpen, Award, TrendingUp, Headphones, Mic, PenTool, PlayCircle } from "lucide-react";
+import { Target, BookOpen, Award, TrendingUp, Headphones, Mic, PenTool, PlayCircle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -40,7 +40,6 @@ export function GeneralPracticeTab() {
   }, [loadFromServer]);
 
   const currentLevelInfo = CEFR_LEVELS.find((l) => l.id === currentLevel);
-  const targetLevelInfo = targetLevel ? CEFR_LEVELS.find((l) => l.id === targetLevel) : null;
 
   const skills = [
     {

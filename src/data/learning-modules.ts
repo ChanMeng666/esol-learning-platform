@@ -1,4 +1,4 @@
-import { LearningModule } from "@/types";
+import { LearningModule, SkillType } from "@/types";
 
 /**
  * Learning Modules Configuration
@@ -98,8 +98,8 @@ export function getModulesByType(type: string): LearningModule[] {
 /**
  * Get modules that support a specific skill
  */
-export function getModulesBySkill(skill: string): LearningModule[] {
+export function getModulesBySkill(skill: SkillType): LearningModule[] {
   return LEARNING_MODULES.filter((module) =>
-    module.supportedSkills.includes(skill as any)
+    module.supportedSkills.includes(skill)
   );
 }

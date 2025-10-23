@@ -280,7 +280,7 @@ export function SpeakingTab() {
                 <CheckCircle className="w-4 h-4 text-primary" />
               </div>
               <div>
-                <h4 className="font-semibold mb-1">Don't Fear Mistakes</h4>
+                <h4 className="font-semibold mb-1">Don&apos;t Fear Mistakes</h4>
                 <p className="text-sm text-muted-foreground">
                   Making mistakes is part of learning - our AI coach provides supportive feedback
                 </p>

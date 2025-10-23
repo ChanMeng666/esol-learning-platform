@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { BookOpen, Headphones, Mic, PenTool, Target, TrendingUp, ArrowRight, Award } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +10,6 @@ import { ProtectedRoute } from "@/components/auth/protected-route";
 import { useCEFRProgress, useAverageCEFRProgress } from "@/lib/store/cefr-progress";
 import { getCEFRProgress } from "@/actions/cefr-progress";
 import { CEFR_LEVELS } from "@/data/cefr-levels";
-import type { CEFRLevel } from "@/types";
 
 /**
  * General English Practice Landing Page
@@ -29,7 +27,6 @@ export default function GeneralPracticePage() {
 }
 
 function GeneralPracticePageContent() {
-  const router = useRouter();
   const {
     currentLevel,
     targetLevel,
@@ -57,7 +54,6 @@ function GeneralPracticePageContent() {
   }, [loadFromServer]);
 
   const currentLevelInfo = CEFR_LEVELS.find((l) => l.id === currentLevel);
-  const targetLevelInfo = targetLevel ? CEFR_LEVELS.find((l) => l.id === targetLevel) : null;
 
   const skills = [
     {
