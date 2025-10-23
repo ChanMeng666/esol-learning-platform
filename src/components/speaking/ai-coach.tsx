@@ -138,7 +138,8 @@ export function AISpeakingCoach() {
             prefix_padding_ms: 300,
             silence_duration_ms: 500,
           },
-        },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any,
       });
       sessionRef.current = session;
 
@@ -233,11 +234,6 @@ export function AISpeakingCoach() {
 
       await session.updateAgent(updatedAgent);
 
-      // Check if muted
-      if (session.muted) {
-        session.muted = false;
-      }
-
       // Send initial message to trigger AI greeting
       session.sendMessage("Hello! I'm ready to practice English conversation with you.");
 
@@ -276,7 +272,8 @@ export function AISpeakingCoach() {
     }
 
     try {
-      sessionRef.current.createResponse();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (sessionRef.current as any).createResponse();
       toast.info("Requested AI response");
     } catch (error) {
       toast.error("Failed to trigger response");
@@ -369,7 +366,7 @@ export function AISpeakingCoach() {
                     <li>Speak clearly in complete sentences</li>
                     <li>Wait for natural pauses before the AI responds</li>
                     <li>Use headphones to prevent audio feedback</li>
-                    <li>Click "Request Response" if the AI doesn't respond automatically</li>
+                    <li>Click &quot;Request Response&quot; if the AI doesn&apos;t respond automatically</li>
                   </ul>
                 </div>
                 {isSpeaking && (
@@ -459,16 +456,16 @@ export function AISpeakingCoach() {
               <ul className="space-y-1 ml-4 list-disc text-muted-foreground">
                 <li>Speak in complete sentences</li>
                 <li>Pause naturally between thoughts</li>
-                <li>Don't interrupt the AI while it's speaking</li>
+                <li>Don&apos;t interrupt the AI while it&apos;s speaking</li>
                 <li>Wait 2-3 seconds after finishing before expecting a response</li>
               </ul>
             </div>
 
             <div className="space-y-2">
-              <h4 className="font-semibold">If AI Doesn't Respond:</h4>
+              <h4 className="font-semibold">If AI Doesn&apos;t Respond:</h4>
               <ul className="space-y-1 ml-4 list-disc text-muted-foreground">
                 <li>Wait a few more seconds for processing</li>
-                <li>Click "Request Response" button</li>
+                <li>Click &quot;Request Response&quot; button</li>
                 <li>Speak louder or more clearly</li>
                 <li>Check microphone permissions</li>
               </ul>
@@ -508,14 +505,14 @@ export function AISpeakingCoach() {
           </CardHeader>
           <CardContent className="space-y-2 text-sm text-muted-foreground">
             <p className="font-semibold text-orange-600 dark:text-orange-400">
-              Not hearing the AI or it can't hear you?
+              Not hearing the AI or it can&apos;t hear you?
             </p>
             <ul className="ml-4 list-disc space-y-1">
               <li>Check browser microphone permissions</li>
               <li>Verify system volume is not muted</li>
               <li>Use Chrome or Edge browser (recommended)</li>
               <li>Refresh the page and try again</li>
-              <li>Make sure you're using headphones</li>
+              <li>Make sure you&apos;re using headphones</li>
             </ul>
           </CardContent>
         </Card>

@@ -106,7 +106,7 @@ function SpeakingPageContent() {
         {/* Additional Info */}
         <div className="mt-8 p-4 bg-muted/50 rounded-lg border border-border">
           <p className="text-sm text-muted-foreground text-center">
-            <strong>Note:</strong> This feature uses OpenAI's Realtime API for natural voice conversations.
+            <strong>Note:</strong> This feature uses OpenAI&apos;s Realtime API for natural voice conversations.
             Your practice sessions are not stored and are used only for real-time interaction.
             Make sure to allow microphone access when prompted.
           </p>

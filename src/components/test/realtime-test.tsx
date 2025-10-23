@@ -194,7 +194,8 @@ export function RealtimeTest() {
             prefix_padding_ms: 300,
             silence_duration_ms: 500,
           },
-        },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any,
       });
       sessionRef.current = session;
 
@@ -274,7 +275,8 @@ export function RealtimeTest() {
           // This event shows that audio is being received
           addDebugEvent("AUDIO_INPUT_RECEIVED", "Audio data received from microphone");
         } else if (event.type === "conversation.item.input_audio_transcription.completed") {
-          addDebugEvent("USER_TRANSCRIPTION_COMPLETE", event.data);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          addDebugEvent("USER_TRANSCRIPTION_COMPLETE", (event as any).data);
         } else if (event.type === "response.created") {
           addDebugEvent("RESPONSE_CREATED", "AI response created");
         } else if (event.type === "response.done") {
@@ -320,15 +322,6 @@ export function RealtimeTest() {
       await session.updateAgent(updatedAgent);
 
       addDebugEvent("AGENT_UPDATED", "Agent configuration applied");
-
-      // Check if session is muted and unmute if necessary
-      addDebugEvent("CHECKING_MUTE_STATUS", { muted: session.muted });
-
-      if (session.muted) {
-        addDebugEvent("UNMUTING_SESSION", "Session is muted, unmuting...");
-        session.muted = false;
-        addDebugEvent("SESSION_UNMUTED", { muted: session.muted });
-      }
 
       // Verify the session is ready
       addDebugEvent("SESSION_READY", {
@@ -389,7 +382,8 @@ export function RealtimeTest() {
     try {
       addDebugEvent("MANUAL_RESPONSE_TRIGGER", "Manually triggering AI response...");
       // Create a response manually
-      sessionRef.current.createResponse();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (sessionRef.current as any).createResponse();
       toast.info("Triggered AI response");
     } catch (error) {
       addDebugEvent("MANUAL_TRIGGER_ERROR", (error as Error).message);
@@ -485,8 +479,8 @@ export function RealtimeTest() {
                   <ul className="text-sm text-muted-foreground space-y-1 ml-4 list-disc">
                     <li>Speak clearly into your microphone for 3-5 seconds</li>
                     <li>The system uses semantic VAD - it waits for natural pauses</li>
-                    <li>Watch Debug tab for "AUDIO_INPUT_RECEIVED" to confirm mic is working</li>
-                    <li>If auto-detection doesn't work, click "Force AI Response" after speaking</li>
+                    <li>Watch Debug tab for &quot;AUDIO_INPUT_RECEIVED&quot; to confirm mic is working</li>
+                    <li>If auto-detection doesn&apos;t work, click &quot;Force AI Response&quot; after speaking</li>
                     <li>Expected events: AUDIO_INPUT_RECEIVED → USER_SPEECH_STARTED → USER_SPEECH_STOPPED</li>
                   </ul>
                 </div>
