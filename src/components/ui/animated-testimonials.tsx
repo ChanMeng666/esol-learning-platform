@@ -3,8 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { Quote, Star } from "lucide-react"
-import { motion, useAnimation, useInView } from "framer-motion"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 
 export interface Testimonial {
   id: number
@@ -39,42 +38,6 @@ export function AnimatedTestimonials({
 }: AnimatedTestimonialsProps) {
   const [activeIndex, setActiveIndex] = useState(0)
 
-  // Refs for scroll animations
-  const sectionRef = useRef(null)
-  const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
-  const controls = useAnimation()
-
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2,
-      },
-    },
-  }
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.5,
-        ease: "easeOut",
-      },
-    },
-  }
-
-  // Trigger animations when section comes into view
-  useEffect(() => {
-    if (isInView) {
-      controls.start("visible")
-    }
-  }, [isInView, controls])
-
   // Auto rotate testimonials
   useEffect(() => {
     if (autoRotateInterval <= 0 || testimonials.length <= 1) return
@@ -91,16 +54,11 @@ export function AnimatedTestimonials({
   }
 
   return (
-    <section ref={sectionRef} id="testimonials" className={`py-24 overflow-hidden bg-muted/30 ${className || ""}`}>
+    <section id="testimonials" className={`py-24 overflow-hidden bg-muted/30 ${className || ""}`}>
       <div className="px-4 md:px-6">
-        <motion.div
-          initial="hidden"
-          animate={controls}
-          variants={containerVariants}
-          className="grid grid-cols-1 gap-16 w-full md:grid-cols-2 lg:gap-24"
-        >
+        <div className="grid grid-cols-1 gap-16 w-full md:grid-cols-2 lg:gap-24">
           {/* Left side: Heading and navigation */}
-          <motion.div variants={itemVariants} className="flex flex-col justify-center">
+          <div className="flex flex-col justify-center">
             <div className="space-y-6">
               {badgeText && (
                 <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary/10 text-primary">
@@ -126,22 +84,19 @@ export function AnimatedTestimonials({
                 ))}
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Right side: Testimonial cards */}
-          <motion.div variants={itemVariants} className="relative h-full mr-10 min-h-[300px] md:min-h-[400px]">
+          <div className="relative h-full mr-10 min-h-[300px] md:min-h-[400px]">
             {testimonials.map((testimonial, index) => (
-              <motion.div
+              <div
                 key={testimonial.id}
-                className="absolute inset-0"
-                initial={{ opacity: 0, x: 100 }}
-                animate={{
+                className="absolute inset-0 transition-opacity duration-500"
+                style={{
                   opacity: activeIndex === index ? 1 : 0,
-                  x: activeIndex === index ? 0 : 100,
-                  scale: activeIndex === index ? 1 : 0.9,
+                  zIndex: activeIndex === index ? 10 : 0,
+                  pointerEvents: activeIndex === index ? 'auto' : 'none'
                 }}
-                transition={{ duration: 0.5, ease: "easeInOut" }}
-                style={{ zIndex: activeIndex === index ? 10 : 0 }}
               >
                 <div className="bg-card border shadow-lg rounded-xl p-8 h-full flex flex-col">
                   <div className="mb-6 flex gap-2">
@@ -172,18 +127,18 @@ export function AnimatedTestimonials({
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
 
             {/* Decorative elements */}
             <div className="absolute -bottom-6 -left-6 h-24 w-24 rounded-xl bg-primary/5"></div>
             <div className="absolute -top-6 -right-6 h-24 w-24 rounded-xl bg-primary/5"></div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
 
         {/* Logo cloud */}
         {trustedCompanies.length > 0 && (
-          <motion.div variants={itemVariants} initial="hidden" animate={controls} className="mt-24 text-center">
+          <div className="mt-24 text-center">
             <h3 className="text-sm font-medium text-muted-foreground mb-8">{trustedCompaniesTitle}</h3>
             <div className="flex flex-wrap justify-center gap-x-12 gap-y-8">
               {trustedCompanies.map((company) => (
@@ -192,7 +147,7 @@ export function AnimatedTestimonials({
                 </div>
               ))}
             </div>
-          </motion.div>
+          </div>
         )}
       </div>
     </section>
