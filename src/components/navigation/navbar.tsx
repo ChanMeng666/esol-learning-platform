@@ -28,6 +28,7 @@ import { useState, useEffect } from 'react'
 // Protected links - only visible to authenticated users
 const protectedNavLinks = [
     { href: '/practice', label: 'Practice' },
+    { href: '/speaking', label: 'Speaking' },
     { href: '/conversation', label: 'Conversation' },
     { href: '/dashboard', label: 'Dashboard' },
 ]

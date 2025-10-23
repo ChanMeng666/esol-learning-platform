@@ -1,0 +1,525 @@
+"use client";
+
+import { useState, useEffect, useRef, useCallback } from "react";
+import { RealtimeAgent, RealtimeSession } from "@openai/agents/realtime";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Mic,
+  Play,
+  Square,
+  Loader2,
+  MessageSquare,
+  Volume2,
+  AlertCircle,
+} from "lucide-react";
+import { toast } from "sonner";
+
+interface Message {
+  role: "user" | "assistant";
+  content: string;
+  timestamp: Date;
+}
+
+// ESOL Speaking Coach instructions
+const SPEAKING_COACH_INSTRUCTIONS = `You are a realtime voice ESOL (English for Speakers of Other Languages) speaking coach. Your main goal is to help non-native English speakers practice and improve their speaking skills at their current CEFR level (A1–C2) through short, engaging, multi-turn, spoken conversations. Always deliver feedback and exercises following CEFR criteria—coherence, fluency, vocabulary, and accuracy—while keeping responses brief, supportive, and as close to natural conversation as possible.
+
+Respond in a warm, friendly, energetic tone, and encourage the learner with every turn. Speak clearly and quickly, never keeping the learner waiting. Immediately stop talking (barge-in) if the user starts speaking.
+
+# ESOL Speaking Coach Guidelines
+
+- Always tailor questions and tasks to the user's current English CEFR level (A1–C2).
+- After each user utterance, provide immediate, constructive spoken feedback (CEFR-aligned: coherence, fluency, range, accuracy) in 5–20 spoken words.
+- Use simple, direct prompts for lower levels (A1–A2); more complex questions, paraphrasing tasks, or discussions for higher levels (B1–C2).
+- Regularly encourage, correct gently, and reinforce user progress.
+- If the user requests, summarize their current level or describe specific CEFR can-do descriptors for motivation.
+- For all explanations or feedback exceeding 5 seconds, pause and offer: "Want more?" before continuing.
+- If a tool can more accurately or quickly answer (grammar, vocabulary, pronunciation), briefly summarize its result.
+- Never claim to be human or take physical actions.
+
+# CEFR Level Reference (for your coaching):
+
+- A1 (Beginner): Can use very basic phrases for immediate needs, introduce self/others, and ask/answer simple personal questions.
+- A2 (Elementary): Can communicate in simple, routine tasks, describe immediate environment, routine matters, and give personal info.
+- B1 (Intermediate): Can manage most situations when traveling, describe experiences, briefly explain plans, opinions, or events.
+- B2 (Upper-Intermediate): Can interact with fluency/spontaneity, explain a viewpoint, discuss pros/cons, handle complex topics.
+- C1 (Advanced): Can express ideas fluently, spontaneously, understand implied meanings, use language flexibly and effectively.
+- C2 (Proficient): Can summarize from various sources, express precisely and effortlessly, with subtle distinctions in complex topics.
+
+This prompt is for dynamic, adaptive, expert ESOL speaking practice using CEFR standards with spoken audio output.`;
+
+/**
+ * AI Speaking Coach Component
+ *
+ * Real-time voice conversation with AI ESOL coach
+ * Uses OpenAI Realtime API for natural, interactive speaking practice
+ */
+export function AISpeakingCoach() {
+  // Session state
+  const [isSessionActive, setIsSessionActive] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
+  // Conversation state
+  const [messages, setMessages] = useState<Message[]>([]);
+
+  // Refs
+  const sessionRef = useRef<RealtimeSession | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messageTimestampsRef = useRef<Map<number, Date>>(new Map());
+
+  // Auto-scroll to bottom
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, []);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, scrollToBottom]);
+
+  // Fetch client secret from API
+  const fetchClientSecret = async () => {
+    try {
+      const response = await fetch("/api/openai/realtime-client-secret", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          voice: "verse",
+          instructions: SPEAKING_COACH_INSTRUCTIONS,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to connect to AI coach");
+      }
+
+      const data = await response.json();
+      return data.clientSecret;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  // Start session
+  const startSession = async () => {
+    try {
+      setIsConnecting(true);
+
+      // Clear previous session data
+      setMessages([]);
+      messageTimestampsRef.current.clear();
+
+      // Get client secret
+      const secret = await fetchClientSecret();
+
+      // Create agent
+      const agent = new RealtimeAgent({
+        name: "ESOL Coach",
+        instructions: SPEAKING_COACH_INSTRUCTIONS,
+      });
+
+      // Create session
+      const session = new RealtimeSession(agent, {
+        transport: "webrtc",
+        config: {
+          audio: {
+            input: {
+              transcription: {
+                model: "gpt-4o-mini-transcribe",
+              },
+            },
+          },
+          turn_detection: {
+            type: "server_vad",
+            threshold: 0.5,
+            prefix_padding_ms: 300,
+            silence_duration_ms: 500,
+          },
+        },
+      });
+      sessionRef.current = session;
+
+      // Helper function to extract transcript from content
+      const extractTranscript = (content: unknown[]): string => {
+        for (const c of content) {
+          const contentItem = c as Record<string, unknown>;
+
+          // Check for direct text content
+          if (contentItem.type === "input_text" || contentItem.type === "text") {
+            if ("text" in contentItem && typeof contentItem.text === "string") {
+              return contentItem.text;
+            }
+          }
+
+          // Check for output audio with transcript (AI responses)
+          if (contentItem.type === "output_audio") {
+            if ("transcript" in contentItem && typeof contentItem.transcript === "string") {
+              return contentItem.transcript;
+            }
+          }
+
+          // Check for input audio with transcript (user input)
+          if (contentItem.type === "input_audio") {
+            if ("transcript" in contentItem && typeof contentItem.transcript === "string") {
+              return contentItem.transcript;
+            }
+          }
+        }
+        return "[Audio]";
+      };
+
+      // Update messages when history changes (handles both new messages and transcription updates)
+      session.on("history_updated", (history) => {
+        const updatedMessages: Message[] = [];
+        const timestamps = messageTimestampsRef.current;
+
+        history.forEach((item, index) => {
+          if (item.type !== "message") return;
+
+          const role = item.role === "user" ? "user" : "assistant";
+          let content = "[Audio]";
+
+          if (item.content && Array.isArray(item.content)) {
+            content = extractTranscript(item.content);
+          }
+
+          // Preserve timestamp if message already exists, otherwise create new one
+          if (!timestamps.has(index)) {
+            timestamps.set(index, new Date());
+          }
+
+          updatedMessages.push({
+            role,
+            content,
+            timestamp: timestamps.get(index)!,
+          });
+        });
+
+        setMessages(updatedMessages);
+      });
+
+      session.on("transport_event", (event) => {
+        // Detect user speech
+        if (event.type === "input_audio_buffer.speech_started") {
+          setIsSpeaking(true);
+        } else if (event.type === "input_audio_buffer.speech_stopped") {
+          setIsSpeaking(false);
+        }
+      });
+
+      session.on("error", (error) => {
+        console.error("Session error:", error);
+        toast.error("An error occurred during the conversation");
+      });
+
+      // Check microphone permissions
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(track => track.stop());
+      } catch (micError) {
+        throw new Error("Microphone permission denied. Please allow microphone access to use the AI coach.");
+      }
+
+      await session.connect({ apiKey: secret });
+
+      // Re-apply agent configuration
+      const updatedAgent = new RealtimeAgent({
+        name: "ESOL Coach",
+        instructions: SPEAKING_COACH_INSTRUCTIONS,
+      });
+
+      await session.updateAgent(updatedAgent);
+
+      // Check if muted
+      if (session.muted) {
+        session.muted = false;
+      }
+
+      // Send initial message to trigger AI greeting
+      session.sendMessage("Hello! I'm ready to practice English conversation with you.");
+
+      setIsSessionActive(true);
+      setIsConnecting(false);
+      toast.success("Connected! Your AI coach will greet you, then you can start speaking.");
+    } catch (error) {
+      setIsConnecting(false);
+      toast.error(`Failed to start session: ${(error as Error).message}`);
+    }
+  };
+
+  // Stop session
+  const stopSession = async () => {
+    try {
+      if (sessionRef.current) {
+        sessionRef.current.close();
+        sessionRef.current = null;
+      }
+
+      // Clear timestamp map
+      messageTimestampsRef.current.clear();
+
+      setIsSessionActive(false);
+      toast.info("Practice session ended");
+    } catch (error) {
+      toast.error("Failed to stop session");
+    }
+  };
+
+  // Manual response trigger
+  const triggerResponse = () => {
+    if (!sessionRef.current || !isSessionActive) {
+      toast.error("No active session");
+      return;
+    }
+
+    try {
+      sessionRef.current.createResponse();
+      toast.info("Requested AI response");
+    } catch (error) {
+      toast.error("Failed to trigger response");
+    }
+  };
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      {/* Main Conversation Panel */}
+      <div className="lg:col-span-3 space-y-6">
+        {/* Controls */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Volume2 className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <CardTitle>AI Speaking Coach</CardTitle>
+                <CardDescription>
+                  Practice English conversation with real-time voice feedback
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Status */}
+            <div className="flex items-center gap-3">
+              <Badge variant={isSessionActive ? "default" : "secondary"} className="text-sm">
+                {isSessionActive ? "🟢 Connected" : "⚪ Not Connected"}
+              </Badge>
+              {isSpeaking && (
+                <Badge variant="outline" className="animate-pulse text-sm">
+                  🎤 Listening...
+                </Badge>
+              )}
+            </div>
+
+            {/* Buttons */}
+            <div className="flex flex-wrap gap-3">
+              {!isSessionActive ? (
+                <Button
+                  onClick={startSession}
+                  disabled={isConnecting}
+                  size="lg"
+                  className="gap-2"
+                >
+                  {isConnecting ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      Connecting...
+                    </>
+                  ) : (
+                    <>
+                      <Play className="h-5 w-5" />
+                      Start Practice
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    onClick={stopSession}
+                    variant="destructive"
+                    size="lg"
+                    className="gap-2"
+                  >
+                    <Square className="h-5 w-5" />
+                    End Practice
+                  </Button>
+                  <Button
+                    onClick={triggerResponse}
+                    variant="secondary"
+                    size="lg"
+                    className="gap-2"
+                  >
+                    <Mic className="h-4 w-4" />
+                    Request Response
+                  </Button>
+                </>
+              )}
+            </div>
+
+            {/* Session Active Instructions */}
+            {isSessionActive && (
+              <div className="space-y-3">
+                <div className="p-4 bg-primary/10 rounded-lg border border-primary/30">
+                  <p className="text-sm font-medium mb-2">🎤 Practice Session Active</p>
+                  <ul className="text-sm text-muted-foreground space-y-1 ml-4 list-disc">
+                    <li>Speak clearly in complete sentences</li>
+                    <li>Wait for natural pauses before the AI responds</li>
+                    <li>Use headphones to prevent audio feedback</li>
+                    <li>Click "Request Response" if the AI doesn't respond automatically</li>
+                  </ul>
+                </div>
+                {isSpeaking && (
+                  <div className="p-3 bg-green-500/10 rounded-lg border border-green-500/30 animate-pulse">
+                    <p className="text-sm font-medium text-green-700 dark:text-green-400">
+                      🎙️ Listening to your voice...
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Conversation Transcript */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5" />
+              <CardTitle>Conversation</CardTitle>
+            </div>
+            <CardDescription>
+              Real-time transcript of your practice session
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="h-[500px] pr-4">
+              {messages.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <MessageSquare className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                  <p className="text-sm">No conversation yet. Start a practice session to begin.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {messages.map((msg, idx) => (
+                    <div
+                      key={idx}
+                      className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                    >
+                      <div
+                        className={`max-w-[85%] rounded-lg p-3 ${
+                          msg.role === "user"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs font-semibold">
+                            {msg.role === "user" ? "You" : "AI Coach"}
+                          </span>
+                          <span className="text-xs opacity-70">
+                            {msg.timestamp.toLocaleTimeString()}
+                          </span>
+                        </div>
+                        <p className="text-sm">{msg.content}</p>
+                      </div>
+                    </div>
+                  ))}
+                  <div ref={messagesEndRef} />
+                </div>
+              )}
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Tips & Info Panel */}
+      <div className="lg:col-span-2 space-y-6">
+        {/* Tips Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">💡 Speaking Tips</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            <div className="space-y-2">
+              <h4 className="font-semibold">Before You Start:</h4>
+              <ul className="space-y-1 ml-4 list-disc text-muted-foreground">
+                <li>Use headphones or earphones</li>
+                <li>Ensure microphone is not muted</li>
+                <li>Find a quiet environment</li>
+                <li>Test your microphone in system settings</li>
+              </ul>
+            </div>
+
+            <div className="space-y-2">
+              <h4 className="font-semibold">During Practice:</h4>
+              <ul className="space-y-1 ml-4 list-disc text-muted-foreground">
+                <li>Speak in complete sentences</li>
+                <li>Pause naturally between thoughts</li>
+                <li>Don't interrupt the AI while it's speaking</li>
+                <li>Wait 2-3 seconds after finishing before expecting a response</li>
+              </ul>
+            </div>
+
+            <div className="space-y-2">
+              <h4 className="font-semibold">If AI Doesn't Respond:</h4>
+              <ul className="space-y-1 ml-4 list-disc text-muted-foreground">
+                <li>Wait a few more seconds for processing</li>
+                <li>Click "Request Response" button</li>
+                <li>Speak louder or more clearly</li>
+                <li>Check microphone permissions</li>
+              </ul>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* About Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">ℹ️ About AI Coach</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm text-muted-foreground">
+            <p>
+              The AI Speaking Coach uses advanced voice recognition and natural language processing
+              to provide real-time feedback on your English speaking skills.
+            </p>
+            <p>
+              It adapts to your CEFR level (A1-C2) and provides constructive feedback on:
+            </p>
+            <ul className="ml-4 list-disc space-y-1">
+              <li>Coherence and fluency</li>
+              <li>Vocabulary range</li>
+              <li>Grammar accuracy</li>
+              <li>Pronunciation</li>
+            </ul>
+          </CardContent>
+        </Card>
+
+        {/* Troubleshooting Card */}
+        <Card className="border-orange-200 dark:border-orange-900">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-orange-600" />
+              <CardTitle className="text-lg">Troubleshooting</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm text-muted-foreground">
+            <p className="font-semibold text-orange-600 dark:text-orange-400">
+              Not hearing the AI or it can't hear you?
+            </p>
+            <ul className="ml-4 list-disc space-y-1">
+              <li>Check browser microphone permissions</li>
+              <li>Verify system volume is not muted</li>
+              <li>Use Chrome or Edge browser (recommended)</li>
+              <li>Refresh the page and try again</li>
+              <li>Make sure you're using headphones</li>
+            </ul>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
