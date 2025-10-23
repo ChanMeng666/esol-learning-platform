@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { BackgroundCircles } from "@/components/ui/background-circles";
 import { WelcomeTour } from "@/components/onboarding/welcome-tour";
 import { Timeline } from "@/components/ui/timeline";
+import { AnimatedTestimonials } from "@/components/ui/animated-testimonials";
 import { useUser, useStackApp } from "@stackframe/stack";
 import Link from "next/link";
 
@@ -12,6 +13,39 @@ export default function HomePage() {
   const router = useRouter();
   const user = useUser();
   const app = useStackApp();
+
+  const testimonials = [
+    {
+      id: 1,
+      name: "Maria Garcia",
+      role: "NZCEL Level 4 Student",
+      company: "Auckland University",
+      content:
+        "The AI Speaking Coach helped me improve my pronunciation dramatically. I went from struggling with conversations to confidently presenting in my university classes. The real-time feedback was invaluable!",
+      rating: 5,
+      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop",
+    },
+    {
+      id: 2,
+      name: "Chen Wei",
+      role: "General English Learner",
+      company: "IT Professional",
+      content:
+        "I've tried many English learning platforms, but this one is different. The CEFR-aligned practice helped me progress from B1 to B2 in just 6 months. The personalized feedback from AI is like having a private tutor!",
+      rating: 5,
+      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+    },
+    {
+      id: 3,
+      name: "Priya Sharma",
+      role: "NZCEL Level 5 Graduate",
+      company: "Healthcare Professional",
+      content:
+        "The comprehensive NZCEL preparation materials were exactly what I needed. I passed Level 5 on my first attempt and secured my nursing registration. The practice questions matched the actual exam perfectly!",
+      rating: 5,
+      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop",
+    },
+  ];
 
   const timelineData = [
     {
@@ -219,6 +253,17 @@ export default function HomePage() {
           </div>
         </div>
       )}
+
+      {/* Student Success Stories */}
+      <AnimatedTestimonials
+        title="Student Success Stories"
+        subtitle="Join thousands of learners who have achieved their English language goals with our AI-powered platform."
+        badgeText="Trusted by students worldwide"
+        testimonials={testimonials}
+        autoRotateInterval={7000}
+        trustedCompanies={["Auckland University", "Victoria University", "Massey University", "AUT", "Otago University"]}
+        trustedCompaniesTitle="Students from leading New Zealand institutions"
+      />
     </div>
   );
 }
