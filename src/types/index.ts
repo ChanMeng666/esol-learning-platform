@@ -1,4 +1,7 @@
-// NZCEL Level Types
+// CEFR Level Types (Common European Framework of Reference for Languages)
+export type CEFRLevel = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
+
+// NZCEL Level Types (New Zealand Certificates in English Language)
 export type NZCELLevel =
   | "foundation"
   | "level-1"
@@ -13,6 +16,9 @@ export type NZCELLevel =
   | "level-5-employment"
   | "level-5-academic"
   | "level-6-advanced";
+
+// Learning Path Types
+export type LearningPath = "general" | "nzcel" | "ielts" | "toefl" | "scenario";
 
 // Skill Types
 export type SkillType = "listening" | "speaking" | "reading" | "writing";
@@ -347,4 +353,59 @@ export interface Transcription {
   confidence: number | null;
   metadata: Record<string, unknown> | null;
   transcribedAt: Date;
+}
+
+// ============================================================================
+// CEFR & LEARNING MODULES TYPES
+// ============================================================================
+
+// CEFR Level Info (Common European Framework of Reference)
+export interface CEFRLevelInfo {
+  id: CEFRLevel;
+  name: string;
+  description: string;
+  canDo: {
+    listening: string;
+    speaking: string;
+    reading: string;
+    writing: string;
+  };
+  equivalency: {
+    nzcel?: string[];
+    ielts?: string;
+    toefl?: string;
+    pte?: string;
+    duolingo?: string;
+  };
+}
+
+// Learning Module Configuration
+export interface LearningModule {
+  id: string;
+  type: LearningPath;
+  name: string;
+  description: string;
+  icon: string;
+  route: string;
+  levelSystem: "cefr" | "nzcel" | "custom";
+  supportedSkills: SkillType[];
+  isActive: boolean;
+}
+
+// CEFR Progress (parallel to NZCEL progress)
+export interface CEFRProgress {
+  currentLevel: CEFRLevel;
+  targetLevel: CEFRLevel | null;
+  skillProgress: SkillProgress;
+  totalPoints: number;
+  questionsCompleted: number;
+}
+
+// Module-specific progress tracking
+export interface ModuleProgress {
+  moduleType: LearningPath;
+  totalTime: number; // seconds
+  questionsCompleted: number;
+  pointsEarned: number;
+  lastAccessed: string | null;
 }

@@ -458,3 +458,54 @@ export const conversationTurnsRelations = relations(conversationTurns, ({ one })
     references: [transcriptions.id],
   }),
 }));
+
+// ============================================================================
+// CEFR & MULTI-MODULE SUPPORT
+// ============================================================================
+
+/**
+ * CEFR Progress Table
+ * Tracks user progress for CEFR-based general practice (parallel to NZCEL progress)
+ */
+export const cefrProgress = pgTable("cefr_progress", {
+  id: bigint("id", { mode: "bigint" }).primaryKey().generatedByDefaultAsIdentity(),
+  userId: text("user_id").notNull().unique(), // Stack Auth user ID
+  currentLevel: text("current_level").notNull().default("A1"), // A1-C2
+  targetLevel: text("target_level"), // A1-C2
+
+  // Skill progress (0-100)
+  listeningProgress: integer("listening_progress").notNull().default(0),
+  speakingProgress: integer("speaking_progress").notNull().default(0),
+  readingProgress: integer("reading_progress").notNull().default(0),
+  writingProgress: integer("writing_progress").notNull().default(0),
+
+  // Stats
+  totalPoints: integer("total_points").notNull().default(0),
+  questionsCompleted: integer("questions_completed").notNull().default(0),
+
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+}, (table) => ({
+  userIdIdx: index("cefr_progress_user_id_idx").on(table.userId),
+}));
+
+/**
+ * Module Progress Table
+ * Tracks overall progress and activity for each learning module/path
+ */
+export const moduleProgress = pgTable("module_progress", {
+  id: bigint("id", { mode: "bigint" }).primaryKey().generatedByDefaultAsIdentity(),
+  userId: text("user_id").notNull(),
+  moduleType: text("module_type").notNull(), // general, nzcel, ielts, toefl, scenario
+
+  // Aggregated stats
+  totalTime: integer("total_time").notNull().default(0), // seconds
+  questionsCompleted: integer("questions_completed").notNull().default(0),
+  pointsEarned: integer("points_earned").notNull().default(0),
+  lastAccessed: timestamp("last_accessed", { withTimezone: true }),
+
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+}, (table) => ({
+  userIdModuleIdx: index("module_progress_user_id_module_idx").on(table.userId, table.moduleType),
+}));

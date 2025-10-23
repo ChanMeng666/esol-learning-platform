@@ -17,8 +17,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NZCEL Exam Prep - Interactive Learning Platform",
-  description: "Master the New Zealand Certificates in English Language with AI-powered practice, adaptive learning, and gamification",
+  title: "ESOL Learning Platform - AI-Powered English Learning",
+  description: "Master English with AI-powered learning platform. CEFR-aligned practice (A1-C2), NZCEL exam prep, real-time speaking coach, and adaptive learning for ESOL students.",
   icons: {
     icon: "/nzcel-prep-logo.svg",
     shortcut: "/nzcel-prep-logo.svg",

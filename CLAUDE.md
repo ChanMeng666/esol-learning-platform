@@ -4,9 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-A full-stack AI-powered NZCEL (New Zealand Certificates in English Language) exam preparation platform built with Next.js 15, React 19, CopilotKit, Neon PostgreSQL, and Stack Auth. The app features a complete backend with database persistence, intelligent audio caching, user authentication, and cloud storage.
+A comprehensive AI-powered ESOL (English for Speakers of Other Languages) learning platform built with Next.js 15, React 19, CopilotKit, Neon PostgreSQL, and Stack Auth. The platform features multiple learning paths including:
+- **CEFR-aligned General Practice** (A1-C2)
+- **NZCEL Exam Preparation** (13 levels)
+- **AI Speaking Coach** with real-time voice conversation
+- **Scenario-based Learning** (coming soon)
 
-**Architecture**: Full-stack with Next.js Server Actions, Neon PostgreSQL (14 tables), Stack Auth authentication, Vercel Blob storage, and OpenAI integrations (TTS, Whisper, GPT-4).
+The app features a complete backend with database persistence, intelligent audio caching, user authentication, cloud storage, and parallel progress tracking for multiple learning systems.
+
+**Architecture**: Full-stack with Next.js Server Actions, Neon PostgreSQL (16 tables), Stack Auth authentication, Vercel Blob storage, and OpenAI integrations (TTS, Whisper, GPT-4, Realtime API).
 
 ## Development Commands
 
@@ -33,14 +39,15 @@ npm run lint             # Run ESLint (uses eslint.config.mjs)
 
 The application uses a **Neon PostgreSQL** serverless database with **Drizzle ORM** for type-safe queries. All database operations are performed through **Next.js Server Actions** with **Stack Auth** authentication.
 
-**Schema Location**: `src/lib/db/schema.ts` (460 lines, 14 tables)
+**Schema Location**: `src/lib/db/schema.ts` (512 lines, 16 tables)
 
 **Key Tables**:
-1. **User Progress** (4 tables): `user_progress`, `completed_questions`, `badges`, `achievements`
-2. **CopilotKit Chat** (2 tables): `copilot_conversations`, `copilot_messages`
-3. **Audio Management** (4 tables): `audio_files`, `question_audio_cache`, `user_recordings`, `transcriptions`
-4. **Practice Sessions** (2 tables): `practice_sessions`, `session_answers`
-5. **Conversation Practice** (2 tables): `conversation_sessions`, `conversation_turns`
+1. **User Progress - NZCEL** (4 tables): `user_progress`, `completed_questions`, `badges`, `achievements`
+2. **User Progress - CEFR** (2 tables): `cefr_progress`, `module_progress` **(NEW)**
+3. **CopilotKit Chat** (2 tables): `copilot_conversations`, `copilot_messages`
+4. **Audio Management** (4 tables): `audio_files`, `question_audio_cache`, `user_recordings`, `transcriptions`
+5. **Practice Sessions** (2 tables): `practice_sessions`, `session_answers`
+6. **Conversation Practice** (2 tables): `conversation_sessions`, `conversation_turns`
 
 **Authentication**: All Server Actions use `fetchWithDrizzle()` helper from `src/lib/db/index.ts` which:
 - Authenticates user via Stack Auth (`stackServerApp.getUser()`)
@@ -51,14 +58,25 @@ The application uses a **Neon PostgreSQL** serverless database with **Drizzle OR
 
 ### State Management: Zustand with LocalStorage Cache
 
-`src/lib/store/user-progress.ts` provides **client-side caching** for performance:
+The platform uses **two parallel progress tracking systems**:
 
+**1. NZCEL Progress** (`src/lib/store/user-progress.ts`)
+- Tracks NZCEL-specific progress (13 levels, Foundation-Level 6)
+- Client-side caching for fast UI updates
+- Persisted to localStorage
+
+**2. CEFR Progress** (`src/lib/store/cefr-progress.ts`) **(NEW)**
+- Tracks CEFR-aligned general practice (A1-C2)
+- Parallel to NZCEL but independent data
+- Same caching strategy with localStorage persistence
+
+**Key Features**:
 - **Purpose**: Fast UI updates without waiting for database queries
 - **Persistence**: Uses Zustand's `persist` middleware with localStorage
 - **Sync Strategy**: Server Actions update both database AND Zustand store
 - **Demo Data**: Initializes with realistic demo data for development
 
-**Important**: Server Actions are the source of truth. Zustand store is a cache only.
+**Important**: Server Actions are the source of truth. Zustand stores are caches only.
 
 ### CopilotKit AI Integration
 
@@ -108,12 +126,20 @@ All database operations are performed through Next.js Server Actions located in 
 - `createConversationSession()` - Creates conversation practice session
 - `saveConversationTurn()` - Records individual conversation turns
 
-**`src/actions/user-progress.ts`** (407 lines) - User progress and gamification
-- `getUserProgress()` - Fetches current user's progress data
+**`src/actions/user-progress.ts`** (407 lines) - NZCEL progress and gamification
+- `getUserProgress()` - Fetches current user's NZCEL progress data
 - `updateSkillProgress()` - Updates skill progress (0-100)
 - `submitAnswer()` - Core action that records answers, updates points, streaks, achievements
 - `awardBadge()` - Awards a badge to user
 - `getAchievements()` - Fetches all achievements with progress
+
+**`src/actions/cefr-progress.ts`** (NEW) - CEFR progress tracking
+- `getCEFRProgress()` - Fetches user's CEFR progress (auto-creates if not exists)
+- `updateCEFRSkillProgress()` - Updates CEFR skill progress (0-100)
+- `setCEFRLevel()` - Sets user's current CEFR level (A1-C2)
+- `setCEFRTargetLevel()` - Sets user's target CEFR level
+- `incrementCEFRStats()` - Increments question count and points for CEFR
+- `resetCEFRProgress()` - Resets CEFR progress (for testing)
 
 **Important Patterns**:
 1. All Server Actions use `fetchWithDrizzle()` for authenticated database access
@@ -183,47 +209,82 @@ Located in `src/app/api/openai/`:
 - Functions: `getScenariosByLevel()`, `getRandomScenario()`
 - Used for real-time speaking practice
 
+### CEFR Data Structure (NEW)
+
+**Levels**: 6 levels defined in `src/data/cefr-levels.ts`:
+- A1 (Elementary) → A2 (Pre-intermediate) → B1 (Intermediate) → B2 (Upper-intermediate) → C1 (Advanced) → C2 (Proficiency)
+- Each level has: id, name, description, canDo (listening/speaking/reading/writing), equivalency (NZCEL, IELTS, TOEFL, PTE, Duolingo)
+- Helper functions: `getCEFRLevelById()`, `getNextCEFRLevel()`, `mapNZCELtoCEFR()`
+
+**Questions**: `src/data/cefr-questions.ts`:
+- Sample questions organized by CEFR level and skill type
+- Helper functions: `getCEFRQuestionsByLevelAndSkill()`, `getRandomCEFRQuestion()`, `getCEFRQuestionCount()`
+- Maps CEFR levels to NZCEL levels internally for consistency
+
+**Learning Modules**: `src/data/learning-modules.ts`:
+- Configuration for all learning paths (general, nzcel, ielts, toefl, scenario)
+- Helper functions: `getActiveModules()`, `getModuleById()`, `getModulesByType()`
+
 ### Component Organization
 
 ```
 src/
 ├── app/
-│   ├── (main)/                 # Main route group (protected)
-│   │   ├── page.tsx           # Landing page
-│   │   ├── practice/          # Practice interface (questions by skill)
-│   │   ├── conversation/      # Real-time voice conversation
-│   │   └── dashboard/         # Progress tracking & achievements
-│   ├── handler/[...stack]/    # Stack Auth routes (sign in, sign up, etc.)
-│   ├── api/openai/            # OpenAI API routes
-│   └── layout.tsx             # Root layout with Stack Auth + CopilotKit providers
-├── actions/                   # Server Actions (database operations)
-│   ├── audio.ts              # Audio caching & TTS
-│   ├── recordings.ts         # User recordings
-│   ├── copilot-chat.ts       # Chat history
-│   ├── sessions.ts           # Session tracking
-│   └── user-progress.ts      # Progress & gamification
+│   ├── (main)/                     # Main route group (protected)
+│   │   ├── page.tsx               # Landing page (ESOL Platform)
+│   │   ├── speaking/              # AI Speaking Coach (featured)
+│   │   ├── practice/
+│   │   │   ├── page.tsx           # Redirect to /practice/nzcel/skills
+│   │   │   ├── general/           # CEFR-aligned general practice (NEW)
+│   │   │   ├── nzcel/             # NZCEL exam prep module (NEW)
+│   │   │   │   ├── page.tsx       # NZCEL landing page
+│   │   │   │   ├── skills/        # Skills practice (old /practice)
+│   │   │   │   └── conversation/  # Conversation practice (old /conversation)
+│   │   │   └── scenarios/         # Scenario learning (coming soon)
+│   │   ├── conversation/          # Redirect to /practice/nzcel/conversation
+│   │   ├── dashboard/             # Multi-module progress dashboard
+│   │   └── test-realtime/         # Realtime API debug page
+│   ├── handler/[...stack]/        # Stack Auth routes
+│   ├── api/openai/                # OpenAI API routes
+│   └── layout.tsx                 # Root layout (Stack Auth + CopilotKit)
+├── actions/                       # Server Actions (database operations)
+│   ├── audio.ts                  # Audio caching & TTS
+│   ├── recordings.ts             # User recordings
+│   ├── copilot-chat.ts           # Chat history
+│   ├── sessions.ts               # Session tracking
+│   ├── user-progress.ts          # NZCEL progress & gamification
+│   └── cefr-progress.ts          # CEFR progress tracking (NEW)
 ├── components/
-│   ├── copilot/              # CopilotKit context & actions
-│   ├── practice/             # Question cards, voice recorder, audio player
-│   ├── conversation/         # Real-time conversation UI
-│   ├── navigation/           # Navbar, footer
-│   ├── ui/                   # shadcn/ui components (20+)
-│   └── providers.tsx         # App-level providers wrapper
+│   ├── copilot/                  # CopilotKit context & actions
+│   ├── practice/                 # Question cards, voice recorder
+│   ├── conversation/             # Real-time conversation UI
+│   ├── speaking/                 # AI Speaking Coach components
+│   ├── navigation/               # Navbar with dropdown menus
+│   ├── ui/                       # shadcn/ui components (20+)
+│   └── providers.tsx             # App-level providers
 ├── lib/
 │   ├── db/
-│   │   ├── schema.ts         # Drizzle schema (14 tables, 460 lines)
-│   │   └── index.ts          # fetchWithDrizzle helper
+│   │   ├── schema.ts             # Drizzle schema (16 tables, 512 lines)
+│   │   └── index.ts              # fetchWithDrizzle helper
 │   ├── blob/
-│   │   └── audio-storage.ts  # Vercel Blob utilities
-│   ├── store/                # Zustand state management
-│   ├── stack.ts              # Stack Auth config
-│   └── openai.ts             # OpenAI client
-├── data/                     # NZCEL levels, questions, scenarios
-├── hooks/                    # Custom React hooks
+│   │   └── audio-storage.ts      # Vercel Blob utilities
+│   ├── store/                    # Zustand state management
+│   │   ├── user-progress.ts      # NZCEL progress store
+│   │   └── cefr-progress.ts      # CEFR progress store (NEW)
+│   ├── stack.ts                  # Stack Auth config
+│   └── openai.ts                 # OpenAI client
+├── data/                         # Content and configuration
+│   ├── nzcel-levels.ts           # NZCEL 13 levels
+│   ├── questions.ts              # NZCEL questions
+│   ├── conversation-scenarios.ts # NZCEL scenarios
+│   ├── cefr-levels.ts            # CEFR 6 levels (NEW)
+│   ├── cefr-questions.ts         # CEFR questions (NEW)
+│   └── learning-modules.ts       # Module configuration (NEW)
+├── hooks/                        # Custom React hooks
 │   ├── use-voice-recorder.ts
 │   ├── use-audio-playback.ts
 │   └── use-copilot-chat-history.ts
-└── types/index.ts            # TypeScript definitions
+└── types/index.ts                # TypeScript definitions (CEFRLevel, LearningPath, etc.)
 ```
 
 ## Key Implementation Patterns

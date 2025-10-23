@@ -25,12 +25,25 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useState, useEffect } from 'react'
 
-// Protected links - only visible to authenticated users
-const protectedNavLinks = [
-    { href: '/practice', label: 'Practice' },
-    { href: '/speaking', label: 'Speaking' },
-    { href: '/conversation', label: 'Conversation' },
-    { href: '/dashboard', label: 'Dashboard' },
+// Navigation structure - only visible to authenticated users
+const navigationStructure = [
+    {
+        label: 'Speaking',
+        href: '/speaking',
+        featured: true, // Highlighted main feature
+    },
+    {
+        label: 'Practice',
+        subItems: [
+            { href: '/practice/nzcel', label: 'NZCEL Exam Prep' },
+            { href: '/practice/general', label: 'General Practice' },
+            { href: '/practice/scenarios', label: 'Scenarios', disabled: true },
+        ],
+    },
+    {
+        label: 'Dashboard',
+        href: '/dashboard',
+    },
 ]
 
 export function Navbar() {
@@ -46,8 +59,8 @@ export function Navbar() {
     const user = useUser()
     const app = useStackApp()
 
-    // Determine which nav links to show based on authentication status
-    const visibleNavLinks = user ? protectedNavLinks : []
+    // Show navigation only for authenticated users
+    const showNavigation = !!user
 
     // Ensure client-only rendering for certain features
     useEffect(() => {
@@ -86,27 +99,55 @@ export function Navbar() {
                     <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
                         <Image
                             src="/nzcel-prep-logo.svg"
-                            alt="NZCEL Prep Logo"
+                            alt="ESOL Platform Logo"
                             width={40}
                             height={40}
                             className="h-10 w-10"
                         />
                         <span className="hidden font-bold text-xl text-black dark:text-white sm:inline-block">
-                            NZCEL Prep
+                            ESOL Platform
                         </span>
                     </Link>
 
                     {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center gap-1">
-                        {visibleNavLinks.map((link) => {
-                            const isActive = pathname === link.href
+                        {showNavigation && navigationStructure.map((item) => {
+                            // Handle dropdown items (Practice menu)
+                            if (item.subItems) {
+                                const isActivePath = item.subItems.some(subItem => pathname.startsWith(subItem.href))
+                                return (
+                                    <DropdownMenu key={item.label}>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button
+                                                variant={isActivePath ? "default" : "ghost"}
+                                                className={`relative ${isActivePath ? 'bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90' : 'text-black dark:text-white'}`}
+                                            >
+                                                {item.label}
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            {item.subItems.map((subItem) => (
+                                                <DropdownMenuItem key={subItem.href} asChild disabled={subItem.disabled}>
+                                                    <Link href={subItem.disabled ? '#' : subItem.href}>
+                                                        {subItem.label}
+                                                        {subItem.disabled && <span className="ml-2 text-xs text-muted-foreground">(Soon)</span>}
+                                                    </Link>
+                                                </DropdownMenuItem>
+                                            ))}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                )
+                            }
+
+                            // Handle simple links
+                            const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
                             return (
-                                <Link key={link.href} href={link.href}>
+                                <Link key={item.href} href={item.href}>
                                     <Button
                                         variant={isActive ? "default" : "ghost"}
-                                        className={`relative ${isActive ? 'bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90' : 'text-black dark:text-white'}`}
+                                        className={`relative ${isActive ? 'bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90' : 'text-black dark:text-white'} ${item.featured ? 'font-semibold' : ''}`}
                                     >
-                                        {link.label}
+                                        {item.label}
                                     </Button>
                                 </Link>
                             )
@@ -187,7 +228,7 @@ export function Navbar() {
                                         <div className="flex items-center gap-2 mb-2">
                                             <Image
                                                 src="/nzcel-prep-logo.svg"
-                                                alt="NZCEL Prep Logo"
+                                                alt="ESOL Platform Logo"
                                                 width={32}
                                                 height={32}
                                                 className="h-8 w-8"
@@ -195,7 +236,7 @@ export function Navbar() {
                                             <SheetTitle className="text-left">Navigation</SheetTitle>
                                         </div>
                                         <SheetDescription className="text-left">
-                                            Navigate through the NZCEL Prep platform
+                                            Navigate through the ESOL learning platform
                                         </SheetDescription>
                                     </SheetHeader>
                                     <div className="mt-6 flex flex-col gap-2">
@@ -244,15 +285,46 @@ export function Navbar() {
                                         )}
 
                                         {/* Mobile Nav Links */}
-                                        {visibleNavLinks.map((link) => {
-                                            const isActive = pathname === link.href
+                                        {showNavigation && navigationStructure.map((item) => {
+                                            // Handle items with sub-items (Practice menu)
+                                            if (item.subItems) {
+                                                return (
+                                                    <div key={item.label} className="space-y-1">
+                                                        <p className="px-4 py-2 text-sm font-semibold text-muted-foreground">
+                                                            {item.label}
+                                                        </p>
+                                                        {item.subItems.map((subItem) => {
+                                                            const isActive = pathname === subItem.href || pathname.startsWith(subItem.href + '/')
+                                                            return (
+                                                                <Link
+                                                                    key={subItem.href}
+                                                                    href={subItem.disabled ? '#' : subItem.href}
+                                                                    onClick={() => !subItem.disabled && setIsOpen(false)}
+                                                                >
+                                                                    <Button
+                                                                        variant={isActive ? "default" : "ghost"}
+                                                                        disabled={subItem.disabled}
+                                                                        className={`w-full justify-start pl-8 ${isActive ? 'bg-black dark:bg-white text-white dark:text-black' : 'text-black dark:text-white'}`}
+                                                                    >
+                                                                        {subItem.label}
+                                                                        {subItem.disabled && <span className="ml-2 text-xs">(Soon)</span>}
+                                                                    </Button>
+                                                                </Link>
+                                                            )
+                                                        })}
+                                                    </div>
+                                                )
+                                            }
+
+                                            // Handle simple links
+                                            const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
                                             return (
-                                                <Link key={link.href} href={link.href} onClick={() => setIsOpen(false)}>
+                                                <Link key={item.href} href={item.href} onClick={() => setIsOpen(false)}>
                                                     <Button
                                                         variant={isActive ? "default" : "ghost"}
-                                                        className={`w-full justify-start ${isActive ? 'bg-black dark:bg-white text-white dark:text-black' : 'text-black dark:text-white'}`}
+                                                        className={`w-full justify-start ${isActive ? 'bg-black dark:bg-white text-white dark:text-black' : 'text-black dark:text-white'} ${item.featured ? 'font-semibold' : ''}`}
                                                     >
-                                                        {link.label}
+                                                        {item.label}
                                                     </Button>
                                                 </Link>
                                             )
