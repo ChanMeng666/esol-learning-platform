@@ -72,7 +72,11 @@ export function AISpeakingCoach() {
 
   // Auto-scroll to bottom
   const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "nearest"
+    });
   }, []);
 
   useEffect(() => {
