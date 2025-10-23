@@ -25,9 +25,12 @@ export default function HomePage() {
             Practice real-time voice conversation with AI coach. Natural dialogue with instant feedback and pronunciation assessment across all CEFR levels.
           </p>
           <div className="mb-8">
-            {/* SVG Placeholder: Replace with custom illustration */}
-            <div className="rounded-lg bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950 h-48 md:h-64 lg:h-80 w-full shadow-[0_0_24px_rgba(34,_42,_53,_0.06),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(34,_42,_53,_0.04),_0_0_4px_rgba(34,_42,_53,_0.08),_0_16px_68px_rgba(47,_48,_55,_0.05),_0_1px_0_rgba(255,_255,_255,_0.1)_inset] flex items-center justify-center">
-              <span className="text-neutral-400 dark:text-neutral-600 text-sm">AI Speaking Coach Illustration</span>
+            <div className="h-64 md:h-80 lg:h-96 w-full flex items-center justify-center">
+              <img
+                src="/ai-speaking-coach.svg"
+                alt="AI Speaking Coach"
+                className="w-full h-full object-contain"
+              />
             </div>
           </div>
           <div className="flex gap-4">
@@ -56,9 +59,12 @@ export default function HomePage() {
             Comprehensive preparation for New Zealand Certificates in English Language. Complete pathway from Foundation to Level 6 covering all skills and university requirements.
           </p>
           <div className="mb-8">
-            {/* SVG Placeholder: Replace with custom illustration */}
-            <div className="rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 h-48 md:h-64 lg:h-80 w-full shadow-[0_0_24px_rgba(34,_42,_53,_0.06),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(34,_42,_53,_0.04),_0_0_4px_rgba(34,_42,_53,_0.08),_0_16px_68px_rgba(47,_48,_55,_0.05),_0_1px_0_rgba(255,_255,_255,_0.1)_inset] flex items-center justify-center">
-              <span className="text-neutral-400 dark:text-neutral-600 text-sm">NZCEL Preparation Illustration</span>
+            <div className="h-64 md:h-80 lg:h-96 w-full flex items-center justify-center">
+              <img
+                src="/nzcel-exam-prep.svg"
+                alt="NZCEL Exam Preparation"
+                className="w-full h-full object-contain"
+              />
             </div>
           </div>
           <div className="flex gap-4">
@@ -87,9 +93,12 @@ export default function HomePage() {
             CEFR-aligned English practice across all proficiency levels. Systematic skill development from Elementary A1 to Proficiency C2 with adaptive difficulty.
           </p>
           <div className="mb-8">
-            {/* SVG Placeholder: Replace with custom illustration */}
-            <div className="rounded-lg bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950 dark:to-red-950 h-48 md:h-64 lg:h-80 w-full shadow-[0_0_24px_rgba(34,_42,_53,_0.06),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(34,_42,_53,_0.04),_0_0_4px_rgba(34,_42,_53,_0.08),_0_16px_68px_rgba(47,_48,_55,_0.05),_0_1px_0_rgba(255,_255,_255,_0.1)_inset] flex items-center justify-center">
-              <span className="text-neutral-400 dark:text-neutral-600 text-sm">General Practice Illustration</span>
+            <div className="h-64 md:h-80 lg:h-96 w-full flex items-center justify-center">
+              <img
+                src="/general-practice.svg"
+                alt="General English Practice"
+                className="w-full h-full object-contain"
+              />
             </div>
           </div>
           <div className="flex gap-4">
@@ -118,9 +127,12 @@ export default function HomePage() {
             Context-based English practice for real-world situations. Workplace communication, travel scenarios, academic discussions, and social interactions.
           </p>
           <div className="mb-8">
-            {/* SVG Placeholder: Replace with custom illustration */}
-            <div className="rounded-lg bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 h-48 md:h-64 lg:h-80 w-full shadow-[0_0_24px_rgba(34,_42,_53,_0.06),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(34,_42,_53,_0.04),_0_0_4px_rgba(34,_42,_53,_0.08),_0_16px_68px_rgba(47,_48,_55,_0.05),_0_1px_0_rgba(255,_255,_255,_0.1)_inset] flex items-center justify-center opacity-60">
-              <span className="text-neutral-400 dark:text-neutral-600 text-sm">Scenario Learning Illustration</span>
+            <div className="h-64 md:h-80 lg:h-96 w-full flex items-center justify-center opacity-60">
+              <img
+                src="/scenario-learning.svg"
+                alt="Scenario-based Learning"
+                className="w-full h-full object-contain"
+              />
             </div>
           </div>
           <div className="flex gap-4">
