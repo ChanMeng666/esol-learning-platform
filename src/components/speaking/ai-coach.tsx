@@ -11,9 +11,6 @@ import {
   Play,
   Square,
   Loader2,
-  MessageSquare,
-  Volume2,
-  AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -325,27 +322,20 @@ export function AISpeakingCoach() {
         {/* Controls */}
         <Card>
           <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Volume2 className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <CardTitle>AI Speaking Coach</CardTitle>
-                <CardDescription>
-                  Practice English conversation with real-time voice feedback
-                </CardDescription>
-              </div>
-            </div>
+            <CardTitle>Speaking Practice</CardTitle>
+            <CardDescription>
+              Real-time voice conversation with AI coach
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Status */}
             <div className="flex items-center gap-3">
               <Badge variant={isSessionActive ? "default" : "secondary"} className="text-sm">
-                {isSessionActive ? "🟢 Connected" : "⚪ Not Connected"}
+                {isSessionActive ? "Connected" : "Not Connected"}
               </Badge>
               {isSpeaking && (
                 <Badge variant="outline" className="animate-pulse text-sm">
-                  🎤 Listening...
+                  Listening...
                 </Badge>
               )}
             </div>
@@ -397,23 +387,13 @@ export function AISpeakingCoach() {
 
             {/* Session Active Instructions */}
             {isSessionActive && (
-              <div className="space-y-3">
-                <div className="p-4 bg-primary/10 rounded-lg border border-primary/30">
-                  <p className="text-sm font-medium mb-2">🎤 Practice Session Active</p>
-                  <ul className="text-sm text-muted-foreground space-y-1 ml-4 list-disc">
-                    <li>Speak clearly in complete sentences</li>
-                    <li>Wait for natural pauses before the AI responds</li>
-                    <li>Use headphones to prevent audio feedback</li>
-                    <li>Click &quot;Request Response&quot; if the AI doesn&apos;t respond automatically</li>
-                  </ul>
-                </div>
-                {isSpeaking && (
-                  <div className="p-3 bg-green-500/10 rounded-lg border border-green-500/30 animate-pulse">
-                    <p className="text-sm font-medium text-green-700 dark:text-green-400">
-                      🎙️ Listening to your voice...
-                    </p>
-                  </div>
-                )}
+              <div className="p-4 bg-muted/50 rounded-lg border">
+                <p className="text-sm font-medium mb-2">Quick Tips</p>
+                <ul className="text-sm text-muted-foreground space-y-1 ml-4 list-disc">
+                  <li>Speak clearly and pause naturally</li>
+                  <li>Use headphones to prevent feedback</li>
+                  <li>Click &quot;Request Response&quot; if needed</li>
+                </ul>
               </div>
             )}
           </CardContent>
@@ -422,20 +402,16 @@ export function AISpeakingCoach() {
         {/* Conversation Transcript */}
         <Card>
           <CardHeader>
-            <div className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5" />
-              <CardTitle>Conversation</CardTitle>
-            </div>
+            <CardTitle>Conversation</CardTitle>
             <CardDescription>
-              Real-time transcript of your practice session
+              Transcript of your practice session
             </CardDescription>
           </CardHeader>
           <CardContent>
             <ScrollArea className="h-[500px] pr-4">
               {messages.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground">
-                  <MessageSquare className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                  <p className="text-sm">No conversation yet. Start a practice session to begin.</p>
+                  <p className="text-sm">Start a practice session to begin</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -471,87 +447,55 @@ export function AISpeakingCoach() {
         </Card>
       </div>
 
-      {/* Tips & Info Panel */}
+      {/* Guide Panel */}
       <div className="lg:col-span-2 space-y-6">
-        {/* Tips Card */}
+        {/* Usage Guide */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">💡 Speaking Tips</CardTitle>
+            <CardTitle className="text-lg">How to Use</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            <div className="space-y-2">
-              <h4 className="font-semibold">Before You Start:</h4>
+          <CardContent className="space-y-4 text-sm">
+            <div>
+              <h4 className="font-semibold mb-2">Setup</h4>
               <ul className="space-y-1 ml-4 list-disc text-muted-foreground">
-                <li>Use headphones or earphones</li>
-                <li>Ensure microphone is not muted</li>
+                <li>Use headphones and allow microphone access</li>
                 <li>Find a quiet environment</li>
-                <li>Test your microphone in system settings</li>
+                <li>Use Chrome or Edge browser</li>
               </ul>
             </div>
 
-            <div className="space-y-2">
-              <h4 className="font-semibold">During Practice:</h4>
+            <div>
+              <h4 className="font-semibold mb-2">Practice Tips</h4>
               <ul className="space-y-1 ml-4 list-disc text-muted-foreground">
-                <li>Speak in complete sentences</li>
+                <li>Speak clearly in complete sentences</li>
                 <li>Pause naturally between thoughts</li>
-                <li>Don&apos;t interrupt the AI while it&apos;s speaking</li>
-                <li>Wait 2-3 seconds after finishing before expecting a response</li>
+                <li>Wait 2-3 seconds after speaking</li>
               </ul>
             </div>
 
-            <div className="space-y-2">
-              <h4 className="font-semibold">If AI Doesn&apos;t Respond:</h4>
+            <div>
+              <h4 className="font-semibold mb-2">Troubleshooting</h4>
               <ul className="space-y-1 ml-4 list-disc text-muted-foreground">
-                <li>Wait a few more seconds for processing</li>
-                <li>Click &quot;Request Response&quot; button</li>
-                <li>Speak louder or more clearly</li>
-                <li>Check microphone permissions</li>
+                <li>Check microphone permissions in browser</li>
+                <li>Verify system volume is not muted</li>
+                <li>Click &quot;Request Response&quot; if AI doesn&apos;t reply</li>
               </ul>
             </div>
           </CardContent>
         </Card>
 
-        {/* About Card */}
+        {/* About */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">ℹ️ About AI Coach</CardTitle>
+            <CardTitle className="text-lg">About</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2 text-sm text-muted-foreground">
+          <CardContent className="text-sm text-muted-foreground space-y-2">
             <p>
-              The AI Speaking Coach uses advanced voice recognition and natural language processing
-              to provide real-time feedback on your English speaking skills.
+              AI coach adapts to your CEFR level (A1-C2) and provides feedback on fluency, vocabulary, grammar, and pronunciation.
             </p>
-            <p>
-              It adapts to your CEFR level (A1-C2) and provides constructive feedback on:
+            <p className="text-xs">
+              Sessions are not stored and used only for real-time practice.
             </p>
-            <ul className="ml-4 list-disc space-y-1">
-              <li>Coherence and fluency</li>
-              <li>Vocabulary range</li>
-              <li>Grammar accuracy</li>
-              <li>Pronunciation</li>
-            </ul>
-          </CardContent>
-        </Card>
-
-        {/* Troubleshooting Card */}
-        <Card className="border-orange-200 dark:border-orange-900">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-orange-600" />
-              <CardTitle className="text-lg">Troubleshooting</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm text-muted-foreground">
-            <p className="font-semibold text-orange-600 dark:text-orange-400">
-              Not hearing the AI or it can&apos;t hear you?
-            </p>
-            <ul className="ml-4 list-disc space-y-1">
-              <li>Check browser microphone permissions</li>
-              <li>Verify system volume is not muted</li>
-              <li>Use Chrome or Edge browser (recommended)</li>
-              <li>Refresh the page and try again</li>
-              <li>Make sure you&apos;re using headphones</li>
-            </ul>
           </CardContent>
         </Card>
       </div>
