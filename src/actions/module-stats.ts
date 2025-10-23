@@ -130,8 +130,8 @@ export async function getSpeakingStats() {
       .select({ count: count() })
       .from(schema.conversationTurns)
       .where(
-        sql`${schema.conversationTurns.conversationId} IN (
-          SELECT ${schema.conversationSessions.conversationId}
+        sql`${schema.conversationTurns.sessionId} IN (
+          SELECT ${schema.conversationSessions.id}
           FROM ${schema.conversationSessions}
           WHERE ${schema.conversationSessions.userId} = ${userId}
         )`
