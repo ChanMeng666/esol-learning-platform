@@ -22,7 +22,7 @@ import type { CEFRLevel, SkillType } from "@/types";
  * Creates initial progress record if none exists
  */
 export async function getCEFRProgress() {
-  return await fetchWithDrizzle(async (db, userId) => {
+  return await fetchWithDrizzle(async (db, { userId }) => {
     try {
       // Check if progress exists
       const existing = await db.query.cefrProgress.findFirst({
@@ -92,7 +92,7 @@ export async function updateCEFRSkillProgress(
   skill: SkillType,
   progress: number
 ) {
-  return await fetchWithDrizzle(async (db, userId) => {
+  return await fetchWithDrizzle(async (db, { userId }) => {
     try {
       // Ensure progress exists
       await getCEFRProgress();
@@ -135,7 +135,7 @@ export async function updateCEFRSkillProgress(
  * @param level - The CEFR level to set (A1-C2)
  */
 export async function setCEFRLevel(level: CEFRLevel) {
-  return await fetchWithDrizzle(async (db, userId) => {
+  return await fetchWithDrizzle(async (db, { userId }) => {
     try {
       // Ensure progress exists
       await getCEFRProgress();
@@ -164,7 +164,7 @@ export async function setCEFRLevel(level: CEFRLevel) {
  * @param level - The target CEFR level (A1-C2)
  */
 export async function setCEFRTargetLevel(level: CEFRLevel | null) {
-  return await fetchWithDrizzle(async (db, userId) => {
+  return await fetchWithDrizzle(async (db, { userId }) => {
     try {
       // Ensure progress exists
       await getCEFRProgress();
@@ -193,7 +193,7 @@ export async function setCEFRTargetLevel(level: CEFRLevel | null) {
  * @param pointsEarned - Points to add
  */
 export async function incrementCEFRStats(pointsEarned: number) {
-  return await fetchWithDrizzle(async (db, userId) => {
+  return await fetchWithDrizzle(async (db, { userId }) => {
     try {
       // Ensure progress exists
       const currentProgress = await getCEFRProgress();
@@ -226,7 +226,7 @@ export async function incrementCEFRStats(pointsEarned: number) {
  * Reset CEFR progress (for testing or user request)
  */
 export async function resetCEFRProgress() {
-  return await fetchWithDrizzle(async (db, userId) => {
+  return await fetchWithDrizzle(async (db, { userId }) => {
     try {
       await db
         .update(cefrProgress)
