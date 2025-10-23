@@ -14,13 +14,13 @@ interface SpeakingStats {
   totalTurns: number;
   averageDuration: number;
   recentSessions: Array<{
-    conversationId: string;
-    scenario: string | null;
-    level: string;
+    sessionId: string;
+    scenarioId: string;
+    scenarioTitle: string;
     targetTurns: number;
     isCompleted: boolean;
     durationSeconds: number | null;
-    createdAt: Date;
+    startedAt: Date | null;
   }>;
 }
 
@@ -200,13 +200,13 @@ export function SpeakingTab() {
           {stats.recentSessions && stats.recentSessions.length > 0 ? (
             <div className="space-y-4">
               {stats.recentSessions.map((session) => (
-                <Card key={session.conversationId} className="border">
+                <Card key={session.sessionId} className="border">
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
                           <h4 className="font-semibold">
-                            {session.scenario || "Conversation Practice"}
+                            {session.scenarioTitle}
                           </h4>
                           {session.isCompleted ? (
                             <Badge variant="default" className="text-xs">
@@ -221,9 +221,6 @@ export function SpeakingTab() {
                         </div>
                         <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
                           <span className="flex items-center gap-1">
-                            <Badge variant="secondary" className="text-xs">{session.level}</Badge>
-                          </span>
-                          <span className="flex items-center gap-1">
                             <MessageCircle className="w-4 h-4" />
                             {session.targetTurns} turns
                           </span>
@@ -235,7 +232,7 @@ export function SpeakingTab() {
                           )}
                           <span className="flex items-center gap-1">
                             <Calendar className="w-4 h-4" />
-                            {new Date(session.createdAt).toLocaleDateString()}
+                            {session.startedAt ? new Date(session.startedAt).toLocaleDateString() : "N/A"}
                           </span>
                         </div>
                       </div>

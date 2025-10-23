@@ -123,7 +123,7 @@ export async function getSpeakingStats() {
       .select()
       .from(schema.conversationSessions)
       .where(eq(schema.conversationSessions.userId, userId))
-      .orderBy(desc(schema.conversationSessions.createdAt));
+      .orderBy(desc(schema.conversationSessions.startedAt));
 
     // Get total conversation turns
     const turnsResult = await db
@@ -141,8 +141,24 @@ export async function getSpeakingStats() {
     const totalSessions = sessions.length;
     const completedSessions = sessions.filter(s => s.isCompleted).length;
 
+    // Calculate duration from startedAt and endedAt for each session
+    const sessionsWithDuration = sessions.map(session => {
+      let durationSeconds = null;
+      if (session.startedAt && session.endedAt) {
+        const start = new Date(session.startedAt).getTime();
+        const end = new Date(session.endedAt).getTime();
+        durationSeconds = Math.round((end - start) / 1000); // Convert ms to seconds
+      }
+      return {
+        ...session,
+        durationSeconds,
+      };
+    });
+
     // Calculate average session duration
-    const completedSessionsWithDuration = sessions.filter(s => s.isCompleted && s.durationSeconds);
+    const completedSessionsWithDuration = sessionsWithDuration.filter(
+      s => s.isCompleted && s.durationSeconds !== null
+    );
     const averageDuration = completedSessionsWithDuration.length > 0
       ? Math.round(
           completedSessionsWithDuration.reduce((sum, s) => sum + (s.durationSeconds || 0), 0) /
@@ -155,7 +171,7 @@ export async function getSpeakingStats() {
       completedSessions,
       totalTurns,
       averageDuration,
-      recentSessions: sessions.slice(0, 5), // Last 5 sessions
+      recentSessions: sessionsWithDuration.slice(0, 5), // Last 5 sessions with calculated duration
     };
   });
 }
