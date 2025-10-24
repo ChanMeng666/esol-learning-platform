@@ -20,21 +20,25 @@ export function Footer() {
             name: 'Crimson AGE School',
             logo: '/schools-logo/crimson-age-school.svg',
             description: 'On-campus learning, primary to high school, NZ and international curriculum',
+            url: 'https://age.school.nz/',
         },
         {
             name: 'Crimson Global Academy',
             logo: '/schools-logo/crimson-global-academy.svg',
             description: 'Global private classes for 7-18yrs, international curriculum',
+            url: 'https://www.crimsonglobalacademy.school/nz/',
         },
         {
             name: 'Mt Hobson Academy',
-            logo: '/schools-logo/mt-hobson-academy.svg',
+            logo: '/schools-logo/mt-hobson-academy-black.svg',
             description: 'Online high school learning, NZ curriculum',
+            url: 'https://www.mthobson.school.nz/',
         },
         {
             name: 'Aotearoa Infinite Academy',
             logo: '/schools-logo/aotearoa-infinite-academy.svg',
             description: 'Online high school, NZ curriculum',
+            url: 'https://www.aotearoainfiniteacademy.school/',
         },
     ]
 
@@ -97,11 +101,11 @@ export function Footer() {
                     <div className="flex flex-col space-y-4">
                         <div className="flex items-center gap-3">
                             <Image
-                                src="/schools-logo/crimson-academies-logo-white.svg"
+                                src="/schools-logo/crimson-academies-logo-black.svg"
                                 alt="Crimson Academies Logo"
-                                width={32}
-                                height={32}
-                                className="h-8 w-8"
+                                width={48}
+                                height={48}
+                                className="h-12 w-12"
                             />
                             <h3 className="font-semibold text-foreground">Crimson Academies</h3>
                         </div>
@@ -109,7 +113,7 @@ export function Footer() {
                             Reinventing world-class education to unlock students&apos; limitless potential. Empowering learners across virtual and hybrid campuses worldwide.
                         </p>
                         <Link
-                            href="https://www.crimsonacademies.nz"
+                            href="https://crimsonacademies.school/"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-2 text-sm text-foreground hover:text-primary transition-colors w-fit group"
@@ -127,19 +131,25 @@ export function Footer() {
                     <h3 className="font-semibold text-foreground mb-6 text-center">Our Schools</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         {schools.map((school) => (
-                            <div key={school.name} className="flex flex-col items-center space-y-3 p-4 rounded-lg border border-border/40 bg-background/50 hover:border-primary/20 transition-colors">
+                            <Link
+                                key={school.name}
+                                href={school.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex flex-col items-center space-y-3 p-4 rounded-lg bg-background/50 hover:bg-accent/50 transition-colors group"
+                            >
                                 <Image
                                     src={school.logo}
                                     alt={`${school.name} Logo`}
                                     width={120}
                                     height={40}
-                                    className="h-10 w-auto object-contain"
+                                    className="h-10 w-auto object-contain group-hover:scale-105 transition-transform"
                                 />
-                                <h4 className="font-medium text-sm text-foreground text-center">{school.name}</h4>
+                                <h4 className="font-medium text-sm text-foreground text-center group-hover:text-primary transition-colors">{school.name}</h4>
                                 <p className="text-xs text-muted-foreground text-center leading-relaxed">
                                     {school.description}
                                 </p>
-                            </div>
+                            </Link>
                         ))}
                     </div>
                 </div>
