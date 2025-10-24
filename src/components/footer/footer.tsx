@@ -44,9 +44,9 @@ export function Footer() {
 
     return (
         <footer className="w-full border-t border-border/40 bg-background">
-            <div className="container mx-auto px-4 py-12">
-                {/* Main Footer Content */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
+            <div className="container mx-auto px-4 py-16">
+                {/* Main Footer Content - Two Column Layout */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 mb-12">
                     {/* Project Brand - Prominent */}
                     <div className="flex flex-col space-y-4">
                         <div className="flex items-center gap-3">
@@ -86,30 +86,32 @@ export function Footer() {
                             })}
                         </div>
                     </div>
-
-                    {/* Crimson Academies Info */}
-                    <div className="flex flex-col space-y-4">
-                        <Link
-                            href="https://crimsonacademies.school/"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="group w-fit"
-                        >
-                            <Image
-                                src="/schools-logo/crimson-academies-logo-black.svg"
-                                alt="Crimson Academies Logo"
-                                width={120}
-                                height={120}
-                                className="h-28 w-28 group-hover:scale-105 transition-transform"
-                            />
-                        </Link>
-                        <p className="text-sm text-muted-foreground">
-                            Reinventing world-class education to unlock students&apos; limitless potential. Empowering learners across virtual and hybrid campuses worldwide.
-                        </p>
-                    </div>
                 </div>
 
-                <Separator className="my-8" />
+                <Separator className="my-12" />
+
+                {/* Crimson Academies Section - Standalone Row */}
+                <div className="flex flex-col items-center space-y-6 mb-12">
+                    <Link
+                        href="https://crimsonacademies.school/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group"
+                    >
+                        <Image
+                            src="/schools-logo/crimson-academies-logo-black.svg"
+                            alt="Crimson Academies Logo"
+                            width={140}
+                            height={140}
+                            className="h-32 w-32 group-hover:scale-105 transition-transform"
+                        />
+                    </Link>
+                    <p className="text-sm text-muted-foreground text-center max-w-2xl">
+                        Reinventing world-class education to unlock students&apos; limitless potential. Empowering learners across virtual and hybrid campuses worldwide.
+                    </p>
+                </div>
+
+                <Separator className="my-12" />
 
                 {/* Our Schools Section */}
                 <div className="mb-8">
