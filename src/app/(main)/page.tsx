@@ -262,14 +262,46 @@ export default function HomePage() {
         testimonials={testimonials}
         autoRotateInterval={7000}
         trustedCompanies={[
-          { name: "College Board - Advanced Placement", logoPath: "/accreditations-logo/AP.svg" },
-          { name: "Cambridge International School", logoPath: "/accreditations-logo/Cambridge-International-School.svg" },
-          { name: "Pearson Edexcel", logoPath: "/accreditations-logo/Pearson-Edexcel.svg" },
-          { name: "NCEA", logoPath: "/accreditations-logo/NCEA.svg" },
-          { name: "Western Association of Schools and Colleges", logoPath: "/accreditations-logo/Western-Association-of-Schools-and-Colleges.svg" },
-          { name: "Council of British International Schools", logoPath: "/accreditations-logo/Council-of-British-International-Schools.svg" },
-          { name: "NCAA", logoPath: "/accreditations-logo/NCAA.svg" },
-          { name: "Florida Department of Education", logoPath: "/accreditations-logo/Florida-Department-of-Education.svg" },
+          {
+            name: "College Board - Advanced Placement",
+            logoPath: "/accreditations-logo/AP.svg",
+            description: "Preparing Students for University - Accredited by the College Board to offer the Advanced Placement (AP) curriculum."
+          },
+          {
+            name: "Cambridge International School",
+            logoPath: "/accreditations-logo/Cambridge-International-School.svg",
+            description: "Innovative Learning, New Zealand Roots - A registered online Cambridge International School."
+          },
+          {
+            name: "Pearson Edexcel",
+            logoPath: "/accreditations-logo/Pearson-Edexcel.svg",
+            description: "Global Citizens - Accredited by Pearson Edexcel to offer the International GCSEs and A Levels."
+          },
+          {
+            name: "NCEA",
+            logoPath: "/accreditations-logo/NCEA.svg",
+            description: "Nurturing Young Minds, Shaping Leaders - Offering NCEA Levels 1-3 in flexible online and in-person settings."
+          },
+          {
+            name: "Western Association of Schools and Colleges",
+            logoPath: "/accreditations-logo/Western-Association-of-Schools-and-Colleges.svg",
+            description: "A World-Class Online High School - Accredited by WASC, the largest global accrediting schooling body."
+          },
+          {
+            name: "Council of British International Schools",
+            logoPath: "/accreditations-logo/Council-of-British-International-Schools.svg",
+            description: "Excellence in Education - A COBIS accredited member, a benchmark for top international schools."
+          },
+          {
+            name: "NCAA",
+            logoPath: "/accreditations-logo/NCAA.svg",
+            description: "Supporting Athletes, Globally - Offering accredited NCAA courses to support student athletes."
+          },
+          {
+            name: "Florida Department of Education",
+            logoPath: "/accreditations-logo/Florida-Department-of-Education.svg",
+            description: "US Curriculum, Global Community - Registered in Florida as a private school with the Department of Education."
+          },
         ]}
         trustedCompaniesTitle="International and Local Accreditations and Qualifications"
       />

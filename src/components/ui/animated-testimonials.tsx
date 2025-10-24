@@ -19,6 +19,7 @@ export interface Testimonial {
 export interface TrustedInstitution {
   name: string
   logoPath: string
+  description?: string
 }
 
 export interface AnimatedTestimonialsProps {
@@ -145,7 +146,7 @@ export function AnimatedTestimonials({
         {trustedCompanies.length > 0 && (
           <div className="mt-24 text-center">
             <h3 className="text-sm font-medium text-muted-foreground mb-8">{trustedCompaniesTitle}</h3>
-            <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
               {trustedCompanies.map((company) => {
                 // Support both string (legacy) and TrustedInstitution object
                 if (typeof company === 'string') {
@@ -156,16 +157,23 @@ export function AnimatedTestimonials({
                   )
                 }
 
-                // Render logo image for TrustedInstitution
+                // Render logo image for TrustedInstitution with optional description
                 return (
-                  <div key={company.name} className="grayscale hover:grayscale-0 transition-all duration-300 opacity-60 hover:opacity-100">
-                    <Image
-                      src={company.logoPath}
-                      alt={company.name}
-                      width={120}
-                      height={60}
-                      className="h-12 w-auto object-contain"
-                    />
+                  <div key={company.name} className="flex flex-col items-center space-y-4 p-4 rounded-lg hover:bg-accent/50 transition-colors group">
+                    <div className="grayscale group-hover:grayscale-0 transition-all duration-300 opacity-60 group-hover:opacity-100">
+                      <Image
+                        src={company.logoPath}
+                        alt={company.name}
+                        width={120}
+                        height={60}
+                        className="h-12 w-auto object-contain"
+                      />
+                    </div>
+                    {company.description && (
+                      <p className="text-sm text-muted-foreground text-center leading-relaxed">
+                        {company.description}
+                      </p>
+                    )}
                   </div>
                 )
               })}
