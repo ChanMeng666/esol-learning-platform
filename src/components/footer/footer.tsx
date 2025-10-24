@@ -93,7 +93,7 @@ export function Footer() {
                             href="https://crimsonacademies.school/"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex flex-col items-start gap-3 group w-fit"
+                            className="group w-fit"
                         >
                             <Image
                                 src="/schools-logo/crimson-academies-logo-black.svg"
@@ -102,7 +102,6 @@ export function Footer() {
                                 height={120}
                                 className="h-28 w-28 group-hover:scale-105 transition-transform"
                             />
-                            <h3 className="font-semibold text-foreground text-xl group-hover:text-primary transition-colors">Crimson Academies</h3>
                         </Link>
                         <p className="text-sm text-muted-foreground">
                             Reinventing world-class education to unlock students&apos; limitless potential. Empowering learners across virtual and hybrid campuses worldwide.
