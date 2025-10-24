@@ -261,7 +261,14 @@ export default function HomePage() {
         badgeText="Trusted by students worldwide"
         testimonials={testimonials}
         autoRotateInterval={7000}
-        trustedCompanies={["Auckland University", "Victoria University", "Massey University", "AUT", "Otago University"]}
+        trustedCompanies={[
+          { name: "University of Auckland", logoPath: "/institution-logo/university-of-auckland.svg" },
+          { name: "Auckland University of Technology", logoPath: "/institution-logo/auckland-university-of-technology.svg" },
+          { name: "Victoria University of Wellington", logoPath: "/institution-logo/victoria-university-of-wellington.svg" },
+          { name: "University of Otago", logoPath: "/institution-logo/university-of-otago.svg" },
+          { name: "University of Waikato", logoPath: "/institution-logo/university-of-waikato.svg" },
+          { name: "Lincoln University", logoPath: "/institution-logo/lincoln-university.svg" },
+        ]}
         trustedCompaniesTitle="Students from leading New Zealand institutions"
       />
     </div>

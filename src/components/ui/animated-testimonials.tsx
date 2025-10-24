@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { Quote, Star } from "lucide-react"
 import { useEffect, useState } from "react"
+import Image from "next/image"
 
 export interface Testimonial {
   id: number
@@ -15,13 +16,18 @@ export interface Testimonial {
   avatar: string
 }
 
+export interface TrustedInstitution {
+  name: string
+  logoPath: string
+}
+
 export interface AnimatedTestimonialsProps {
   title?: string
   subtitle?: string
   badgeText?: string
   testimonials?: Testimonial[]
   autoRotateInterval?: number
-  trustedCompanies?: string[]
+  trustedCompanies?: (string | TrustedInstitution)[]
   trustedCompaniesTitle?: string
   className?: string
 }
@@ -140,12 +146,30 @@ export function AnimatedTestimonials({
         {trustedCompanies.length > 0 && (
           <div className="mt-24 text-center">
             <h3 className="text-sm font-medium text-muted-foreground mb-8">{trustedCompaniesTitle}</h3>
-            <div className="flex flex-wrap justify-center gap-x-12 gap-y-8">
-              {trustedCompanies.map((company) => (
-                <div key={company} className="text-2xl font-semibold text-muted-foreground/50">
-                  {company}
-                </div>
-              ))}
+            <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-8">
+              {trustedCompanies.map((company) => {
+                // Support both string (legacy) and TrustedInstitution object
+                if (typeof company === 'string') {
+                  return (
+                    <div key={company} className="text-2xl font-semibold text-muted-foreground/50">
+                      {company}
+                    </div>
+                  )
+                }
+
+                // Render logo image for TrustedInstitution
+                return (
+                  <div key={company.name} className="grayscale hover:grayscale-0 transition-all duration-300 opacity-60 hover:opacity-100">
+                    <Image
+                      src={company.logoPath}
+                      alt={company.name}
+                      width={120}
+                      height={60}
+                      className="h-12 w-auto object-contain"
+                    />
+                  </div>
+                )
+              })}
             </div>
           </div>
         )}
