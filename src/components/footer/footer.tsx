@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { Github, ExternalLink, BookOpen, MessageCircle, LayoutDashboard, Mic } from 'lucide-react'
+import { BookOpen, MessageCircle, LayoutDashboard, Mic } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 
 export function Footer() {
@@ -52,29 +52,19 @@ export function Footer() {
                         <div className="flex items-center gap-3">
                             <Image
                                 src="/nzcel-prep-logo.svg"
-                                alt="ESOL Learning Platform Logo"
+                                alt="ESOL Platform Logo"
                                 width={48}
                                 height={48}
                                 className="h-12 w-12"
                             />
                             <div>
-                                <h3 className="font-bold text-xl text-foreground">ESOL Learning Platform</h3>
+                                <h3 className="font-bold text-xl text-foreground">ESOL Platform</h3>
                                 <p className="text-sm text-muted-foreground">AI-Powered English Learning</p>
                             </div>
                         </div>
                         <p className="text-sm text-muted-foreground max-w-md">
                             Comprehensive English language learning with AI-powered speaking practice, NZCEL exam prep, CEFR-aligned exercises, and adaptive learning paths tailored to your goals.
                         </p>
-                        <Link
-                            href="https://github.com/ChanMeng666/nzcel-prep"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 text-sm text-foreground hover:text-primary transition-colors w-fit group"
-                        >
-                            <Github className="h-4 w-4" />
-                            <span>View on GitHub</span>
-                            <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </Link>
                     </div>
 
                     {/* Quick Links */}
@@ -103,16 +93,16 @@ export function Footer() {
                             href="https://crimsonacademies.school/"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-4 group w-fit"
+                            className="flex flex-col items-start gap-3 group w-fit"
                         >
                             <Image
                                 src="/schools-logo/crimson-academies-logo-black.svg"
                                 alt="Crimson Academies Logo"
-                                width={80}
-                                height={80}
-                                className="h-20 w-20 group-hover:scale-105 transition-transform"
+                                width={120}
+                                height={120}
+                                className="h-28 w-28 group-hover:scale-105 transition-transform"
                             />
-                            <h3 className="font-semibold text-foreground text-lg group-hover:text-primary transition-colors">Crimson Academies</h3>
+                            <h3 className="font-semibold text-foreground text-xl group-hover:text-primary transition-colors">Crimson Academies</h3>
                         </Link>
                         <p className="text-sm text-muted-foreground">
                             Reinventing world-class education to unlock students&apos; limitless potential. Empowering learners across virtual and hybrid campuses worldwide.

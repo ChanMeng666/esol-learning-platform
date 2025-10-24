@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Menu, Flame, Trophy, User, LogOut } from 'lucide-react'
+import { Menu, Flame, Trophy, User, LogOut, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useUserProgress } from '@/lib/store/user-progress'
 import { useUser, useStackApp } from '@stackframe/stack'
@@ -53,6 +53,7 @@ export function Navbar() {
     const [mounted, setMounted] = useState(false)
     const [isVisible, setIsVisible] = useState(true)
     const [lastScrollY, setLastScrollY] = useState(0)
+    const [isPracticeDropdownOpen, setIsPracticeDropdownOpen] = useState(false)
 
     // Use Stack Auth hooks at top level
     // No redirect - allow unauthenticated users to access public pages
@@ -115,17 +116,34 @@ export function Navbar() {
                             // Handle dropdown items (Practice menu)
                             if (item.subItems) {
                                 const isActivePath = item.subItems.some(subItem => pathname.startsWith(subItem.href))
+
                                 return (
-                                    <DropdownMenu key={item.label}>
+                                    <DropdownMenu
+                                        key={item.label}
+                                        open={isPracticeDropdownOpen}
+                                        onOpenChange={setIsPracticeDropdownOpen}
+                                    >
                                         <DropdownMenuTrigger asChild>
-                                            <Button
-                                                variant={isActivePath ? "default" : "ghost"}
-                                                className={`relative ${isActivePath ? 'bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90' : 'text-black dark:text-white'}`}
+                                            <div
+                                                onMouseEnter={() => setIsPracticeDropdownOpen(true)}
+                                                onMouseLeave={() => setIsPracticeDropdownOpen(false)}
                                             >
-                                                {item.label}
-                                            </Button>
+                                                <Button
+                                                    variant={isActivePath ? "default" : "ghost"}
+                                                    className={`relative ${isActivePath ? 'bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90' : 'text-black dark:text-white'}`}
+                                                >
+                                                    {item.label}
+                                                    <ChevronDown
+                                                        className={`ml-1 h-4 w-4 transition-transform duration-200 ${isPracticeDropdownOpen ? 'rotate-180' : ''}`}
+                                                    />
+                                                </Button>
+                                            </div>
                                         </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
+                                        <DropdownMenuContent
+                                            align="end"
+                                            onMouseEnter={() => setIsPracticeDropdownOpen(true)}
+                                            onMouseLeave={() => setIsPracticeDropdownOpen(false)}
+                                        >
                                             {item.subItems.map((subItem) => (
                                                 <DropdownMenuItem key={subItem.href} asChild disabled={subItem.disabled}>
                                                     <Link href={subItem.disabled ? '#' : subItem.href}>
