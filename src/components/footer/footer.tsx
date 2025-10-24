@@ -2,16 +2,40 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { Github, Mail, ExternalLink, BookOpen, MessageCircle, LayoutDashboard } from 'lucide-react'
+import { Github, ExternalLink, BookOpen, MessageCircle, LayoutDashboard, Mic } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 
 export function Footer() {
     const currentYear = new Date().getFullYear()
 
     const footerLinks = [
+        { href: '/speaking', label: 'AI Speaking Coach', icon: Mic },
         { href: '/practice', label: 'Practice', icon: BookOpen },
         { href: '/conversation', label: 'Conversation', icon: MessageCircle },
         { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    ]
+
+    const schools = [
+        {
+            name: 'Crimson AGE School',
+            logo: '/schools-logo/crimson-age-school.svg',
+            description: 'On-campus learning, primary to high school, NZ and international curriculum',
+        },
+        {
+            name: 'Crimson Global Academy',
+            logo: '/schools-logo/crimson-global-academy.svg',
+            description: 'Global private classes for 7-18yrs, international curriculum',
+        },
+        {
+            name: 'Mt Hobson Academy',
+            logo: '/schools-logo/mt-hobson-academy.svg',
+            description: 'Online high school learning, NZ curriculum',
+        },
+        {
+            name: 'Aotearoa Infinite Academy',
+            logo: '/schools-logo/aotearoa-infinite-academy.svg',
+            description: 'Online high school, NZ curriculum',
+        },
     ]
 
     return (
@@ -24,18 +48,18 @@ export function Footer() {
                         <div className="flex items-center gap-3">
                             <Image
                                 src="/nzcel-prep-logo.svg"
-                                alt="NZCEL Prep Logo"
+                                alt="ESOL Learning Platform Logo"
                                 width={48}
                                 height={48}
                                 className="h-12 w-12"
                             />
                             <div>
-                                <h3 className="font-bold text-xl text-foreground">NZCEL Prep</h3>
-                                <p className="text-sm text-muted-foreground">Interactive Learning Platform</p>
+                                <h3 className="font-bold text-xl text-foreground">ESOL Learning Platform</h3>
+                                <p className="text-sm text-muted-foreground">AI-Powered English Learning</p>
                             </div>
                         </div>
                         <p className="text-sm text-muted-foreground max-w-md">
-                            Master the New Zealand Certificates in English Language with AI-powered practice, adaptive learning, and gamification.
+                            Comprehensive English language learning with AI-powered speaking practice, NZCEL exam prep, CEFR-aligned exercises, and adaptive learning paths tailored to your goals.
                         </p>
                         <Link
                             href="https://github.com/ChanMeng666/nzcel-prep"
@@ -69,40 +93,54 @@ export function Footer() {
                         </div>
                     </div>
 
-                    {/* Developer Info */}
+                    {/* Crimson Academies Info */}
                     <div className="flex flex-col space-y-4">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3">
                             <Image
-                                src="/chan_logo.svg"
-                                alt="Chan Meng Logo"
-                                width={24}
-                                height={24}
-                                className="h-6 w-6"
+                                src="/schools-logo/crimson-academies-logo-white.svg"
+                                alt="Crimson Academies Logo"
+                                width={32}
+                                height={32}
+                                className="h-8 w-8"
                             />
-                            <h3 className="font-semibold text-foreground">Chan Meng</h3>
+                            <h3 className="font-semibold text-foreground">Crimson Academies</h3>
                         </div>
                         <p className="text-sm text-muted-foreground">
-                            Custom web solutions tailored to your needs. From concept to deployment.
+                            Reinventing world-class education to unlock students' limitless potential. Empowering learners across virtual and hybrid campuses worldwide.
                         </p>
-                        <div className="flex flex-col space-y-2">
-                            <a
-                                href="mailto:chanmeng.dev@gmail.com"
-                                className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors w-fit"
-                            >
-                                <Mail className="h-4 w-4" />
-                                <span>chanmeng.dev@gmail.com</span>
-                            </a>
-                            <Link
-                                href="https://github.com/ChanMeng666"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors w-fit group"
-                            >
-                                <Github className="h-4 w-4" />
-                                <span>Portfolio & Projects</span>
-                                <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </Link>
-                        </div>
+                        <Link
+                            href="https://www.crimsonacademies.nz"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-sm text-foreground hover:text-primary transition-colors w-fit group"
+                        >
+                            <span>Visit Crimson Academies</span>
+                            <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </Link>
+                    </div>
+                </div>
+
+                <Separator className="my-8" />
+
+                {/* Our Schools Section */}
+                <div className="mb-8">
+                    <h3 className="font-semibold text-foreground mb-6 text-center">Our Schools</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {schools.map((school) => (
+                            <div key={school.name} className="flex flex-col items-center space-y-3 p-4 rounded-lg border border-border/40 bg-background/50 hover:border-primary/20 transition-colors">
+                                <Image
+                                    src={school.logo}
+                                    alt={`${school.name} Logo`}
+                                    width={120}
+                                    height={40}
+                                    className="h-10 w-auto object-contain"
+                                />
+                                <h4 className="font-medium text-sm text-foreground text-center">{school.name}</h4>
+                                <p className="text-xs text-muted-foreground text-center leading-relaxed">
+                                    {school.description}
+                                </p>
+                            </div>
+                        ))}
                     </div>
                 </div>
 
@@ -110,7 +148,8 @@ export function Footer() {
 
                 {/* Bottom Bar - Copyright */}
                 <div className="flex flex-col items-center gap-1 text-xs text-muted-foreground/70">
-                    <span>© {currentYear} NZCEL Prep. All rights reserved.</span>
+                    <span>© {currentYear} Crimson Academies. All rights reserved.</span>
+                    <span>ESOL Learning Platform - Empowering English learners worldwide</span>
                 </div>
             </div>
         </footer>
