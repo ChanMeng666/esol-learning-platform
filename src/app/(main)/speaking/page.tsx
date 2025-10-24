@@ -23,12 +23,9 @@ function SpeakingPageContent() {
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-primary mb-2">
+          <h1 className="text-4xl font-bold text-primary mb-4">
             AI Speaking Practice
           </h1>
-          <p className="text-muted-foreground">
-            Real-time conversation practice with AI ESOL Coach
-          </p>
         </div>
 
         {/* Main Component */}

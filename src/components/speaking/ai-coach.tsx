@@ -8,10 +8,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   Mic,
   Play,
   Square,
   Loader2,
+  HelpCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -317,198 +326,194 @@ export function AISpeakingCoach() {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-      {/* Main Conversation Panel */}
-      <div className="lg:col-span-3 space-y-6">
-        {/* Controls */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Speaking Practice</CardTitle>
-            <CardDescription>
-              Real-time voice conversation with AI coach
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Status */}
-            <div className="flex items-center gap-3">
-              <Badge variant={isSessionActive ? "default" : "secondary"} className="text-sm">
-                {isSessionActive ? "Connected" : "Not Connected"}
-              </Badge>
-              {isSpeaking && (
-                <Badge
-                  className="animate-pulse text-sm font-semibold bg-green-500 hover:bg-green-500 text-white border-green-600 shadow-lg shadow-green-500/50"
-                >
-                  <Mic className="h-3.5 w-3.5 mr-1.5" />
-                  Listening...
-                </Badge>
-              )}
-            </div>
+    <div className="space-y-6">
+      {/* Page Description & Help Button */}
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div className="flex-1">
+          <p className="text-muted-foreground text-base leading-relaxed">
+            Practice real-time voice conversation with an AI ESOL Coach that adapts to your CEFR level (A1-C2) and provides instant feedback on fluency, vocabulary, grammar, and pronunciation. Sessions are used only for real-time practice and are not stored.
+          </p>
+        </div>
 
-            {/* Buttons */}
-            <div className="flex flex-wrap gap-3">
-              {!isSessionActive ? (
-                <Button
-                  onClick={startSession}
-                  disabled={isConnecting}
-                  size="lg"
-                  className="gap-2"
-                >
-                  {isConnecting ? (
-                    <>
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                      Connecting...
-                    </>
-                  ) : (
-                    <>
-                      <Play className="h-5 w-5" />
-                      Start Practice
-                    </>
-                  )}
-                </Button>
-              ) : (
-                <>
-                  <Button
-                    onClick={stopSession}
-                    variant="destructive"
-                    size="lg"
-                    className="gap-2"
-                  >
-                    <Square className="h-5 w-5" />
-                    End Practice
-                  </Button>
-                  <Button
-                    onClick={triggerResponse}
-                    variant="secondary"
-                    size="lg"
-                    className="gap-2"
-                  >
-                    <Mic className="h-4 w-4" />
-                    Request Response
-                  </Button>
-                </>
-              )}
-            </div>
-
-            {/* Session Active Instructions */}
-            {isSessionActive && (
-              <div className="p-4 bg-muted/50 rounded-lg border">
-                <p className="text-sm font-medium mb-2">Quick Tips</p>
-                <ul className="text-sm text-muted-foreground space-y-1 ml-4 list-disc">
-                  <li>Speak clearly and pause naturally</li>
-                  <li>Use headphones to prevent feedback</li>
-                  <li>Click &quot;Request Response&quot; if needed</li>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="gap-2 shrink-0">
+              <HelpCircle className="h-4 w-4" />
+              How to Use
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>How to Use AI Speaking Coach</DialogTitle>
+              <DialogDescription>
+                Complete guide to get the most out of your speaking practice
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-6 mt-4">
+              <div>
+                <h4 className="font-semibold mb-3 text-base">Setup</h4>
+                <ul className="space-y-2 ml-4 list-disc text-muted-foreground">
+                  <li>Use headphones and allow microphone access</li>
+                  <li>Find a quiet environment</li>
+                  <li>Use Chrome or Edge browser for best compatibility</li>
                 </ul>
               </div>
-            )}
-          </CardContent>
-        </Card>
 
-        {/* Conversation Transcript */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Conversation</CardTitle>
-            <CardDescription>
-              Transcript of your practice session
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[500px] pr-4">
-              {messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                  <DotLottieReact
-                    src="/realtime-speaking.lottie"
-                    loop
-                    autoplay
-                    style={{ width: 200, height: 200 }}
-                  />
-                  <p className="text-sm mt-4">Start a practice session to begin</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {messages.map((msg, idx) => (
-                    <div
-                      key={idx}
-                      className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+              <div>
+                <h4 className="font-semibold mb-3 text-base">Practice Tips</h4>
+                <ul className="space-y-2 ml-4 list-disc text-muted-foreground">
+                  <li>Speak clearly in complete sentences</li>
+                  <li>Pause naturally between thoughts</li>
+                  <li>Wait 2-3 seconds after speaking to allow the AI to respond</li>
+                  <li>Don&apos;t worry about making mistakes - that&apos;s part of learning!</li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="font-semibold mb-3 text-base">Troubleshooting</h4>
+                <ul className="space-y-2 ml-4 list-disc text-muted-foreground">
+                  <li>Check microphone permissions in your browser settings</li>
+                  <li>Verify system volume is not muted</li>
+                  <li>Click &quot;Request Response&quot; if the AI doesn&apos;t reply automatically</li>
+                  <li>Refresh the page if you experience connection issues</li>
+                </ul>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Main AI Coach Interface */}
+      <Card className="w-full">
+        <CardContent className="pt-6">
+          <div className="space-y-6">
+            {/* Session Control */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold">Session Control</h3>
+
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                {/* Left: Buttons */}
+                <div className="flex items-center gap-3 flex-wrap">
+                  {!isSessionActive ? (
+                    <Button
+                      onClick={startSession}
+                      disabled={isConnecting}
+                      size="lg"
+                      className="gap-2"
                     >
-                      <div
-                        className={`max-w-[85%] rounded-lg p-3 ${
-                          msg.role === "user"
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted"
-                        }`}
+                      {isConnecting ? (
+                        <>
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                          Connecting...
+                        </>
+                      ) : (
+                        <>
+                          <Play className="h-5 w-5" />
+                          Start Practice
+                        </>
+                      )}
+                    </Button>
+                  ) : (
+                    <>
+                      <Button
+                        onClick={stopSession}
+                        variant="destructive"
+                        size="lg"
+                        className="gap-2"
                       >
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-xs font-semibold">
-                            {msg.role === "user" ? "You" : "AI Coach"}
-                          </span>
-                          <span className="text-xs opacity-70">
-                            {msg.timestamp.toLocaleTimeString()}
-                          </span>
-                        </div>
-                        <p className="text-sm">{msg.content}</p>
-                      </div>
-                    </div>
-                  ))}
-                  <div ref={messagesEndRef} />
+                        <Square className="h-5 w-5" />
+                        End Practice
+                      </Button>
+                      <Button
+                        onClick={triggerResponse}
+                        variant="secondary"
+                        size="lg"
+                        className="gap-2"
+                      >
+                        <Mic className="h-4 w-4" />
+                        Request Response
+                      </Button>
+                    </>
+                  )}
+                </div>
+
+                {/* Right: Status Badges */}
+                <div className="flex items-center gap-3 flex-wrap">
+                  <Badge variant={isSessionActive ? "default" : "secondary"} className="text-sm">
+                    {isSessionActive ? "Connected" : "Not Connected"}
+                  </Badge>
+                  {isSpeaking && (
+                    <Badge
+                      className="animate-pulse text-sm font-semibold bg-green-500 hover:bg-green-500 text-white border-green-600 shadow-lg shadow-green-500/50"
+                    >
+                      <Mic className="h-3.5 w-3.5 mr-1.5" />
+                      Listening...
+                    </Badge>
+                  )}
+                </div>
+              </div>
+
+              {/* Session Active Instructions */}
+              {isSessionActive && (
+                <div className="p-4 bg-muted/50 rounded-lg border">
+                  <p className="text-sm font-medium mb-2">Quick Tips</p>
+                  <ul className="text-sm text-muted-foreground space-y-1 ml-4 list-disc">
+                    <li>Speak clearly and pause naturally</li>
+                    <li>Use headphones to prevent feedback</li>
+                    <li>Click &quot;Request Response&quot; if needed</li>
+                  </ul>
                 </div>
               )}
-            </ScrollArea>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Guide Panel */}
-      <div className="lg:col-span-2 space-y-6">
-        {/* Usage Guide */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">How to Use</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm">
-            <div>
-              <h4 className="font-semibold mb-2">Setup</h4>
-              <ul className="space-y-1 ml-4 list-disc text-muted-foreground">
-                <li>Use headphones and allow microphone access</li>
-                <li>Find a quiet environment</li>
-                <li>Use Chrome or Edge browser</li>
-              </ul>
             </div>
 
-            <div>
-              <h4 className="font-semibold mb-2">Practice Tips</h4>
-              <ul className="space-y-1 ml-4 list-disc text-muted-foreground">
-                <li>Speak clearly in complete sentences</li>
-                <li>Pause naturally between thoughts</li>
-                <li>Wait 2-3 seconds after speaking</li>
-              </ul>
+            {/* Conversation Transcript */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold">Conversation Transcript</h3>
+              <ScrollArea className="h-[500px] pr-4 border rounded-lg p-4 bg-muted/20">
+                {messages.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                    <DotLottieReact
+                      src="/realtime-speaking.lottie"
+                      loop
+                      autoplay
+                      style={{ width: 180, height: 180 }}
+                    />
+                    <p className="text-sm mt-4">Start a practice session to begin</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {messages.map((msg, idx) => (
+                      <div
+                        key={idx}
+                        className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                      >
+                        <div
+                          className={`max-w-[85%] rounded-lg p-3 ${
+                            msg.role === "user"
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs font-semibold">
+                              {msg.role === "user" ? "You" : "AI Coach"}
+                            </span>
+                            <span className="text-xs opacity-70">
+                              {msg.timestamp.toLocaleTimeString()}
+                            </span>
+                          </div>
+                          <p className="text-sm">{msg.content}</p>
+                        </div>
+                      </div>
+                    ))}
+                    <div ref={messagesEndRef} />
+                  </div>
+                )}
+              </ScrollArea>
             </div>
-
-            <div>
-              <h4 className="font-semibold mb-2">Troubleshooting</h4>
-              <ul className="space-y-1 ml-4 list-disc text-muted-foreground">
-                <li>Check microphone permissions in browser</li>
-                <li>Verify system volume is not muted</li>
-                <li>Click &quot;Request Response&quot; if AI doesn&apos;t reply</li>
-              </ul>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* About */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">About</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground space-y-2">
-            <p>
-              AI coach adapts to your CEFR level (A1-C2) and provides feedback on fluency, vocabulary, grammar, and pronunciation.
-            </p>
-            <p className="text-xs">
-              Sessions are not stored and used only for real-time practice.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
