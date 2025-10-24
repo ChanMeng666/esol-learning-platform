@@ -99,28 +99,24 @@ export function Footer() {
 
                     {/* Crimson Academies Info */}
                     <div className="flex flex-col space-y-4">
-                        <div className="flex items-center gap-3">
-                            <Image
-                                src="/schools-logo/crimson-academies-logo-black.svg"
-                                alt="Crimson Academies Logo"
-                                width={48}
-                                height={48}
-                                className="h-12 w-12"
-                            />
-                            <h3 className="font-semibold text-foreground">Crimson Academies</h3>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                            Reinventing world-class education to unlock students&apos; limitless potential. Empowering learners across virtual and hybrid campuses worldwide.
-                        </p>
                         <Link
                             href="https://crimsonacademies.school/"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 text-sm text-foreground hover:text-primary transition-colors w-fit group"
+                            className="flex items-center gap-4 group w-fit"
                         >
-                            <span>Visit Crimson Academies</span>
-                            <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <Image
+                                src="/schools-logo/crimson-academies-logo-black.svg"
+                                alt="Crimson Academies Logo"
+                                width={80}
+                                height={80}
+                                className="h-20 w-20 group-hover:scale-105 transition-transform"
+                            />
+                            <h3 className="font-semibold text-foreground text-lg group-hover:text-primary transition-colors">Crimson Academies</h3>
                         </Link>
+                        <p className="text-sm text-muted-foreground">
+                            Reinventing world-class education to unlock students&apos; limitless potential. Empowering learners across virtual and hybrid campuses worldwide.
+                        </p>
                     </div>
                 </div>
 
@@ -141,9 +137,9 @@ export function Footer() {
                                 <Image
                                     src={school.logo}
                                     alt={`${school.name} Logo`}
-                                    width={120}
-                                    height={40}
-                                    className="h-10 w-auto object-contain group-hover:scale-105 transition-transform"
+                                    width={180}
+                                    height={60}
+                                    className="h-16 w-auto object-contain group-hover:scale-105 transition-transform"
                                 />
                                 <h4 className="font-medium text-sm text-foreground text-center group-hover:text-primary transition-colors">{school.name}</h4>
                                 <p className="text-xs text-muted-foreground text-center leading-relaxed">

@@ -68,7 +68,6 @@ export function AnimatedTestimonials({
             <div className="space-y-6">
               {badgeText && (
                 <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary/10 text-primary">
-                  <Star className="mr-1 h-3.5 w-3.5 fill-primary" />
                   <span>{badgeText}</span>
                 </div>
               )}

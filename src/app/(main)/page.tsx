@@ -262,14 +262,16 @@ export default function HomePage() {
         testimonials={testimonials}
         autoRotateInterval={7000}
         trustedCompanies={[
-          { name: "University of Auckland", logoPath: "/institution-logo/university-of-auckland.svg" },
-          { name: "Auckland University of Technology", logoPath: "/institution-logo/auckland-university-of-technology.svg" },
-          { name: "Victoria University of Wellington", logoPath: "/institution-logo/victoria-university-of-wellington.svg" },
-          { name: "University of Otago", logoPath: "/institution-logo/university-of-otago.svg" },
-          { name: "University of Waikato", logoPath: "/institution-logo/university-of-waikato.svg" },
-          { name: "Lincoln University", logoPath: "/institution-logo/lincoln-university.svg" },
+          { name: "College Board - Advanced Placement", logoPath: "/accreditations-logo/AP.png" },
+          { name: "Cambridge International School", logoPath: "/accreditations-logo/Cambridge-International-School.png" },
+          { name: "Pearson Edexcel", logoPath: "/accreditations-logo/Pearson-Edexcel.png" },
+          { name: "NCEA", logoPath: "/accreditations-logo/NCEA.png" },
+          { name: "Western Association of Schools and Colleges", logoPath: "/accreditations-logo/Western-Association-of-Schools-and-Colleges.png" },
+          { name: "Council of British International Schools", logoPath: "/accreditations-logo/Council-of-British-International-Schools.png" },
+          { name: "NCAA", logoPath: "/accreditations-logo/NCAA.png" },
+          { name: "Florida Department of Education", logoPath: "/accreditations-logo/Florida-Department-of-Education.png" },
         ]}
-        trustedCompaniesTitle="Students from leading New Zealand institutions"
+        trustedCompaniesTitle="International and Local Accreditations and Qualifications"
       />
     </div>
   );
