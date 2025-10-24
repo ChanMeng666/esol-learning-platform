@@ -262,14 +262,14 @@ export default function HomePage() {
         testimonials={testimonials}
         autoRotateInterval={7000}
         trustedCompanies={[
-          { name: "College Board - Advanced Placement", logoPath: "/accreditations-logo/AP.png" },
-          { name: "Cambridge International School", logoPath: "/accreditations-logo/Cambridge-International-School.png" },
-          { name: "Pearson Edexcel", logoPath: "/accreditations-logo/Pearson-Edexcel.png" },
-          { name: "NCEA", logoPath: "/accreditations-logo/NCEA.png" },
-          { name: "Western Association of Schools and Colleges", logoPath: "/accreditations-logo/Western-Association-of-Schools-and-Colleges.png" },
-          { name: "Council of British International Schools", logoPath: "/accreditations-logo/Council-of-British-International-Schools.png" },
-          { name: "NCAA", logoPath: "/accreditations-logo/NCAA.png" },
-          { name: "Florida Department of Education", logoPath: "/accreditations-logo/Florida-Department-of-Education.png" },
+          { name: "College Board - Advanced Placement", logoPath: "/accreditations-logo/AP.svg" },
+          { name: "Cambridge International School", logoPath: "/accreditations-logo/Cambridge-International-School.svg" },
+          { name: "Pearson Edexcel", logoPath: "/accreditations-logo/Pearson-Edexcel.svg" },
+          { name: "NCEA", logoPath: "/accreditations-logo/NCEA.svg" },
+          { name: "Western Association of Schools and Colleges", logoPath: "/accreditations-logo/Western-Association-of-Schools-and-Colleges.svg" },
+          { name: "Council of British International Schools", logoPath: "/accreditations-logo/Council-of-British-International-Schools.svg" },
+          { name: "NCAA", logoPath: "/accreditations-logo/NCAA.svg" },
+          { name: "Florida Department of Education", logoPath: "/accreditations-logo/Florida-Department-of-Education.svg" },
         ]}
         trustedCompaniesTitle="International and Local Accreditations and Qualifications"
       />

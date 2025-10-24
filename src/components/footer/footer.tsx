@@ -101,9 +101,9 @@ export function Footer() {
                         <Image
                             src="/schools-logo/crimson-academies-logo-black.svg"
                             alt="Crimson Academies Logo"
-                            width={140}
-                            height={140}
-                            className="h-32 w-32 group-hover:scale-105 transition-transform"
+                            width={200}
+                            height={200}
+                            className="h-48 w-48 group-hover:scale-105 transition-transform"
                         />
                         <h4 className="font-medium text-lg text-foreground text-center group-hover:text-primary transition-colors">
                             Crimson Academies
