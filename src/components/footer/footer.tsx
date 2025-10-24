@@ -106,7 +106,7 @@ export function Footer() {
                             <h3 className="font-semibold text-foreground">Crimson Academies</h3>
                         </div>
                         <p className="text-sm text-muted-foreground">
-                            Reinventing world-class education to unlock students' limitless potential. Empowering learners across virtual and hybrid campuses worldwide.
+                            Reinventing world-class education to unlock students&apos; limitless potential. Empowering learners across virtual and hybrid campuses worldwide.
                         </p>
                         <Link
                             href="https://www.crimsonacademies.nz"
