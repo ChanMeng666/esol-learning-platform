@@ -45,7 +45,8 @@ The **AI-Powered ESOL Learning Platform** is a comprehensive solution for Englis
 - 🎯 **Dual Progress Tracking** - Separate CEFR and NZCEL progress systems
 - 🏆 **Gamification System** - Points, badges, streaks, and progressive achievements
 - 📊 **Multi-Module Dashboard** - Unified view of progress across all learning paths
-- 🗄️ **Full Database Integration** - Neon PostgreSQL with **16 tables** for complete data tracking
+- 🗄️ **Full Database Integration** - Neon PostgreSQL with **43 tables** across 12 categories
+- 🏢 **Multi-Tenant Architecture** - Complete organization-based data isolation with 58+ Server Actions
 - 💾 **Intelligent Audio Caching** - 90%+ cost savings on TTS API calls
 - 🔐 **Secure Authentication** - Stack Auth with route protection
 - ☁️ **Cloud Storage** - Vercel Blob for audio files with CDN acceleration
@@ -499,32 +500,46 @@ npm run drizzle:push
 
 ### Database Architecture
 
-The platform uses **Neon PostgreSQL** (serverless) with **Drizzle ORM** for type-safe database queries. All database operations are performed through Next.js Server Actions with Stack Auth authentication.
+The platform uses **Neon PostgreSQL** (serverless) with **Drizzle ORM** for type-safe database queries. All database operations are performed through Next.js Server Actions with **multi-tenant support** and Stack Auth authentication.
+
+**Multi-Tenant Features**:
+- 🏢 Complete organization-based data isolation
+- 🔒 All 43 tables include `organization_id` column
+- ✅ 58+ Server Actions with automatic organization scoping
+- 🛡️ Zero risk of cross-tenant data leakage
 
 ```mermaid
 graph LR
     A[Client Component] -->|calls| B[Server Action]
     B -->|authenticates| C[Stack Auth]
-    C -->|validates| D[fetchWithDrizzle]
-    D -->|queries| E[Drizzle ORM]
-    E -->|executes| F[Neon PostgreSQL]
+    C -->|retrieves| D[Enhanced User + Org]
+    D -->|provides context| E[fetchWithDrizzle]
+    E -->|auto-scopes| F[Drizzle ORM]
+    F -->|organization_id filter| G[Neon PostgreSQL]
 
     style B fill:#a855f7,stroke:#7c3aed,color:#fff
     style C fill:#10b981,stroke:#059669,color:#fff
-    style E fill:#ec4899,stroke:#db2777,color:#fff
-    style F fill:#f59e0b,stroke:#d97706,color:#fff
+    style D fill:#3b82f6,stroke:#2563eb,color:#fff
+    style F fill:#ec4899,stroke:#db2777,color:#fff
+    style G fill:#f59e0b,stroke:#d97706,color:#fff
 ```
 
-### Database Tables (16 Total)
+### Database Tables (43 Total - 12 Categories)
 
-| Category | Tables | Purpose |
-|----------|--------|---------|
-| **User Progress - NZCEL** | `user_progress`, `completed_questions`, `badges`, `achievements` | Track NZCEL learning progress and gamification |
-| **User Progress - CEFR & Modules** | `cefr_progress`, `module_progress` | Track CEFR progress and module statistics |
-| **CopilotKit Chat** | `copilot_conversations`, `copilot_messages` | Persist AI chat history |
-| **Audio Management** | `audio_files`, `question_audio_cache`, `user_recordings`, `transcriptions` | Manage audio files and TTS caching |
-| **Practice Sessions** | `practice_sessions`, `session_answers` | Track practice sessions |
-| **Conversation Practice** | `conversation_sessions`, `conversation_turns` | Track conversation practice |
+| Category | Tables | Purpose | Multi-Tenant |
+|----------|--------|---------|--------------|
+| **Organizations & User Management** (5) | `organizations`, `users`, `departments`, `classes`, `grade_level` | Multi-tenant infrastructure and user hierarchy | ✅ Core |
+| **User Progress - NZCEL** (4) | `user_progress`, `completed_questions`, `badges`, `achievements` | Track NZCEL learning progress and gamification | ✅ |
+| **User Progress - CEFR & Modules** (2) | `cefr_progress`, `module_progress` | Track CEFR progress and module statistics | ✅ |
+| **CopilotKit Chat** (2) | `copilot_conversations`, `copilot_messages` | Persist AI chat history | ✅ |
+| **Audio Management** (4) | `audio_files`, `question_audio_cache`, `user_recordings`, `transcriptions` | Manage audio files and TTS caching | ✅ |
+| **Practice Sessions** (2) | `practice_sessions`, `session_answers` | Track practice sessions | ✅ |
+| **Conversation Practice** (2) | `conversation_sessions`, `conversation_turns` | Track conversation practice | ✅ |
+| **Education & Class Management** (7) | `assignments`, `assignment_submissions`, `student_class_enrollments`, `teacher_class_assignments`, `class_schedules`, `attendance_records`, `student_notes` | Classroom management and student tracking | ✅ |
+| **Diagnostic Testing** (4) | `diagnostic_tests`, `diagnostic_test_sections`, `diagnostic_test_questions`, `diagnostic_test_results` | Standardized testing and assessments | ✅ |
+| **Gamification & Engagement** (4) | `leaderboards`, `learning_paths`, `learning_path_milestones`, `user_learning_paths` | Competitive features and learning paths | ✅ |
+| **Permissions & Access Control** (3) | `organization_question_access`, `organization_settings`, `user_roles` | Fine-grained permissions and configuration | ✅ |
+| **Notifications & Communication** (2) | `notifications`, `feedback_requests` | User notifications and feedback | ✅ |
 
 ### Key Features
 
@@ -546,9 +561,13 @@ The platform implements a sophisticated audio caching system to minimize OpenAI 
 
 #### 🔐 Security & Privacy
 
+- **Multi-tenant isolation**: Complete organization-based data separation (43 tables)
 - **Stack Auth integration**: All Server Actions require authentication
-- **User data isolation**: All queries scoped to authenticated user
+- **Enhanced user system**: Links Stack Auth IDs to organizations
+- **Automatic scoping**: All queries filtered by `organization_id`
+- **User data isolation**: Queries scoped to both user and organization
 - **Encrypted at rest**: Neon PostgreSQL with automatic encryption
+- **Zero cross-tenant leakage**: Impossible to access data from other organizations
 
 For detailed database schema documentation, see [DATABASE_ARCHITECTURE.md](DATABASE_ARCHITECTURE.md).
 
@@ -590,8 +609,8 @@ nzcel-prep/
 │   │
 │   ├── lib/
 │   │   ├── db/
-│   │   │   ├── schema.ts           # Drizzle schema (16 tables) ✨
-│   │   │   └── index.ts            # Database client
+│   │   │   ├── schema.ts           # Drizzle schema (43 tables, multi-tenant) ✨
+│   │   │   └── index.ts            # fetchWithDrizzle helper (organization context)
 │   │   ├── blob/
 │   │   │   └── audio-storage.ts    # Vercel Blob utilities
 │   │   ├── store/
@@ -1002,7 +1021,7 @@ Comprehensive documentation is available for developers and contributors:
 - **[README.md](README.md)** - This file (overview, features, getting started)
 
 ### Quick Links
-- [Database Schema](/src/lib/db/schema.ts) - Drizzle ORM schema (14 tables)
+- [Database Schema](/src/lib/db/schema.ts) - Drizzle ORM schema (43 tables, multi-tenant)
 - [Server Actions](/src/actions/) - All database operations
 - [API Routes](/src/app/api/openai/) - OpenAI integrations
 

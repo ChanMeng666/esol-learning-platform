@@ -10,9 +10,16 @@ This document provides a comprehensive overview of the NZCEL Prep Platform's dat
 - **ORM**: Drizzle ORM v0.44.6
 - **Authentication**: Stack Auth v2.8.43
 - **File Storage**: Vercel Blob v2.0.0
-- **Total Tables**: **16 tables** across 6 categories
-- **Key Feature**: Intelligent audio caching system to minimize TTS API costs
-- **Multi-Module Support**: Parallel progress tracking for NZCEL and CEFR learning paths
+- **Total Tables**: **43 tables** across 12 categories
+- **Architecture**: Multi-tenant with organization-based data isolation
+- **Data Isolation**: All tables include `organization_id` column for tenant separation
+- **Server Actions**: 58+ functions with complete multi-tenant support
+- **Key Features**:
+  - Intelligent audio caching system to minimize TTS API costs
+  - Multi-module support with parallel progress tracking (NZCEL, CEFR)
+  - Education management (assignments, classes, attendance)
+  - Diagnostic testing and assessment
+  - Gamification with leaderboards and learning paths
 
 ---
 
@@ -34,7 +41,14 @@ This document provides a comprehensive overview of the NZCEL Prep Platform's dat
 
 ```mermaid
 mindmap
-  root((ESOL Platform Database))
+  root((ESOL Platform Database
+43 Tables - Multi-Tenant))
+    Organizations & User Management
+      organizations
+      users
+      departments
+      classes
+      grade_level
     User Progress - NZCEL
       user_progress
       completed_questions
@@ -57,24 +71,61 @@ mindmap
     Conversation Practice
       conversation_sessions
       conversation_turns
+    Education & Class Management
+      assignments
+      assignment_submissions
+      student_class_enrollments
+      teacher_class_assignments
+      class_schedules
+      attendance_records
+      student_notes
+    Diagnostic Testing
+      diagnostic_tests
+      diagnostic_test_sections
+      diagnostic_test_questions
+      diagnostic_test_results
+    Gamification & Engagement
+      leaderboards
+      learning_paths
+      learning_path_milestones
+      user_learning_paths
+    Permissions & Access Control
+      organization_question_access
+      organization_settings
+      user_roles
+    Notifications & Communication
+      notifications
+      feedback_requests
 ```
 
 ### Tables by Category
 
-| Category | Tables | Primary Purpose |
-|----------|--------|-----------------|
-| **User Progress - NZCEL** | `user_progress`, `completed_questions`, `badges`, `achievements` | Track NZCEL learning progress, points, streaks, and achievements |
-| **User Progress - CEFR & Modules** | `cefr_progress`, `module_progress` | Track CEFR progress and multi-module statistics |
-| **CopilotKit Chat History** | `copilot_conversations`, `copilot_messages` | Persist AI chat conversations across all contexts |
-| **Audio File Management** | `audio_files`, `question_audio_cache`, `user_recordings`, `transcriptions` | Manage audio files, TTS caching, and speech-to-text |
-| **Practice Sessions** | `practice_sessions`, `session_answers` | Track individual practice sessions and answers |
-| **Conversation Practice** | `conversation_sessions`, `conversation_turns` | Track real-time conversation practice sessions |
+| Category | Tables | Primary Purpose | Multi-Tenant |
+|----------|--------|-----------------|--------------|
+| **Organizations & User Management** (5) | `organizations`, `users`, `departments`, `classes`, `grade_level` | Multi-tenant infrastructure and user hierarchy | ✅ Core |
+| **User Progress - NZCEL** (4) | `user_progress`, `completed_questions`, `badges`, `achievements` | Track NZCEL learning progress, points, streaks, and achievements | ✅ |
+| **User Progress - CEFR & Modules** (2) | `cefr_progress`, `module_progress` | Track CEFR progress and multi-module statistics | ✅ |
+| **CopilotKit Chat History** (2) | `copilot_conversations`, `copilot_messages` | Persist AI chat conversations across all contexts | ✅ |
+| **Audio File Management** (4) | `audio_files`, `question_audio_cache`, `user_recordings`, `transcriptions` | Manage audio files, TTS caching, and speech-to-text | ✅ |
+| **Practice Sessions** (2) | `practice_sessions`, `session_answers` | Track individual practice sessions and answers | ✅ |
+| **Conversation Practice** (2) | `conversation_sessions`, `conversation_turns` | Track real-time conversation practice sessions | ✅ |
+| **Education & Class Management** (7) | `assignments`, `assignment_submissions`, `student_class_enrollments`, `teacher_class_assignments`, `class_schedules`, `attendance_records`, `student_notes` | Classroom management, assignments, and student tracking | ✅ |
+| **Diagnostic Testing** (4) | `diagnostic_tests`, `diagnostic_test_sections`, `diagnostic_test_questions`, `diagnostic_test_results` | Standardized testing and diagnostic assessments | ✅ |
+| **Gamification & Engagement** (4) | `leaderboards`, `learning_paths`, `learning_path_milestones`, `user_learning_paths` | Competitive features and structured learning paths | ✅ |
+| **Permissions & Access Control** (3) | `organization_question_access`, `organization_settings`, `user_roles` | Fine-grained permissions and organization configuration | ✅ |
+| **Notifications & Communication** (2) | `notifications`, `feedback_requests` | User notifications and feedback collection | ✅ |
+
+**Note**: All 43 tables include `organization_id` column for multi-tenant data isolation
 
 ---
 
 ## Entity Relationship Diagram
 
-### Complete Database ERD
+> **Note**: This ERD focuses on the core learning and session tracking tables (16 tables). The complete database includes 43 tables across 12 categories, with all tables implementing multi-tenant isolation via `organization_id`. See [Tables by Category](#tables-by-category) for the full list.
+
+### Core Learning & Session Tracking ERD
+
+**Multi-Tenant Note**: All tables shown include an `organization_id` column (not displayed in ERD for clarity). All queries are automatically scoped to the user's organization via `fetchWithDrizzle()`.
 
 ```mermaid
 erDiagram
@@ -612,7 +663,13 @@ Tracks overall usage statistics for each learning module/path.
 
 ### Overview
 
-All database operations are performed through Next.js Server Actions, ensuring security and type safety.
+All database operations are performed through Next.js Server Actions with **multi-tenant support**, ensuring security, type safety, and complete data isolation.
+
+**Key Features**:
+- 58+ Server Actions across 8 files
+- All actions enforce organization-level data isolation
+- Automatic `organizationId` injection via `fetchWithDrizzle()`
+- Type-safe database operations with Drizzle ORM
 
 ```mermaid
 graph TB
@@ -620,24 +677,28 @@ graph TB
         A[React Component]
     end
 
-    subgraph "Server Actions"
+    subgraph "Server Actions (58+ Functions)"
         B[audio.ts]
         C[recordings.ts]
         D[copilot-chat.ts]
         E[sessions.ts]
         F[user-progress.ts]
+        G[cefr-progress.ts]
+        H[module-stats.ts]
+        I[diagnostics.ts]
     end
 
-    subgraph "Database Layer"
-        G[fetchWithDrizzle]
-        H[Stack Auth]
-        I[Drizzle ORM]
+    subgraph "Multi-Tenant Database Layer"
+        J[fetchWithDrizzle<br/>organizationId injection]
+        K[Stack Auth]
+        L[Enhanced Users Table<br/>Stack ID → Org mapping]
+        M[Drizzle ORM]
     end
 
     subgraph "External Services"
-        J[Neon PostgreSQL]
-        K[Vercel Blob]
-        L[OpenAI APIs]
+        N[Neon PostgreSQL<br/>43 Tables]
+        O[Vercel Blob]
+        P[OpenAI APIs]
     end
 
     A -->|calls| B
@@ -645,68 +706,136 @@ graph TB
     A -->|calls| D
     A -->|calls| E
     A -->|calls| F
+    A -->|calls| G
+    A -->|calls| H
+    A -->|calls| I
 
-    B --> G
-    C --> G
-    D --> G
-    E --> G
-    F --> G
-
-    G --> H
-    G --> I
-    H --> I
+    B --> J
+    C --> J
+    D --> J
+    E --> J
+    F --> J
+    G --> J
+    H --> J
     I --> J
 
-    B --> K
-    C --> K
-    B --> L
-    C --> L
+    J --> K
+    J --> L
+    K --> L
+    L --> M
+    M --> N
+
+    B --> O
+    C --> O
+    B --> P
+    C --> P
 
     style B fill:#a855f7,stroke:#7c3aed,color:#fff
     style C fill:#a855f7,stroke:#7c3aed,color:#fff
     style D fill:#a855f7,stroke:#7c3aed,color:#fff
     style E fill:#a855f7,stroke:#7c3aed,color:#fff
     style F fill:#a855f7,stroke:#7c3aed,color:#fff
-    style G fill:#10b981,stroke:#059669,color:#fff
+    style G fill:#a855f7,stroke:#7c3aed,color:#fff
+    style H fill:#a855f7,stroke:#7c3aed,color:#fff
+    style I fill:#a855f7,stroke:#7c3aed,color:#fff
+    style J fill:#10b981,stroke:#059669,color:#fff
 ```
 
 ### Server Actions Catalog
 
-| File | Primary Functions | Purpose |
-|------|------------------|---------|
-| **`actions/audio.ts`** | `getQuestionAudio()`, `generateTTS()`, `updateAudioAccessCount()`, `getAudioCacheStats()` | Audio generation, intelligent caching, cache statistics |
-| **`actions/recordings.ts`** | `saveUserRecording()`, `getUserRecordings()`, `getRecordingById()`, `getSessionRecordings()` | User voice recording management and retrieval |
-| **`actions/copilot-chat.ts`** | `getOrCreateConversation()`, `saveChatMessage()`, `getChatHistory()`, `getUserConversations()` | CopilotKit chat history persistence |
-| **`actions/sessions.ts`** | `createPracticeSession()`, `saveSessionAnswer()`, `completePracticeSession()`, `createConversationSession()`, `saveConversationTurn()` | Practice and conversation session tracking |
-| **`actions/user-progress.ts`** | `getUserProgress()`, `updateSkillProgress()`, `submitAnswer()`, `awardBadge()`, `getAchievements()` | NZCEL user progress, gamification, achievements |
-| **`actions/cefr-progress.ts`** | `getCEFRProgress()`, `updateCEFRSkillProgress()`, `setCEFRLevel()`, `setCEFRTargetLevel()`, `incrementCEFRStats()`, `resetCEFRProgress()` | CEFR progress tracking and management |
-| **`actions/module-stats.ts`** | `getModuleStats()`, `updateModuleStats()`, `getAllModuleStats()` | Multi-module statistics and dashboard data |
-| **`actions/diagnostics.ts`** | System diagnostic and debugging utilities | Development and troubleshooting tools |
+| File | Functions | Purpose | Multi-Tenant |
+|------|-----------|---------|--------------|
+| **`actions/audio.ts`** (7 functions) | `getQuestionAudio()`, `generateTTS()`, `updateAudioAccessCount()`, `getAudioCacheStats()`, `getAllQuestionAudio()`, `getUserQuestionAudioHistory()`, `deactivateQuestionAudioCache()` | Audio generation, intelligent caching, cache statistics | ✅ All scoped |
+| **`actions/recordings.ts`** (7 functions) | `saveUserRecording()`, `getUserRecordings()`, `getRecordingById()`, `getSessionRecordings()`, `saveTranscription()`, `getUserRecordingsWithFilters()`, `deleteUserRecording()` | User voice recording management and retrieval | ✅ All scoped |
+| **`actions/copilot-chat.ts`** (8 functions) | `getOrCreateConversation()`, `saveChatMessage()`, `getChatHistory()`, `getUserConversations()`, `getConversationWithMessages()`, `getConversationsByContext()`, `deleteConversation()`, `updateConversationTitle()` | CopilotKit chat history persistence | ✅ All scoped |
+| **`actions/sessions.ts`** (12 functions) | `createPracticeSession()`, `saveSessionAnswer()`, `completePracticeSession()`, `getPracticeSessionWithAnswers()`, `getRecentPracticeSessions()`, `createConversationSession()`, `saveConversationTurn()`, `completeConversationSession()`, `getConversationSessionWithTurns()`, `getRecentConversationSessions()`, `getPracticeSessionsWithFilters()`, `getConversationSessionsWithFilters()` | Practice and conversation session tracking | ✅ All scoped |
+| **`actions/user-progress.ts`** (11 functions) | `getUserProgress()`, `updateSkillProgress()`, `submitAnswer()`, `awardBadge()`, `getAchievements()`, `markAchievementComplete()`, `addBadge()`, `getGamificationStats()`, `resetProgress()`, `getUserBadges()`, `updateUserPreferences()` | NZCEL user progress, gamification, achievements | ✅ All scoped |
+| **`actions/cefr-progress.ts`** (6 functions) | `getCEFRProgress()`, `updateCEFRSkillProgress()`, `setCEFRLevel()`, `setCEFRTargetLevel()`, `incrementCEFRStats()`, `resetCEFRProgress()` | CEFR progress tracking and management | ✅ All scoped |
+| **`actions/module-stats.ts`** (5 functions) | `getModuleStats()`, `updateModuleStats()`, `getAllModuleStats()`, `getSpeakingStats()`, `getGeneralPracticeStats()` | Multi-module statistics and dashboard data | ✅ All scoped |
+| **`actions/diagnostics.ts`** (2 functions) | `getUserDiagnostics()`, `createSampleData()` | System diagnostic and debugging utilities | ✅ All scoped |
 
-### Authentication Flow
+**Total**: 58 functions across 8 files, all with complete multi-tenant support
 
-All Server Actions use `fetchWithDrizzle()` helper which:
+### Multi-Tenant Authentication Flow
 
-1. Authenticates user via Stack Auth
-2. Extracts `userId` from session
-3. Scopes all database queries to authenticated user
-4. Returns user-specific data only
+All Server Actions use the enhanced `fetchWithDrizzle()` helper which implements complete multi-tenant isolation:
 
+**Process Flow**:
+1. Authenticates user via Stack Auth (`stackServerApp.getUser()`)
+2. Retrieves enhanced user record from `users` table (links Stack Auth ID to organization)
+3. Provides context: `{ userId, organizationId, enhancedUser }`
+4. **All database queries automatically scoped to user's organization**
+5. Returns organization-scoped data only
+
+**Enhanced Implementation**:
 ```typescript
 // src/lib/db/index.ts
 import { stackServerApp } from "@/lib/stack";
 import { drizzle } from "drizzle-orm/neon-http";
+import { eq } from "drizzle-orm";
+import * as schema from "./schema";
 
 export async function fetchWithDrizzle<T>(
-  callback: (db: ReturnType<typeof drizzle>, context: { userId: string }) => Promise<T>
+  callback: (
+    db: DrizzleDb,
+    context: {
+      userId: string;
+      organizationId: bigint;
+      enhancedUser: EnhancedUser;
+    }
+  ) => Promise<T>
 ): Promise<T> {
+  // 1. Authenticate with Stack Auth
   const user = await stackServerApp.getUser();
   if (!user) throw new Error("Unauthorized");
 
   const db = drizzle(neon(process.env.DATABASE_URL!), { schema });
-  return callback(db, { userId: user.id });
+
+  // 2. Get enhanced user with organization
+  const enhancedUser = await db.query.users.findFirst({
+    where: eq(schema.users.stackUserId, user.id),
+  });
+
+  if (!enhancedUser) {
+    throw new Error("Enhanced user not found");
+  }
+
+  // 3. Provide organization context
+  return callback(db, {
+    userId: user.id,
+    organizationId: enhancedUser.organizationId,
+    enhancedUser,
+  });
 }
 ```
+
+**Multi-Tenant Pattern in Server Actions**:
+```typescript
+export async function exampleServerAction() {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    // Validate organization context
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
+    // All queries MUST include organizationId filter
+    const data = await db.query.tableName.findMany({
+      where: and(
+        eq(schema.tableName.userId, userId),
+        eq(schema.tableName.organizationId, organizationId)  // REQUIRED
+      ),
+    });
+
+    return data;
+  });
+}
+```
+
+**Security Benefits**:
+- Complete data isolation between organizations
+- No risk of cross-tenant data leakage
+- Automatic enforcement (cannot be bypassed)
+- Type-safe with TypeScript
 
 ---
 

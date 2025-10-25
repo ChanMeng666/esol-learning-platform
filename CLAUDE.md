@@ -14,7 +14,7 @@ A comprehensive **AI-Powered ESOL Learning Platform** built with Next.js 15, Rea
 
 The platform features a complete backend with database persistence, intelligent audio caching, user authentication, cloud storage, and **parallel progress tracking** for multiple learning systems (NZCEL and CEFR).
 
-**Architecture**: Full-stack with Next.js Server Actions, Neon PostgreSQL (16 tables), Stack Auth authentication, Vercel Blob storage, and OpenAI integrations (TTS, Whisper, GPT-4, Realtime API).
+**Architecture**: Full-stack with Next.js Server Actions, Neon PostgreSQL (43 tables), Stack Auth authentication, Vercel Blob storage, and OpenAI integrations (TTS, Whisper, GPT-4, Realtime API). **Multi-tenant architecture** with organization-based data isolation.
 
 ## Development Commands
 
@@ -50,22 +50,45 @@ The application uses a **Neon PostgreSQL** serverless database with **Drizzle OR
 - **Production Migrations**: Always use `drizzle:generate` + `drizzle:migrate` workflow
 - **No Automated Schema Push**: `npx drizzle-kit push` cannot be automated via Server Actions or API routes
 
-**Schema Location**: `src/lib/db/schema.ts` (512 lines, **16 tables**)
+**Schema Location**: `src/lib/db/schema.ts` (1371 lines, **43 tables**)
 
-**Key Tables**:
-1. **User Progress - NZCEL** (4 tables): `user_progress`, `completed_questions`, `badges`, `achievements`
-2. **User Progress - CEFR & Modules** (2 tables): `cefr_progress`, `module_progress` ✨
-3. **CopilotKit Chat** (2 tables): `copilot_conversations`, `copilot_messages`
-4. **Audio Management** (4 tables): `audio_files`, `question_audio_cache`, `user_recordings`, `transcriptions`
-5. **Practice Sessions** (2 tables): `practice_sessions`, `session_answers`
-6. **Conversation Practice** (2 tables): `conversation_sessions`, `conversation_turns`
+**Key Tables** (Organized by Category):
+1. **Organizations & User Management** (5 tables): `organizations`, `users`, `departments`, `classes`, `grade_level`
+2. **User Progress - NZCEL** (4 tables): `user_progress`, `completed_questions`, `badges`, `achievements`
+3. **User Progress - CEFR & Modules** (2 tables): `cefr_progress`, `module_progress`
+4. **CopilotKit Chat** (2 tables): `copilot_conversations`, `copilot_messages`
+5. **Audio Management** (4 tables): `audio_files`, `question_audio_cache`, `user_recordings`, `transcriptions`
+6. **Practice Sessions** (2 tables): `practice_sessions`, `session_answers`
+7. **Conversation Practice** (2 tables): `conversation_sessions`, `conversation_turns`
+8. **Education & Class Management** (7 tables): `assignments`, `assignment_submissions`, `student_class_enrollments`, `teacher_class_assignments`, `class_schedules`, `attendance_records`, `student_notes`
+9. **Diagnostic Testing** (4 tables): `diagnostic_tests`, `diagnostic_test_sections`, `diagnostic_test_questions`, `diagnostic_test_results`
+10. **Gamification & Engagement** (4 tables): `leaderboards`, `learning_paths`, `learning_path_milestones`, `user_learning_paths`
+11. **Permissions & Access Control** (3 tables): `organization_question_access`, `organization_settings`, `user_roles`
+12. **Notifications & Communication** (2 tables): `notifications`, `feedback_requests`
 
-**Authentication**: All Server Actions use `fetchWithDrizzle()` helper from `src/lib/db/index.ts` which:
+**Multi-Tenant Authentication & Data Isolation**: All Server Actions use `fetchWithDrizzle()` helper from `src/lib/db/index.ts` which:
 - Authenticates user via Stack Auth (`stackServerApp.getUser()`)
-- Extracts `userId` from session
-- Scopes all database queries to authenticated user
+- Retrieves enhanced user record from `users` table (links Stack Auth ID to organization)
+- Provides context: `{ userId, organizationId, enhancedUser }`
+- **Automatically scopes ALL database queries to user's organization**
+- Enforces data isolation between organizations (shared database, organization-based filtering)
 
-**Important**: All database operations MUST go through Server Actions in `src/actions/`. Never query the database directly from client components.
+**Multi-Tenant Pattern**:
+```typescript
+export async function fetchWithDrizzle<T>(
+  callback: (db: DrizzleDb, context: {
+    userId: string;
+    organizationId: bigint;
+    enhancedUser: EnhancedUser;
+  }) => Promise<T>
+): Promise<T>
+```
+
+**Critical Requirements**:
+1. All Server Actions MUST validate `organizationId` exists: `if (!organizationId) throw new Error("Organization context required")`
+2. All INSERT operations MUST include `organizationId` field
+3. All SELECT/UPDATE/DELETE operations MUST filter by `organizationId` using `and()` helper
+4. Never query the database directly from client components—always use Server Actions in `src/actions/`
 
 ### State Management: Zustand with LocalStorage Cache
 
@@ -157,11 +180,45 @@ All database operations are performed through Next.js Server Actions located in 
 - `updateModuleStats()` - Updates module usage stats (time, questions, points)
 - `getAllModuleStats()` - Fetches stats for all modules (for dashboard overview)
 
+**Multi-Tenant Implementation Pattern** (Applied to all 58+ Server Actions):
+```typescript
+export async function exampleServerAction() {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    // 1. Validate organization context
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
+    // 2. INSERT - include organizationId
+    const [record] = await db
+      .insert(schema.tableName)
+      .values({
+        organizationId,  // REQUIRED
+        userId,
+        // ... other fields
+      })
+      .returning();
+
+    // 3. SELECT/UPDATE/DELETE - filter by organizationId
+    const data = await db.query.tableName.findFirst({
+      where: and(
+        eq(schema.tableName.userId, userId),
+        eq(schema.tableName.organizationId, organizationId)  // REQUIRED
+      ),
+    });
+
+    return data;
+  });
+}
+```
+
 **Important Patterns**:
 1. All Server Actions use `fetchWithDrizzle()` for authenticated database access
-2. Actions return user-specific data only (scoped by userId)
-3. Error handling with try/catch and appropriate error messages
-4. TypeScript types for all parameters and return values
+2. **All functions validate `organizationId` exists** (58+ validations implemented)
+3. Actions return organization-scoped data only (isolated by `organizationId`)
+4. Error handling with try/catch and descriptive error messages
+5. TypeScript types for all parameters and return values
+6. **All 43 tables include `organization_id` column** for multi-tenant data isolation
 
 ### Vercel Blob Storage: Audio File Management
 
@@ -295,8 +352,8 @@ src/
 │   └── providers.tsx               # App-level providers
 ├── lib/
 │   ├── db/
-│   │   ├── schema.ts               # Drizzle schema (16 tables, 512 lines) ✨
-│   │   └── index.ts                # fetchWithDrizzle helper
+│   │   ├── schema.ts               # Drizzle schema (43 tables, 1371 lines) ✨
+│   │   └── index.ts                # fetchWithDrizzle helper (multi-tenant)
 │   ├── blob/
 │   │   └── audio-storage.ts        # Vercel Blob utilities
 │   ├── store/                      # Zustand state management
@@ -435,19 +492,25 @@ COPILOT_CLOUD_API_KEY="..."  # Optional, for CopilotKit Cloud
 
 1. **Never query database directly from client**: Always use Server Actions in `src/actions/`
 2. **Always use fetchWithDrizzle**: Never create raw Drizzle client instances
-3. **Audio caching**: Use `getQuestionAudio()` instead of calling TTS API directly
-4. **User data isolation**: Server Actions automatically scope to authenticated user
-5. **Zustand is cache only**: Server Actions are the source of truth
-6. **Voice recording state management**: Use refs for async callback values
-7. **Achievement logic**: Already auto-runs on `submitAnswer()`, don't duplicate
-8. **CopilotKit context**: Changes to NZCEL data structure require updating `copilot-context.tsx`
-9. **API routes**: All OpenAI routes should use `getOpenAIClient()` helper
-10. **Transcription edge cases**: Handle empty/null audio blobs gracefully
-11. **Database migrations**:
+3. **Multi-tenant requirements** (⚠️ CRITICAL):
+   - All Server Actions MUST validate `organizationId`: `if (!organizationId) throw new Error("Organization context required")`
+   - All INSERT operations MUST include `organizationId` field
+   - All queries MUST filter by `organizationId` using `and(eq(schema.table.organizationId, organizationId))`
+   - Never assume single-tenant—all data is organization-scoped
+4. **Audio caching**: Use `getQuestionAudio()` instead of calling TTS API directly
+5. **Organization data isolation**: Server Actions automatically scope to user's organization (not just userId)
+6. **Zustand is cache only**: Server Actions are the source of truth
+7. **Voice recording state management**: Use refs for async callback values
+8. **Achievement logic**: Already auto-runs on `submitAnswer()`, don't duplicate
+9. **CopilotKit context**: Changes to NZCEL data structure require updating `copilot-context.tsx`
+10. **API routes**: All OpenAI routes should use `getOpenAIClient()` helper
+11. **Transcription edge cases**: Handle empty/null audio blobs gracefully
+12. **Database migrations**:
     - Development: Use `npm run drizzle:push` (requires manual terminal execution)
     - Production: Use `drizzle:generate` + `drizzle:migrate` workflow
     - ⚠️ CRITICAL: `drizzle:push` CANNOT be automated via Server Actions or API routes
     - Database: Neon PostgreSQL (serverless) with Drizzle ORM
+    - All 43 tables have `organization_id` column for multi-tenant isolation
 
 ## UI & Styling
 
@@ -460,11 +523,14 @@ COPILOT_CLOUD_API_KEY="..."  # Optional, for CopilotKit Cloud
 ## Additional Notes
 
 - The platform is **full-stack** with complete backend (database, authentication, file storage)
+- **Multi-tenant architecture** with organization-based data isolation (43 tables, all scoped by `organization_id`)
 - **Multi-module architecture** supports parallel learning paths (NZCEL, CEFR, Speaking, Scenarios)
 - **Dual progress tracking**: NZCEL and CEFR systems operate independently but share gamification
+- **Enhanced user system**: Links Stack Auth IDs to organizations via `users` table for multi-tenant support
 - User data persists across devices via cloud database (Neon PostgreSQL)
+- **Complete data isolation**: All 58+ Server Actions enforce organization-level filtering
 - Audio caching reduces API costs by 90%+ for repeated questions
-- All user recordings and transcriptions are permanently stored
+- All user recordings and transcriptions are permanently stored (organization-scoped)
 - Complete session tracking enables learning analytics across all modules
 - **AI Speaking Coach** uses OpenAI Realtime API (GA) for natural two-way conversations
 - Dashboard provides unified view of progress across all learning paths
@@ -472,6 +538,7 @@ COPILOT_CLOUD_API_KEY="..."  # Optional, for CopilotKit Cloud
 - Voice features require HTTPS in production (browser security)
 - Database migrations should be tested in development before production deployment
 - **Module system** allows easy addition of new learning paths (IELTS, TOEFL planned)
+- **Education features**: Assignments, class management, diagnostic testing, attendance tracking (all multi-tenant)
 
 ## Database Documentation
 
