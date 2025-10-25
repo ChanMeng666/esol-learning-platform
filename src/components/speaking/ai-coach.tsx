@@ -473,7 +473,7 @@ export function AISpeakingCoach() {
                 {messages.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                     <DotLottieReact
-                      src="/realtime-speaking.lottie"
+                      src="/animations/realtime-speaking.lottie"
                       loop
                       autoplay
                       style={{ width: 180, height: 180 }}

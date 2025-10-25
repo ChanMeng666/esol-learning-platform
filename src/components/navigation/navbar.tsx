@@ -99,7 +99,7 @@ export function Navbar() {
                     {/* Logo - Clickable to navigate to homepage */}
                     <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
                         <Image
-                            src="/nzcel-prep-logo.svg"
+                            src="/images/brand/nzcel-prep-logo.svg"
                             alt="ESOL Platform Logo"
                             width={40}
                             height={40}
@@ -245,7 +245,7 @@ export function Navbar() {
                                     <SheetHeader>
                                         <div className="flex items-center gap-2 mb-2">
                                             <Image
-                                                src="/nzcel-prep-logo.svg"
+                                                src="/images/brand/nzcel-prep-logo.svg"
                                                 alt="ESOL Platform Logo"
                                                 width={32}
                                                 height={32}

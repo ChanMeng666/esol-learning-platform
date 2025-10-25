@@ -414,7 +414,7 @@ function PracticePageContent() {
               {!selectedSkill ? (
                 <div className="text-center py-20">
                   <DotLottieReact
-                    src="/learning.lottie"
+                    src="/animations/learning.lottie"
                     autoplay
                     loop
                     style={{ width: 300, height: 300, margin: '0 auto' }}

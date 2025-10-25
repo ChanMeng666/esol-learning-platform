@@ -87,7 +87,7 @@ function ConversationPageContent() {
             {/* Lottie Animation */}
             <div className="flex justify-center">
               <DotLottieReact
-                src="/speaking.lottie"
+                src="/animations/speaking.lottie"
                 autoplay
                 loop
                 style={{ width: 200, height: 200 }}

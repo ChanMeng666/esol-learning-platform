@@ -18,25 +18,25 @@ export function Footer() {
     const schools = [
         {
             name: 'Crimson AGE School',
-            logo: '/schools-logo/crimson-age-school.svg',
+            logo: '/images/schools/crimson-age-school.svg',
             description: 'On-campus learning, primary to high school, NZ and international curriculum',
             url: 'https://age.school.nz/',
         },
         {
             name: 'Crimson Global Academy',
-            logo: '/schools-logo/crimson-global-academy.svg',
+            logo: '/images/schools/crimson-global-academy.svg',
             description: 'Global private classes for 7-18yrs, international curriculum',
             url: 'https://www.crimsonglobalacademy.school/nz/',
         },
         {
             name: 'Mt Hobson Academy',
-            logo: '/schools-logo/mt-hobson-academy-black.svg',
+            logo: '/images/schools/mt-hobson-academy-black.svg',
             description: 'Online high school learning, NZ curriculum',
             url: 'https://www.mthobson.school.nz/',
         },
         {
             name: 'Aotearoa Infinite Academy',
-            logo: '/schools-logo/aotearoa-infinite-academy.svg',
+            logo: '/images/schools/aotearoa-infinite-academy.svg',
             description: 'Online high school, NZ curriculum',
             url: 'https://www.aotearoainfiniteacademy.school/',
         },
@@ -51,7 +51,7 @@ export function Footer() {
                     <div className="flex flex-col space-y-4">
                         <div className="flex items-center gap-3">
                             <Image
-                                src="/nzcel-prep-logo.svg"
+                                src="/images/brand/nzcel-prep-logo.svg"
                                 alt="ESOL Platform Logo"
                                 width={48}
                                 height={48}
@@ -99,7 +99,7 @@ export function Footer() {
                         className="flex flex-col items-center space-y-3 group"
                     >
                         <Image
-                            src="/schools-logo/crimson-academies-logo-black.svg"
+                            src="/images/schools/crimson-academies-logo-black.svg"
                             alt="Crimson Academies Logo"
                             width={200}
                             height={200}

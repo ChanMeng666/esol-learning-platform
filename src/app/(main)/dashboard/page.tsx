@@ -35,7 +35,7 @@ function DashboardPageContent() {
             {/* Dashboard Animation */}
             <div className="flex justify-center md:justify-end">
               <DotLottieReact
-                src="/dashboard.lottie"
+                src="/animations/dashboard.lottie"
                 autoplay
                 loop
                 style={{ width: 150, height: 150 }}

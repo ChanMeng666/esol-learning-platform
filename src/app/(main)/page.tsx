@@ -58,7 +58,7 @@ export default function HomePage() {
           <div className="mb-8">
             <div className="h-64 md:h-80 lg:h-96 w-full flex items-center justify-center">
               <img
-                src="/ai-speaking-coach.svg"
+                src="/images/illustrations/ai-speaking-coach.svg"
                 alt="AI Speaking Coach"
                 className="w-full h-full object-contain"
               />
@@ -92,7 +92,7 @@ export default function HomePage() {
           <div className="mb-8">
             <div className="h-64 md:h-80 lg:h-96 w-full flex items-center justify-center">
               <img
-                src="/nzcel-exam-prep.svg"
+                src="/images/illustrations/nzcel-exam-prep.svg"
                 alt="NZCEL Exam Preparation"
                 className="w-full h-full object-contain"
               />
@@ -126,7 +126,7 @@ export default function HomePage() {
           <div className="mb-8">
             <div className="h-64 md:h-80 lg:h-96 w-full flex items-center justify-center">
               <img
-                src="/general-practice.svg"
+                src="/images/illustrations/general-practice.svg"
                 alt="General English Practice"
                 className="w-full h-full object-contain"
               />
@@ -160,7 +160,7 @@ export default function HomePage() {
           <div className="mb-8">
             <div className="h-64 md:h-80 lg:h-96 w-full flex items-center justify-center opacity-60">
               <img
-                src="/scenario-learning.svg"
+                src="/images/illustrations/scenario-learning.svg"
                 alt="Scenario-based Learning"
                 className="w-full h-full object-contain"
               />
@@ -264,42 +264,42 @@ export default function HomePage() {
         trustedCompanies={[
           {
             name: "College Board - Advanced Placement",
-            logoPath: "/accreditations-logo/AP.svg",
+            logoPath: "/images/accreditations/AP.svg",
             description: "Accredited by the College Board to offer Advanced Placement (AP) curriculum."
           },
           {
             name: "Cambridge International School",
-            logoPath: "/accreditations-logo/Cambridge-International-School.svg",
+            logoPath: "/images/accreditations/Cambridge-International-School.svg",
             description: "Registered Cambridge International School."
           },
           {
             name: "Pearson Edexcel",
-            logoPath: "/accreditations-logo/Pearson-Edexcel.svg",
+            logoPath: "/images/accreditations/Pearson-Edexcel.svg",
             description: "Accredited by Pearson Edexcel to offer International GCSEs and A Levels."
           },
           {
             name: "NCEA",
-            logoPath: "/accreditations-logo/NCEA.svg",
+            logoPath: "/images/accreditations/NCEA.svg",
             description: "Offering NCEA Levels 1-3 in flexible online and in-person settings."
           },
           {
             name: "Western Association of Schools and Colleges",
-            logoPath: "/accreditations-logo/Western-Association-of-Schools-and-Colleges.svg",
+            logoPath: "/images/accreditations/Western-Association-of-Schools-and-Colleges.svg",
             description: "Accredited by WASC, the largest global accrediting schooling body."
           },
           {
             name: "Council of British International Schools",
-            logoPath: "/accreditations-logo/Council-of-British-International-Schools.svg",
+            logoPath: "/images/accreditations/Council-of-British-International-Schools.svg",
             description: "COBIS accredited member, a benchmark for top international schools."
           },
           {
             name: "NCAA",
-            logoPath: "/accreditations-logo/NCAA.svg",
+            logoPath: "/images/accreditations/NCAA.svg",
             description: "Offering accredited NCAA courses to support student athletes."
           },
           {
             name: "Florida Department of Education",
-            logoPath: "/accreditations-logo/Florida-Department-of-Education.svg",
+            logoPath: "/images/accreditations/Florida-Department-of-Education.svg",
             description: "Registered in Florida as a private school with the Department of Education."
           },
         ]}

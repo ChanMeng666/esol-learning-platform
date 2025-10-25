@@ -20,9 +20,9 @@ export const metadata: Metadata = {
   title: "ESOL Learning Platform - AI-Powered English Learning",
   description: "Master English with AI-powered learning platform. CEFR-aligned practice (A1-C2), NZCEL exam prep, real-time speaking coach, and adaptive learning for ESOL students.",
   icons: {
-    icon: "/nzcel-prep-logo.svg",
-    shortcut: "/nzcel-prep-logo.svg",
-    apple: "/nzcel-prep-logo.svg",
+    icon: "/images/brand/nzcel-prep-logo.svg",
+    shortcut: "/images/brand/nzcel-prep-logo.svg",
+    apple: "/images/brand/nzcel-prep-logo.svg",
   },
 };
 

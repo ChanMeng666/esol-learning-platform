@@ -543,9 +543,9 @@ COPILOT_CLOUD_API_KEY="..."  # Optional, for CopilotKit Cloud
 ## Database Documentation
 
 For comprehensive database architecture documentation, see:
-- **[DATABASE_ARCHITECTURE.md](DATABASE_ARCHITECTURE.md)** - Complete schema, ERD diagrams, Server Actions catalog, data flow, integration examples
-- **[DATABASE_SCHEMA_IMPLEMENTATION.md](DATABASE_SCHEMA_IMPLEMENTATION.md)** - Implementation guide with real-world integration examples
-- **[STACK_AUTH_INTEGRATION.md](STACK_AUTH_INTEGRATION.md)** - Stack Auth setup and migration guide
+- **[DATABASE_ARCHITECTURE.md](docs/architecture/DATABASE_ARCHITECTURE.md)** - Complete schema, ERD diagrams, Server Actions catalog, data flow, integration examples
+- **[DATABASE_SCHEMA_IMPLEMENTATION.md](docs/architecture/DATABASE_SCHEMA_IMPLEMENTATION.md)** - Implementation guide with real-world integration examples
+- **[STACK_AUTH_INTEGRATION.md](docs/guides/STACK_AUTH_INTEGRATION.md)** - Stack Auth setup and migration guide
 
 ## Development Guidelines
 
