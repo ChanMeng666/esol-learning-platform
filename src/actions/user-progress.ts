@@ -2,45 +2,62 @@
 
 import { fetchWithDrizzle } from "@/lib/db";
 import * as schema from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 /**
  * Get user progress data
+ * Multi-tenant: Scoped to user's organization
  */
 export async function getUserProgress() {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     const progress = await db.query.userProgress.findFirst({
-      where: eq(schema.userProgress.userId, userId),
+      where: and(
+        eq(schema.userProgress.userId, userId),
+        eq(schema.userProgress.organizationId, organizationId)
+      ),
     });
-    
+
     return progress;
   });
 }
 
 /**
  * Initialize user progress for first-time users
+ * Multi-tenant: Creates progress within user's organization
  */
 export async function initializeUserProgress() {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     // Check if user already has progress
     const existing = await db.query.userProgress.findFirst({
-      where: eq(schema.userProgress.userId, userId),
+      where: and(
+        eq(schema.userProgress.userId, userId),
+        eq(schema.userProgress.organizationId, organizationId)
+      ),
     });
-    
+
     if (existing) {
       return existing;
     }
-    
+
     // Create initial progress
     const [newProgress] = await db.insert(schema.userProgress).values({
+      organizationId,
       userId,
       currentLevel: "foundation",
     }).returning();
-    
+
     // Initialize default achievements
-    await initializeAchievements(userId);
-    
+    await initializeAchievements(userId, organizationId);
+
     revalidatePath("/dashboard");
     return newProgress;
   });
@@ -48,11 +65,13 @@ export async function initializeUserProgress() {
 
 /**
  * Initialize default achievements for a new user
+ * Multi-tenant: Creates achievements within user's organization
  */
-async function initializeAchievements(userId: string) {
+async function initializeAchievements(userId: string, organizationId: bigint) {
   return fetchWithDrizzle(async (db) => {
     const defaultAchievements = [
       {
+        organizationId,
         userId,
         achievementId: "first-question",
         title: "First Steps",
@@ -62,6 +81,7 @@ async function initializeAchievements(userId: string) {
         reward: 50,
       },
       {
+        organizationId,
         userId,
         achievementId: "ten-questions",
         title: "Getting Started",
@@ -71,6 +91,7 @@ async function initializeAchievements(userId: string) {
         reward: 100,
       },
       {
+        organizationId,
         userId,
         achievementId: "fifty-questions",
         title: "Dedicated Learner",
@@ -80,6 +101,7 @@ async function initializeAchievements(userId: string) {
         reward: 250,
       },
       {
+        organizationId,
         userId,
         achievementId: "hundred-questions",
         title: "NZCEL Master",
@@ -89,6 +111,7 @@ async function initializeAchievements(userId: string) {
         reward: 500,
       },
       {
+        organizationId,
         userId,
         achievementId: "seven-day-streak",
         title: "Week Warrior",
@@ -98,6 +121,7 @@ async function initializeAchievements(userId: string) {
         reward: 200,
       },
       {
+        organizationId,
         userId,
         achievementId: "perfect-score",
         title: "Perfectionist",
@@ -107,28 +131,36 @@ async function initializeAchievements(userId: string) {
         reward: 300,
       },
     ];
-    
+
     await db.insert(schema.achievements).values(defaultAchievements);
   });
 }
 
 /**
  * Update skill progress
+ * Multi-tenant: Updates progress within user's organization only
  */
 export async function updateSkillProgress(
-  skill: "listening" | "speaking" | "reading" | "writing", 
+  skill: "listening" | "speaking" | "reading" | "writing",
   value: number
 ) {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     const update = {
       [`${skill}Progress`]: Math.min(100, Math.max(0, value)),
       updatedAt: new Date(),
     };
-    
+
     await db.update(schema.userProgress)
       .set(update)
-      .where(eq(schema.userProgress.userId, userId));
-    
+      .where(and(
+        eq(schema.userProgress.userId, userId),
+        eq(schema.userProgress.organizationId, organizationId)
+      ));
+
     revalidatePath("/dashboard");
     revalidatePath("/practice");
   });
@@ -136,16 +168,24 @@ export async function updateSkillProgress(
 
 /**
  * Update current level
+ * Multi-tenant: Updates level within user's organization only
  */
 export async function updateCurrentLevel(level: string) {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     await db.update(schema.userProgress)
       .set({
         currentLevel: level,
         updatedAt: new Date(),
       })
-      .where(eq(schema.userProgress.userId, userId));
-    
+      .where(and(
+        eq(schema.userProgress.userId, userId),
+        eq(schema.userProgress.organizationId, organizationId)
+      ));
+
     revalidatePath("/dashboard");
     revalidatePath("/practice");
   });
@@ -153,11 +193,19 @@ export async function updateCurrentLevel(level: string) {
 
 /**
  * Get all completed questions for the user
+ * Multi-tenant: Returns only questions from user's organization
  */
 export async function getCompletedQuestions() {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     return db.query.completedQuestions.findMany({
-      where: eq(schema.completedQuestions.userId, userId),
+      where: and(
+        eq(schema.completedQuestions.userId, userId),
+        eq(schema.completedQuestions.organizationId, organizationId)
+      ),
       orderBy: (questions, { desc }) => [desc(questions.completedAt)],
     });
   });
@@ -165,22 +213,38 @@ export async function getCompletedQuestions() {
 
 /**
  * Get all achievements for the user
+ * Multi-tenant: Returns only achievements from user's organization
  */
 export async function getAchievements() {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     return db.query.achievements.findMany({
-      where: eq(schema.achievements.userId, userId),
+      where: and(
+        eq(schema.achievements.userId, userId),
+        eq(schema.achievements.organizationId, organizationId)
+      ),
     });
   });
 }
 
 /**
  * Get all badges for the user
+ * Multi-tenant: Returns only badges from user's organization
  */
 export async function getBadges() {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     return db.query.badges.findMany({
-      where: eq(schema.badges.userId, userId),
+      where: and(
+        eq(schema.badges.userId, userId),
+        eq(schema.badges.organizationId, organizationId)
+      ),
       orderBy: (badges, { desc }) => [desc(badges.earnedAt)],
     });
   });
@@ -188,6 +252,7 @@ export async function getBadges() {
 
 /**
  * Submit an answer and update progress
+ * Multi-tenant: Records answer and updates progress within user's organization
  */
 export async function submitAnswer(
   questionId: string,
@@ -195,9 +260,14 @@ export async function submitAnswer(
   points: number,
   skill: "listening" | "speaking" | "reading" | "writing" = "reading"
 ) {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     // Record completed question
     await db.insert(schema.completedQuestions).values({
+      organizationId,
       userId,
       questionId,
       isCorrect,
@@ -207,7 +277,10 @@ export async function submitAnswer(
 
     // Get current progress
     const progress = await db.query.userProgress.findFirst({
-      where: eq(schema.userProgress.userId, userId),
+      where: and(
+        eq(schema.userProgress.userId, userId),
+        eq(schema.userProgress.organizationId, organizationId)
+      ),
     });
 
     if (!progress) return;
@@ -253,10 +326,13 @@ export async function submitAnswer(
         lastStudyDate: new Date(),
         updatedAt: new Date(),
       })
-      .where(eq(schema.userProgress.userId, userId));
+      .where(and(
+        eq(schema.userProgress.userId, userId),
+        eq(schema.userProgress.organizationId, organizationId)
+      ));
 
     // Check and update achievements
-    await checkAndUpdateAchievements(userId, {
+    await checkAndUpdateAchievements(userId, organizationId, {
       questionsCompleted: newQuestionsCompleted,
       streak: newStreak,
       perfectStreak: newPerfectStreak,
@@ -275,14 +351,19 @@ export async function submitAnswer(
 
 /**
  * Check and update achievements based on progress
+ * Multi-tenant: Updates achievements within user's organization only
  */
 async function checkAndUpdateAchievements(
   userId: string,
+  organizationId: bigint,
   stats: { questionsCompleted: number; streak: number; perfectStreak: number }
 ) {
   return fetchWithDrizzle(async (db) => {
     const achievements = await db.query.achievements.findMany({
-      where: eq(schema.achievements.userId, userId),
+      where: and(
+        eq(schema.achievements.userId, userId),
+        eq(schema.achievements.organizationId, organizationId)
+      ),
     });
 
     const updates: Array<{ id: bigint; progress: number; completed: boolean; reward: number }> = [];
@@ -334,7 +415,10 @@ async function checkAndUpdateAchievements(
       // Award bonus points for completed achievements
       if (update.completed && update.reward > 0) {
         const progress = await db.query.userProgress.findFirst({
-          where: eq(schema.userProgress.userId, userId),
+          where: and(
+            eq(schema.userProgress.userId, userId),
+            eq(schema.userProgress.organizationId, organizationId)
+          ),
         });
 
         if (progress) {
@@ -342,7 +426,10 @@ async function checkAndUpdateAchievements(
             .set({
               totalPoints: (progress.totalPoints || 0) + update.reward,
             })
-            .where(eq(schema.userProgress.userId, userId));
+            .where(and(
+              eq(schema.userProgress.userId, userId),
+              eq(schema.userProgress.organizationId, organizationId)
+            ));
         }
       }
     }
@@ -351,6 +438,7 @@ async function checkAndUpdateAchievements(
 
 /**
  * Award a badge to the user
+ * Multi-tenant: Awards badge within user's organization
  */
 export async function awardBadge(
   badgeId: string,
@@ -359,15 +447,24 @@ export async function awardBadge(
   icon: string,
   rarity: "common" | "rare" | "epic" | "legendary"
 ) {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     // Check if badge already exists
     const existing = await db.query.badges.findFirst({
-      where: eq(schema.badges.userId, userId),
+      where: and(
+        eq(schema.badges.userId, userId),
+        eq(schema.badges.organizationId, organizationId),
+        eq(schema.badges.badgeId, badgeId)
+      ),
     });
 
     if (existing) return existing;
 
     const [badge] = await db.insert(schema.badges).values({
+      organizationId,
       userId,
       badgeId,
       name,
@@ -383,11 +480,19 @@ export async function awardBadge(
 
 /**
  * Add points to user progress
+ * Multi-tenant: Adds points within user's organization only
  */
 export async function addPoints(points: number) {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     const progress = await db.query.userProgress.findFirst({
-      where: eq(schema.userProgress.userId, userId),
+      where: and(
+        eq(schema.userProgress.userId, userId),
+        eq(schema.userProgress.organizationId, organizationId)
+      ),
     });
 
     if (!progress) return;
@@ -399,7 +504,10 @@ export async function addPoints(points: number) {
         totalPoints: newTotal,
         updatedAt: new Date(),
       })
-      .where(eq(schema.userProgress.userId, userId));
+      .where(and(
+        eq(schema.userProgress.userId, userId),
+        eq(schema.userProgress.organizationId, organizationId)
+      ));
 
     revalidatePath("/dashboard");
     return newTotal;

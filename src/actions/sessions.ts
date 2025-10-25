@@ -4,12 +4,18 @@ import { fetchWithDrizzle } from "@/lib/db";
 import * as schema from "@/lib/db/schema";
 import { eq, and, desc } from "drizzle-orm";
 
+/**
+ * Session Management Server Actions
+ * Multi-tenant: All operations are scoped to user's organization
+ */
+
 // ============================================================================
 // PRACTICE SESSIONS
 // ============================================================================
 
 /**
  * Create a new practice session
+ * Multi-tenant: Creates session within user's organization
  *
  * @param skill - Skill being practiced (listening, speaking, reading, writing)
  * @param level - NZCEL level
@@ -19,12 +25,17 @@ export async function createPracticeSession(
   skill: string,
   level: string
 ) {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     const sessionId = crypto.randomUUID();
 
     const [session] = await db
       .insert(schema.practiceSessions)
       .values({
+        organizationId,
         userId,
         sessionId,
         skill,
@@ -38,6 +49,7 @@ export async function createPracticeSession(
 
 /**
  * Save answer to a practice session
+ * Multi-tenant: Saves answer within user's organization
  *
  * @param sessionId - Session ID (bigint)
  * @param questionId - Question ID
@@ -63,10 +75,15 @@ export async function saveSessionAnswer(
   transcriptionId?: bigint,
   aiFeedback?: string
 ) {
-  return fetchWithDrizzle(async (db) => {
+  return fetchWithDrizzle(async (db, { organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     const [answer] = await db
       .insert(schema.sessionAnswers)
       .values({
+        organizationId,
         sessionId,
         questionId,
         userAnswer,
@@ -104,16 +121,22 @@ export async function saveSessionAnswer(
 
 /**
  * Complete a practice session
+ * Multi-tenant: Completes session within user's organization only
  *
  * @param sessionId - Session ID (bigint)
  * @returns Updated session
  */
 export async function completePracticeSession(sessionId: bigint) {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     const session = await db.query.practiceSessions.findFirst({
       where: and(
         eq(schema.practiceSessions.id, sessionId),
-        eq(schema.practiceSessions.userId, userId)
+        eq(schema.practiceSessions.userId, userId),
+        eq(schema.practiceSessions.organizationId, organizationId)
       ),
     });
 
@@ -142,16 +165,22 @@ export async function completePracticeSession(sessionId: bigint) {
 
 /**
  * Get practice session with all answers
+ * Multi-tenant: Returns session from user's organization only
  *
  * @param sessionId - Session ID (bigint)
  * @returns Session with answers
  */
 export async function getPracticeSessionWithAnswers(sessionId: bigint) {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     return await db.query.practiceSessions.findFirst({
       where: and(
         eq(schema.practiceSessions.id, sessionId),
-        eq(schema.practiceSessions.userId, userId)
+        eq(schema.practiceSessions.userId, userId),
+        eq(schema.practiceSessions.organizationId, organizationId)
       ),
       with: {
         answers: {
@@ -164,14 +193,22 @@ export async function getPracticeSessionWithAnswers(sessionId: bigint) {
 
 /**
  * Get user's recent practice sessions
+ * Multi-tenant: Returns sessions from user's organization only
  *
  * @param limit - Number of sessions to fetch
  * @returns List of practice sessions
  */
 export async function getRecentPracticeSessions(limit: number = 20) {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     return await db.query.practiceSessions.findMany({
-      where: eq(schema.practiceSessions.userId, userId),
+      where: and(
+        eq(schema.practiceSessions.userId, userId),
+        eq(schema.practiceSessions.organizationId, organizationId)
+      ),
       orderBy: desc(schema.practiceSessions.startedAt),
       limit,
     });
@@ -184,6 +221,7 @@ export async function getRecentPracticeSessions(limit: number = 20) {
 
 /**
  * Create a new conversation session
+ * Multi-tenant: Creates session within user's organization
  *
  * @param scenarioId - Scenario ID
  * @param scenarioTitle - Scenario title
@@ -195,12 +233,17 @@ export async function createConversationSession(
   scenarioTitle: string,
   targetTurns: number
 ) {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     const sessionId = crypto.randomUUID();
 
     const [session] = await db
       .insert(schema.conversationSessions)
       .values({
+        organizationId,
         userId,
         sessionId,
         scenarioId,
@@ -215,6 +258,7 @@ export async function createConversationSession(
 
 /**
  * Save conversation turn
+ * Multi-tenant: Saves turn within user's organization
  *
  * @param sessionId - Session ID (bigint)
  * @param turnNumber - Turn number
@@ -243,10 +287,15 @@ export async function saveConversationTurn(
     vocabulary?: number;
   }
 ) {
-  return fetchWithDrizzle(async (db) => {
+  return fetchWithDrizzle(async (db, { organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     const [turn] = await db
       .insert(schema.conversationTurns)
       .values({
+        organizationId,
         sessionId,
         turnNumber,
         speaker,
@@ -284,6 +333,7 @@ export async function saveConversationTurn(
 
 /**
  * Complete a conversation session
+ * Multi-tenant: Completes session within user's organization only
  *
  * @param sessionId - Session ID (bigint)
  * @param totalPoints - Total points earned
@@ -293,11 +343,16 @@ export async function completeConversationSession(
   sessionId: bigint,
   totalPoints: number
 ) {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     const session = await db.query.conversationSessions.findFirst({
       where: and(
         eq(schema.conversationSessions.id, sessionId),
-        eq(schema.conversationSessions.userId, userId)
+        eq(schema.conversationSessions.userId, userId),
+        eq(schema.conversationSessions.organizationId, organizationId)
       ),
       with: {
         turns: true,
@@ -343,16 +398,22 @@ export async function completeConversationSession(
 
 /**
  * Get conversation session with all turns
+ * Multi-tenant: Returns session from user's organization only
  *
  * @param sessionId - Session ID (bigint)
  * @returns Session with turns
  */
 export async function getConversationSessionWithTurns(sessionId: bigint) {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     return await db.query.conversationSessions.findFirst({
       where: and(
         eq(schema.conversationSessions.id, sessionId),
-        eq(schema.conversationSessions.userId, userId)
+        eq(schema.conversationSessions.userId, userId),
+        eq(schema.conversationSessions.organizationId, organizationId)
       ),
       with: {
         turns: {
@@ -365,14 +426,22 @@ export async function getConversationSessionWithTurns(sessionId: bigint) {
 
 /**
  * Get user's recent conversation sessions
+ * Multi-tenant: Returns sessions from user's organization only
  *
  * @param limit - Number of sessions to fetch
  * @returns List of conversation sessions
  */
 export async function getRecentConversationSessions(limit: number = 20) {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     return await db.query.conversationSessions.findMany({
-      where: eq(schema.conversationSessions.userId, userId),
+      where: and(
+        eq(schema.conversationSessions.userId, userId),
+        eq(schema.conversationSessions.organizationId, organizationId)
+      ),
       orderBy: desc(schema.conversationSessions.startedAt),
       limit,
     });
@@ -385,6 +454,7 @@ export async function getRecentConversationSessions(limit: number = 20) {
 
 /**
  * Get practice sessions with filtering
+ * Multi-tenant: Returns filtered sessions from user's organization only
  *
  * @param filters - Filter options
  * @param filters.skill - Filter by skill (listening, speaking, reading, writing)
@@ -401,11 +471,18 @@ export async function getPracticeSessionsWithFilters(
   },
   limit: number = 20
 ) {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     console.log("[getPracticeSessionsWithFilters] Current userId:", userId);
     console.log("[getPracticeSessionsWithFilters] Filters:", filters);
 
-    const conditions = [eq(schema.practiceSessions.userId, userId)];
+    const conditions = [
+      eq(schema.practiceSessions.userId, userId),
+      eq(schema.practiceSessions.organizationId, organizationId)
+    ];
 
     // Apply skill filter
     if (filters.skill) {
@@ -447,6 +524,7 @@ export async function getPracticeSessionsWithFilters(
 
 /**
  * Get conversation sessions with filtering
+ * Multi-tenant: Returns filtered sessions from user's organization only
  *
  * @param filters - Filter options
  * @param filters.scenarioId - Filter by scenario ID
@@ -461,8 +539,15 @@ export async function getConversationSessionsWithFilters(
   },
   limit: number = 20
 ) {
-  return fetchWithDrizzle(async (db, { userId }) => {
-    const conditions = [eq(schema.conversationSessions.userId, userId)];
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
+    const conditions = [
+      eq(schema.conversationSessions.userId, userId),
+      eq(schema.conversationSessions.organizationId, organizationId)
+    ];
 
     // Apply scenario filter
     if (filters.scenarioId) {

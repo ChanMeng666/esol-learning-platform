@@ -6,6 +6,7 @@ import { eq, and, desc } from "drizzle-orm";
 
 /**
  * Get or create a CopilotKit conversation session
+ * Multi-tenant: Creates conversation within user's organization
  *
  * Creates a new conversation or returns existing one for the context
  *
@@ -19,11 +20,16 @@ export async function getOrCreateConversation(
   contextId?: string,
   title?: string
 ) {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     // Try to find existing active conversation for this context
     const existing = await db.query.copilotConversations.findFirst({
       where: and(
         eq(schema.copilotConversations.userId, userId),
+        eq(schema.copilotConversations.organizationId, organizationId),
         eq(schema.copilotConversations.contextType, contextType),
         contextId
           ? eq(schema.copilotConversations.contextId, contextId)
@@ -41,6 +47,7 @@ export async function getOrCreateConversation(
     const [conversation] = await db
       .insert(schema.copilotConversations)
       .values({
+        organizationId,
         userId,
         sessionId,
         contextType,
@@ -55,6 +62,7 @@ export async function getOrCreateConversation(
 
 /**
  * Save a chat message to the conversation
+ * Multi-tenant: Saves message within user's organization
  *
  * @param conversationId - Conversation ID
  * @param role - Message role (user, assistant, system)
@@ -72,11 +80,16 @@ export async function saveChatMessage(
   metadata?: Record<string, unknown>,
   audioUrl?: string
 ) {
-  return fetchWithDrizzle(async (db) => {
+  return fetchWithDrizzle(async (db, { organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     // Insert message
     const [message] = await db
       .insert(schema.copilotMessages)
       .values({
+        organizationId,
         conversationId,
         role,
         content,
@@ -88,7 +101,10 @@ export async function saveChatMessage(
 
     // Update conversation stats
     const conversation = await db.query.copilotConversations.findFirst({
-      where: eq(schema.copilotConversations.id, conversationId),
+      where: and(
+        eq(schema.copilotConversations.id, conversationId),
+        eq(schema.copilotConversations.organizationId, organizationId)
+      ),
     });
 
     if (conversation) {
@@ -98,7 +114,10 @@ export async function saveChatMessage(
           messageCount: conversation.messageCount + 1,
           lastMessageAt: new Date(),
         })
-        .where(eq(schema.copilotConversations.id, conversationId));
+        .where(and(
+          eq(schema.copilotConversations.id, conversationId),
+          eq(schema.copilotConversations.organizationId, organizationId)
+        ));
     }
 
     return message;
@@ -107,6 +126,7 @@ export async function saveChatMessage(
 
 /**
  * Get chat history for a conversation
+ * Multi-tenant: Returns messages from user's organization only
  *
  * @param conversationId - Conversation ID
  * @param limit - Number of messages to fetch
@@ -116,9 +136,16 @@ export async function getChatHistory(
   conversationId: bigint,
   limit: number = 50
 ) {
-  return fetchWithDrizzle(async (db) => {
+  return fetchWithDrizzle(async (db, { organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     return await db.query.copilotMessages.findMany({
-      where: eq(schema.copilotMessages.conversationId, conversationId),
+      where: and(
+        eq(schema.copilotMessages.conversationId, conversationId),
+        eq(schema.copilotMessages.organizationId, organizationId)
+      ),
       orderBy: (messages, { asc }) => [asc(messages.createdAt)],
       limit,
     });
@@ -127,14 +154,22 @@ export async function getChatHistory(
 
 /**
  * Get all conversations for current user
+ * Multi-tenant: Returns conversations from user's organization only
  *
  * @param limit - Number of conversations to fetch
  * @returns List of conversations with message count
  */
 export async function getUserConversations(limit: number = 20) {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     return await db.query.copilotConversations.findMany({
-      where: eq(schema.copilotConversations.userId, userId),
+      where: and(
+        eq(schema.copilotConversations.userId, userId),
+        eq(schema.copilotConversations.organizationId, organizationId)
+      ),
       orderBy: (conversations, { desc }) => [desc(conversations.lastMessageAt)],
       limit,
     });
@@ -143,16 +178,22 @@ export async function getUserConversations(limit: number = 20) {
 
 /**
  * Get conversation with all messages
+ * Multi-tenant: Returns conversation from user's organization only
  *
  * @param conversationId - Conversation ID
  * @returns Conversation with full message history
  */
 export async function getConversationWithMessages(conversationId: bigint) {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     const conversation = await db.query.copilotConversations.findFirst({
       where: and(
         eq(schema.copilotConversations.id, conversationId),
-        eq(schema.copilotConversations.userId, userId)
+        eq(schema.copilotConversations.userId, userId),
+        eq(schema.copilotConversations.organizationId, organizationId)
       ),
       with: {
         messages: {
@@ -167,6 +208,7 @@ export async function getConversationWithMessages(conversationId: bigint) {
 
 /**
  * Get conversations by context
+ * Multi-tenant: Returns conversations from user's organization only
  *
  * Useful for showing chat history related to specific practice/conversation sessions
  *
@@ -178,10 +220,15 @@ export async function getConversationsByContext(
   contextType: "practice" | "conversation" | "dashboard" | "general",
   contextId?: string
 ) {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     return await db.query.copilotConversations.findMany({
       where: and(
         eq(schema.copilotConversations.userId, userId),
+        eq(schema.copilotConversations.organizationId, organizationId),
         eq(schema.copilotConversations.contextType, contextType),
         contextId
           ? eq(schema.copilotConversations.contextId, contextId)
@@ -194,17 +241,23 @@ export async function getConversationsByContext(
 
 /**
  * Delete a conversation and all its messages
+ * Multi-tenant: Deletes conversation from user's organization only
  *
  * @param conversationId - Conversation ID
  * @returns Success boolean
  */
 export async function deleteConversation(conversationId: bigint) {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     // Verify ownership
     const conversation = await db.query.copilotConversations.findFirst({
       where: and(
         eq(schema.copilotConversations.id, conversationId),
-        eq(schema.copilotConversations.userId, userId)
+        eq(schema.copilotConversations.userId, userId),
+        eq(schema.copilotConversations.organizationId, organizationId)
       ),
     });
 
@@ -215,12 +268,18 @@ export async function deleteConversation(conversationId: bigint) {
     // Delete messages first (cascade would handle this, but being explicit)
     await db
       .delete(schema.copilotMessages)
-      .where(eq(schema.copilotMessages.conversationId, conversationId));
+      .where(and(
+        eq(schema.copilotMessages.conversationId, conversationId),
+        eq(schema.copilotMessages.organizationId, organizationId)
+      ));
 
     // Delete conversation
     await db
       .delete(schema.copilotConversations)
-      .where(eq(schema.copilotConversations.id, conversationId));
+      .where(and(
+        eq(schema.copilotConversations.id, conversationId),
+        eq(schema.copilotConversations.organizationId, organizationId)
+      ));
 
     return true;
   });
@@ -228,6 +287,7 @@ export async function deleteConversation(conversationId: bigint) {
 
 /**
  * Update conversation title
+ * Multi-tenant: Updates conversation within user's organization only
  *
  * @param conversationId - Conversation ID
  * @param newTitle - New title
@@ -237,14 +297,19 @@ export async function updateConversationTitle(
   conversationId: bigint,
   newTitle: string
 ) {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     const [updated] = await db
       .update(schema.copilotConversations)
       .set({ title: newTitle })
       .where(
         and(
           eq(schema.copilotConversations.id, conversationId),
-          eq(schema.copilotConversations.userId, userId)
+          eq(schema.copilotConversations.userId, userId),
+          eq(schema.copilotConversations.organizationId, organizationId)
         )
       )
       .returning();

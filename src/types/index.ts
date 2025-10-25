@@ -409,3 +409,427 @@ export interface ModuleProgress {
   pointsEarned: number;
   lastAccessed: string | null;
 }
+
+// ============================================================================
+// MULTI-TENANCY & ORGANIZATION MANAGEMENT TYPES
+// ============================================================================
+
+// User Role Types
+export type UserRole = "system_admin" | "school_admin" | "department_head" | "teacher" | "student" | "parent";
+
+// Organization/School
+export interface Organization {
+  id: bigint;
+  name: string;
+  slug: string;
+  settings: {
+    allowed_level_systems?: ("nzcel" | "cefr")[];
+    use_shared_question_bank?: boolean;
+    custom_branding?: Record<string, unknown>;
+    features_enabled?: Record<string, boolean>;
+  };
+  subscriptionTier: "basic" | "pro" | "enterprise";
+  maxStudents: number | null;
+  isActive: boolean;
+  contactEmail: string | null;
+  contactPhone: string | null;
+  address: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Enhanced User (extends Stack Auth with organization)
+export interface EnhancedUser {
+  id: bigint;
+  organizationId: bigint;
+  stackUserId: string;
+  email: string;
+  fullName: string;
+  role: UserRole;
+  isActive: boolean;
+  metadata: Record<string, unknown> | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Department
+export interface Department {
+  id: bigint;
+  organizationId: bigint;
+  name: string;
+  description: string | null;
+  headTeacherId: bigint | null;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Grade Level
+export interface GradeLevel {
+  id: bigint;
+  organizationId: bigint;
+  name: string;
+  orderIndex: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Class
+export interface Class {
+  id: bigint;
+  organizationId: bigint;
+  departmentId: bigint | null;
+  gradeLevelId: bigint | null;
+  name: string;
+  teacherId: bigint;
+  academicYear: string;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Class Teacher (supports multiple teachers per class)
+export interface ClassTeacher {
+  id: bigint;
+  classId: bigint;
+  teacherId: bigint;
+  role: "primary_teacher" | "assistant_teacher" | "substitute_teacher";
+  assignedAt: Date;
+}
+
+// Class Enrollment
+export interface ClassEnrollment {
+  id: bigint;
+  classId: bigint;
+  studentId: bigint;
+  status: "active" | "completed" | "dropped" | "transferred";
+  enrolledAt: Date;
+  completedAt: Date | null;
+}
+
+// Student Group
+export interface StudentGroup {
+  id: bigint;
+  organizationId: bigint;
+  createdByTeacherId: bigint;
+  name: string;
+  description: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Parent-Student Relationship
+export interface ParentStudentRelationship {
+  id: bigint;
+  parentId: bigint;
+  studentId: bigint;
+  relationshipType: "parent" | "guardian" | "other";
+  isPrimary: boolean;
+  createdAt: Date;
+}
+
+// ============================================================================
+// DIAGNOSTIC TESTING TYPES
+// ============================================================================
+
+export type DiagnosticTestType = "initial_placement" | "progress_check" | "final_assessment";
+export type DiagnosticLevelSystem = "nzcel" | "cefr";
+
+export interface DiagnosticTest {
+  id: bigint;
+  organizationId: bigint | null; // null for system tests
+  name: string;
+  description: string | null;
+  levelSystem: DiagnosticLevelSystem;
+  testType: DiagnosticTestType;
+  targetSkills: SkillType[];
+  estimatedDuration: number | null; // minutes
+  isActive: boolean;
+  isSystemTest: boolean;
+  createdByUserId: bigint | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface DiagnosticTestSection {
+  id: bigint;
+  diagnosticTestId: bigint;
+  skillType: SkillType;
+  sectionName: string;
+  levelRangeMin: string; // e.g., "A1" or "foundation"
+  levelRangeMax: string; // e.g., "C2" or "level-6-advanced"
+  totalQuestions: number;
+  passingThreshold: number | null; // 0.00-1.00
+  orderIndex: number;
+  instructions: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface DiagnosticTestQuestion {
+  id: bigint;
+  testSectionId: bigint;
+  questionType: QuestionType;
+  questionText: string;
+  options: unknown | null; // JSON
+  correctAnswer: string | null;
+  difficultyLevel: string;
+  points: number;
+  rubric: unknown | null; // JSON
+  audioUrl: string | null;
+  imageUrl: string | null;
+  orderIndex: number;
+  metadata: Record<string, unknown> | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface StudentDiagnosticAttempt {
+  id: bigint;
+  studentId: bigint;
+  organizationId: bigint;
+  diagnosticTestId: bigint;
+  attemptNumber: number;
+  startedAt: Date;
+  completedAt: Date | null;
+  isCompleted: boolean;
+  totalDuration: number | null; // seconds
+  createdAt: Date;
+}
+
+export interface DiagnosticQuestionResponse {
+  id: bigint;
+  attemptId: bigint;
+  questionId: bigint;
+  studentAnswer: string | null;
+  audioRecordingId: bigint | null;
+  transcriptionId: bigint | null;
+  isCorrect: boolean | null;
+  pointsEarned: number;
+  aiAssessment: unknown | null; // JSON
+  timeSpent: number | null; // seconds
+  answeredAt: Date;
+}
+
+export interface StudentDiagnosticResult {
+  id: bigint;
+  studentId: bigint;
+  organizationId: bigint;
+  attemptId: bigint;
+  diagnosticTestId: bigint;
+  levelSystem: DiagnosticLevelSystem;
+  overallLevel: string;
+  skillLevels: Record<string, string>; // {"listening": "B1", ...}
+  skillScores: Record<string, number>; // {"listening": 75, ...}
+  strengths: string[];
+  areasForImprovement: string[];
+  recommendedNextSteps: string[];
+  totalScore: number;
+  percentageScore: number;
+  reviewedByTeacherId: bigint | null;
+  teacherComments: string | null;
+  reviewedAt: Date | null;
+  completedAt: Date;
+  createdAt: Date;
+}
+
+// ============================================================================
+// TEACHER ASSIGNMENT MANAGEMENT TYPES
+// ============================================================================
+
+export type AssignmentType = "speaking_practice" | "writing_task" | "listening_exercise" | "reading_comprehension" | "diagnostic_test" | "custom";
+export type AssignmentStatus = "draft" | "active" | "completed" | "archived";
+export type AssignmentTargetType = "student" | "class" | "student_group" | "grade_level";
+export type AssignmentStudentStatusType = "assigned" | "in_progress" | "completed" | "overdue" | "excused";
+export type AssignmentSubmissionType = "practice_session" | "diagnostic_test" | "custom_content";
+
+export interface Assignment {
+  id: bigint;
+  organizationId: bigint;
+  createdByTeacherId: bigint;
+  title: string;
+  description: string | null;
+  instructions: string | null;
+  assignmentType: AssignmentType;
+  targetSkill: SkillType | null;
+  targetLevel: string | null;
+  requirements: {
+    min_duration?: number;
+    min_questions?: number;
+    topic?: string;
+    daily_target?: number;
+    specific_questions?: string[];
+    diagnostic_test_id?: number;
+  } | null;
+  dueDate: Date | null;
+  isRecurring: boolean;
+  recurringPattern: {
+    frequency?: "daily" | "weekly";
+    days?: number[];
+  } | null;
+  pointsReward: number | null;
+  status: AssignmentStatus;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface AssignmentTarget {
+  id: bigint;
+  assignmentId: bigint;
+  targetType: AssignmentTargetType;
+  targetId: bigint;
+  assignedAt: Date;
+}
+
+export interface AssignmentStudentStatus {
+  id: bigint;
+  assignmentId: bigint;
+  studentId: bigint;
+  status: AssignmentStudentStatusType;
+  assignedAt: Date;
+  startedAt: Date | null;
+  completedAt: Date | null;
+  progressPercentage: number;
+  timeSpent: number;
+  teacherViewed: boolean;
+  teacherFeedback: string | null;
+  teacherScore: number | null;
+  feedbackGivenAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface AssignmentSubmission {
+  id: bigint;
+  assignmentId: bigint;
+  studentId: bigint;
+  studentStatusId: bigint;
+  submissionType: AssignmentSubmissionType;
+  practiceSessionId: bigint | null;
+  diagnosticAttemptId: bigint | null;
+  content: Record<string, unknown> | null;
+  audioRecordingIds: bigint[];
+  transcriptionIds: bigint[];
+  questionsCompleted: number;
+  questionsCorrect: number | null;
+  totalPointsEarned: number;
+  aiAssessment: Record<string, unknown> | null;
+  submittedAt: Date;
+}
+
+// ============================================================================
+// TEACHER INSIGHTS & ANALYTICS TYPES
+// ============================================================================
+
+export type InsightType = "common_errors" | "difficult_topics" | "student_engagement" | "skill_distribution" | "recommended_focus_areas" | "class_performance_summary";
+export type InsightScopeType = "student" | "class" | "student_group" | "grade_level" | "department";
+
+export interface TeacherInsight {
+  id: bigint;
+  organizationId: bigint;
+  teacherId: bigint;
+  insightType: InsightType;
+  scopeType: InsightScopeType;
+  scopeId: bigint;
+  timePeriodStart: Date | null;
+  timePeriodEnd: Date | null;
+  data: {
+    summary?: string;
+    details?: Record<string, unknown>;
+    recommendations?: string[];
+    metrics?: Record<string, unknown>;
+  };
+  generatedAt: Date;
+  acknowledgedAt: Date | null;
+  isDismissed: boolean;
+}
+
+export interface ClassAnalytics {
+  id: bigint;
+  organizationId: bigint;
+  classId: bigint;
+  date: Date;
+  totalStudents: number;
+  activeStudents: number;
+  avgListeningProgress: number | null;
+  avgSpeakingProgress: number | null;
+  avgReadingProgress: number | null;
+  avgWritingProgress: number | null;
+  totalTimeSpent: number;
+  totalQuestionsCompleted: number;
+  averageAccuracy: number | null;
+  topPerformers: bigint[];
+  needsAttention: bigint[];
+  generatedAt: Date;
+}
+
+// ============================================================================
+// RBAC TYPES
+// ============================================================================
+
+export type PermissionAction = "create" | "read" | "update" | "delete" | "assign" | "review";
+export type PermissionScope = "system" | "organization" | "department" | "class" | "own";
+export type PermissionType = "grant" | "deny";
+
+export interface RolePermission {
+  id: bigint;
+  role: UserRole;
+  resource: string;
+  action: PermissionAction;
+  scope: PermissionScope;
+  conditions: Record<string, unknown> | null;
+  createdAt: Date;
+}
+
+export interface UserPermission {
+  id: bigint;
+  userId: bigint;
+  organizationId: bigint;
+  permissionType: PermissionType;
+  resource: string;
+  action: PermissionAction;
+  grantedByUserId: bigint;
+  grantedAt: Date;
+  expiresAt: Date | null;
+}
+
+// ============================================================================
+// QUESTION BANK MANAGEMENT TYPES
+// ============================================================================
+
+export type QuestionBankLevelSystem = "nzcel" | "cefr" | "custom";
+export type QuestionBankAccessType = "full_access" | "read_only" | "no_access";
+
+export interface QuestionBank {
+  id: bigint;
+  organizationId: bigint | null;
+  name: string;
+  description: string | null;
+  levelSystem: QuestionBankLevelSystem;
+  isSystemBank: boolean;
+  isPublic: boolean;
+  createdByUserId: bigint | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface QuestionBankQuestion {
+  id: bigint;
+  questionBankId: bigint;
+  questionId: string;
+  questionData: Question; // Full question object
+  skillType: SkillType;
+  difficultyLevel: string;
+  tags: string[];
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface OrganizationQuestionAccess {
+  id: bigint;
+  organizationId: bigint;
+  questionBankId: bigint;
+  accessType: QuestionBankAccessType;
+  grantedAt: Date;
+}

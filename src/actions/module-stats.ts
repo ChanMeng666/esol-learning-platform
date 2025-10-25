@@ -11,12 +11,17 @@ import type { LearningPath } from "@/types";
 
 /**
  * Get or create module progress for a specific module
+ * Multi-tenant: Scoped to user's organization
  *
  * @param moduleType - Type of learning module (general, nzcel, etc.)
  * @returns Module progress record
  */
 export async function getModuleProgress(moduleType: LearningPath) {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     // Try to find existing record
     const existing = await db
       .select()
@@ -24,6 +29,7 @@ export async function getModuleProgress(moduleType: LearningPath) {
       .where(
         and(
           eq(schema.moduleProgress.userId, userId),
+          eq(schema.moduleProgress.organizationId, organizationId),
           eq(schema.moduleProgress.moduleType, moduleType)
         )
       )
@@ -37,6 +43,7 @@ export async function getModuleProgress(moduleType: LearningPath) {
     const [newRecord] = await db
       .insert(schema.moduleProgress)
       .values({
+        organizationId,
         userId,
         moduleType,
         totalTime: 0,
@@ -52,15 +59,23 @@ export async function getModuleProgress(moduleType: LearningPath) {
 
 /**
  * Get all module progress for current user
+ * Multi-tenant: Returns only modules from user's organization
  *
  * @returns Array of module progress records
  */
 export async function getAllModuleProgress() {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     const modules = await db
       .select()
       .from(schema.moduleProgress)
-      .where(eq(schema.moduleProgress.userId, userId))
+      .where(and(
+        eq(schema.moduleProgress.userId, userId),
+        eq(schema.moduleProgress.organizationId, organizationId)
+      ))
       .orderBy(desc(schema.moduleProgress.lastAccessed));
 
     return modules;
@@ -69,6 +84,7 @@ export async function getAllModuleProgress() {
 
 /**
  * Update module progress
+ * Multi-tenant: Updates within user's organization only
  *
  * @param moduleType - Type of learning module
  * @param timeSpent - Time spent in seconds
@@ -81,7 +97,11 @@ export async function updateModuleProgress(
   questionsCompleted: number = 0,
   pointsEarned: number = 0
 ) {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     // Get or create module progress
     const existing = await getModuleProgress(moduleType);
 
@@ -98,6 +118,7 @@ export async function updateModuleProgress(
       .where(
         and(
           eq(schema.moduleProgress.userId, userId),
+          eq(schema.moduleProgress.organizationId, organizationId),
           eq(schema.moduleProgress.moduleType, moduleType)
         )
       )
@@ -113,16 +134,24 @@ export async function updateModuleProgress(
 
 /**
  * Get speaking practice statistics
+ * Multi-tenant: Returns only stats from user's organization
  *
  * @returns Speaking practice stats
  */
 export async function getSpeakingStats() {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     // Get all conversation sessions
     const sessions = await db
       .select()
       .from(schema.conversationSessions)
-      .where(eq(schema.conversationSessions.userId, userId))
+      .where(and(
+        eq(schema.conversationSessions.userId, userId),
+        eq(schema.conversationSessions.organizationId, organizationId)
+      ))
       .orderBy(desc(schema.conversationSessions.startedAt));
 
     // Get total conversation turns
@@ -134,6 +163,7 @@ export async function getSpeakingStats() {
           SELECT ${schema.conversationSessions.id}
           FROM ${schema.conversationSessions}
           WHERE ${schema.conversationSessions.userId} = ${userId}
+          AND ${schema.conversationSessions.organizationId} = ${organizationId}
         )`
       );
 
@@ -182,11 +212,16 @@ export async function getSpeakingStats() {
 
 /**
  * Get aggregated statistics across all modules
+ * Multi-tenant: Returns aggregated stats from user's organization only
  *
  * @returns Aggregated stats
  */
 export async function getAggregatedStats() {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     // Get all module progress
     const modules = await getAllModuleProgress();
 
@@ -194,14 +229,20 @@ export async function getAggregatedStats() {
     const nzcelProgress = await db
       .select()
       .from(schema.userProgress)
-      .where(eq(schema.userProgress.userId, userId))
+      .where(and(
+        eq(schema.userProgress.userId, userId),
+        eq(schema.userProgress.organizationId, organizationId)
+      ))
       .limit(1);
 
     // Get CEFR progress
     const cefrProgress = await db
       .select()
       .from(schema.cefrProgress)
-      .where(eq(schema.cefrProgress.userId, userId))
+      .where(and(
+        eq(schema.cefrProgress.userId, userId),
+        eq(schema.cefrProgress.organizationId, organizationId)
+      ))
       .limit(1);
 
     // Get speaking stats

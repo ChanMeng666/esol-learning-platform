@@ -9,6 +9,7 @@ import { createHash } from "crypto";
 
 /**
  * Get or generate question audio with intelligent caching
+ * Multi-tenant: Caches audio per organization
  *
  * This is the core function to avoid repeated OpenAI TTS calls:
  * 1. Check if audio exists in cache (question_audio_cache table)
@@ -33,11 +34,16 @@ export async function getQuestionAudio(
     .digest("hex");
 
   // 2. Query cache for existing audio
-  const cached = await fetchWithDrizzle(async (db) => {
+  const cached = await fetchWithDrizzle(async (db, { organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     return await db.query.questionAudioCache.findFirst({
       where: and(
         eq(schema.questionAudioCache.questionId, questionId),
-        eq(schema.questionAudioCache.contentHash, contentHash)
+        eq(schema.questionAudioCache.contentHash, contentHash),
+        eq(schema.questionAudioCache.organizationId, organizationId)
       ),
       with: {
         audioFile: true,
@@ -65,11 +71,16 @@ export async function getQuestionAudio(
   );
 
   // 6. Save to database (audio_files + question_audio_cache)
-  await fetchWithDrizzle(async (db) => {
+  await fetchWithDrizzle(async (db, { organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     // Insert into audio_files table
     const [audioFile] = await db
       .insert(schema.audioFiles)
       .values({
+        organizationId,
         fileId: audioInfo.fileId,
         blobUrl: audioInfo.blobUrl,
         fileType: "question_audio",
@@ -82,6 +93,7 @@ export async function getQuestionAudio(
 
     // Insert into question_audio_cache table
     await db.insert(schema.questionAudioCache).values({
+      organizationId,
       questionId,
       audioFileId: audioFile.id,
       textContent,
@@ -122,15 +134,23 @@ async function generateTTS(
 
 /**
  * Update audio access statistics
+ * Multi-tenant: Updates within user's organization only
  *
  * Called when cached audio is accessed to track usage
  *
  * @param cacheId - ID of the question_audio_cache record
  */
 async function updateAudioAccessCount(cacheId: bigint): Promise<void> {
-  await fetchWithDrizzle(async (db) => {
+  await fetchWithDrizzle(async (db, { organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     const currentCache = await db.query.questionAudioCache.findFirst({
-      where: eq(schema.questionAudioCache.id, cacheId),
+      where: and(
+        eq(schema.questionAudioCache.id, cacheId),
+        eq(schema.questionAudioCache.organizationId, organizationId)
+      ),
     });
 
     if (currentCache) {
@@ -140,13 +160,17 @@ async function updateAudioAccessCount(cacheId: bigint): Promise<void> {
           accessCount: currentCache.accessCount + 1,
           lastAccessedAt: new Date(),
         })
-        .where(eq(schema.questionAudioCache.id, cacheId));
+        .where(and(
+          eq(schema.questionAudioCache.id, cacheId),
+          eq(schema.questionAudioCache.organizationId, organizationId)
+        ));
     }
   });
 }
 
 /**
  * Deactivate old audio cache entry
+ * Multi-tenant: Deactivates within user's organization only
  *
  * Use when question text or voice changes - marks old cache as inactive
  * without deleting (keeps history)
@@ -156,25 +180,40 @@ async function updateAudioAccessCount(cacheId: bigint): Promise<void> {
 export async function deactivateQuestionAudioCache(
   questionId: string
 ): Promise<void> {
-  await fetchWithDrizzle(async (db) => {
+  await fetchWithDrizzle(async (db, { organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     await db
       .update(schema.questionAudioCache)
       .set({
         isActive: false,
       })
-      .where(eq(schema.questionAudioCache.questionId, questionId));
+      .where(and(
+        eq(schema.questionAudioCache.questionId, questionId),
+        eq(schema.questionAudioCache.organizationId, organizationId)
+      ));
   });
 }
 
 /**
  * Get cache statistics for monitoring
+ * Multi-tenant: Returns stats from user's organization only
  *
  * @returns Cache stats (total cached, total hits, storage used)
  */
 export async function getAudioCacheStats() {
-  return await fetchWithDrizzle(async (db) => {
+  return await fetchWithDrizzle(async (db, { organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     const cacheEntries = await db.query.questionAudioCache.findMany({
-      where: eq(schema.questionAudioCache.isActive, true),
+      where: and(
+        eq(schema.questionAudioCache.isActive, true),
+        eq(schema.questionAudioCache.organizationId, organizationId)
+      ),
       with: {
         audioFile: true,
       },
@@ -201,6 +240,7 @@ export async function getAudioCacheStats() {
 
 /**
  * Get all question audio from cache
+ * Multi-tenant: Returns audio from user's organization only
  * Returns all available TTS audio for questions
  *
  * @param filters - Filter options
@@ -213,10 +253,17 @@ export async function getAllQuestionAudio(
   } = {},
   limit: number = 50
 ) {
-  return fetchWithDrizzle(async (db) => {
+  return fetchWithDrizzle(async (db, { organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     // Get all active audio cache entries
     const audioEntries = await db.query.questionAudioCache.findMany({
-      where: eq(schema.questionAudioCache.isActive, true),
+      where: and(
+        eq(schema.questionAudioCache.isActive, true),
+        eq(schema.questionAudioCache.organizationId, organizationId)
+      ),
       with: {
         audioFile: true,
       },
@@ -232,6 +279,7 @@ export async function getAllQuestionAudio(
 
 /**
  * Get question audio history for current user
+ * Multi-tenant: Returns audio from user's organization only
  * Returns audio for questions the user has practiced
  *
  * @param filters - Filter options
@@ -247,10 +295,17 @@ export async function getUserQuestionAudioHistory(
   } = {},
   limit: number = 50
 ) {
-  return fetchWithDrizzle(async (db, { userId }) => {
+  return fetchWithDrizzle(async (db, { userId, organizationId }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
     // 1. Get all unique question IDs from user's practice sessions
     const sessions = await db.query.practiceSessions.findMany({
-      where: eq(schema.practiceSessions.userId, userId),
+      where: and(
+        eq(schema.practiceSessions.userId, userId),
+        eq(schema.practiceSessions.organizationId, organizationId)
+      ),
       with: {
         answers: true,
       },
@@ -274,7 +329,10 @@ export async function getUserQuestionAudioHistory(
       // If user has no practice history, return all audio
       console.log("[getUserQuestionAudioHistory] No practice history, returning all audio");
       return await db.query.questionAudioCache.findMany({
-        where: eq(schema.questionAudioCache.isActive, true),
+        where: and(
+          eq(schema.questionAudioCache.isActive, true),
+          eq(schema.questionAudioCache.organizationId, organizationId)
+        ),
         with: {
           audioFile: true,
         },
@@ -287,7 +345,8 @@ export async function getUserQuestionAudioHistory(
     const audioEntries = await db.query.questionAudioCache.findMany({
       where: and(
         inArray(schema.questionAudioCache.questionId, Array.from(questionIds)),
-        eq(schema.questionAudioCache.isActive, true)
+        eq(schema.questionAudioCache.isActive, true),
+        eq(schema.questionAudioCache.organizationId, organizationId)
       ),
       with: {
         audioFile: true,

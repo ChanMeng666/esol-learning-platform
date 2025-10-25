@@ -2,7 +2,7 @@
 
 import { fetchWithDrizzle } from "@/lib/db";
 import { cefrProgress } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import type { CEFRLevel, SkillType } from "@/types";
 
@@ -11,6 +11,8 @@ import type { CEFRLevel, SkillType } from "@/types";
  *
  * Handles all CEFR-based general practice progress tracking
  * Parallel to NZCEL progress system but for general English learning
+ *
+ * Multi-tenant: All operations are scoped to user's organization
  */
 
 // ============================================================================
@@ -20,13 +22,21 @@ import type { CEFRLevel, SkillType } from "@/types";
 /**
  * Get user's CEFR progress
  * Creates initial progress record if none exists
+ * Multi-tenant: Scoped to user's organization
  */
 export async function getCEFRProgress() {
-  return await fetchWithDrizzle(async (db, { userId }) => {
+  return await fetchWithDrizzle(async (db, { userId, organizationId }) => {
     try {
+      if (!organizationId) {
+        throw new Error("Organization context required");
+      }
+
       // Check if progress exists
       const existing = await db.query.cefrProgress.findFirst({
-        where: eq(cefrProgress.userId, userId),
+        where: and(
+          eq(cefrProgress.userId, userId),
+          eq(cefrProgress.organizationId, organizationId)
+        ),
       });
 
       // Create initial progress if none exists
@@ -34,6 +44,7 @@ export async function getCEFRProgress() {
         const [newProgress] = await db
           .insert(cefrProgress)
           .values({
+            organizationId,
             userId,
             currentLevel: "A1",
             targetLevel: null,
@@ -85,6 +96,7 @@ export async function getCEFRProgress() {
 
 /**
  * Update CEFR skill progress
+ * Multi-tenant: Updates within user's organization only
  * @param skill - The skill to update (listening, speaking, reading, writing)
  * @param progress - Progress value (0-100)
  */
@@ -92,8 +104,12 @@ export async function updateCEFRSkillProgress(
   skill: SkillType,
   progress: number
 ) {
-  return await fetchWithDrizzle(async (db, { userId }) => {
+  return await fetchWithDrizzle(async (db, { userId, organizationId }) => {
     try {
+      if (!organizationId) {
+        throw new Error("Organization context required");
+      }
+
       // Ensure progress exists
       await getCEFRProgress();
 
@@ -117,7 +133,10 @@ export async function updateCEFRSkillProgress(
           [columnName]: clampedProgress,
           updatedAt: new Date(),
         })
-        .where(eq(cefrProgress.userId, userId));
+        .where(and(
+          eq(cefrProgress.userId, userId),
+          eq(cefrProgress.organizationId, organizationId)
+        ));
 
       revalidatePath("/practice/general");
       revalidatePath("/dashboard");
@@ -132,11 +151,16 @@ export async function updateCEFRSkillProgress(
 
 /**
  * Set user's current CEFR level
+ * Multi-tenant: Updates within user's organization only
  * @param level - The CEFR level to set (A1-C2)
  */
 export async function setCEFRLevel(level: CEFRLevel) {
-  return await fetchWithDrizzle(async (db, { userId }) => {
+  return await fetchWithDrizzle(async (db, { userId, organizationId }) => {
     try {
+      if (!organizationId) {
+        throw new Error("Organization context required");
+      }
+
       // Ensure progress exists
       await getCEFRProgress();
 
@@ -146,7 +170,10 @@ export async function setCEFRLevel(level: CEFRLevel) {
           currentLevel: level,
           updatedAt: new Date(),
         })
-        .where(eq(cefrProgress.userId, userId));
+        .where(and(
+          eq(cefrProgress.userId, userId),
+          eq(cefrProgress.organizationId, organizationId)
+        ));
 
       revalidatePath("/practice/general");
       revalidatePath("/dashboard");
@@ -161,11 +188,16 @@ export async function setCEFRLevel(level: CEFRLevel) {
 
 /**
  * Set user's target CEFR level
+ * Multi-tenant: Updates within user's organization only
  * @param level - The target CEFR level (A1-C2)
  */
 export async function setCEFRTargetLevel(level: CEFRLevel | null) {
-  return await fetchWithDrizzle(async (db, { userId }) => {
+  return await fetchWithDrizzle(async (db, { userId, organizationId }) => {
     try {
+      if (!organizationId) {
+        throw new Error("Organization context required");
+      }
+
       // Ensure progress exists
       await getCEFRProgress();
 
@@ -175,7 +207,10 @@ export async function setCEFRTargetLevel(level: CEFRLevel | null) {
           targetLevel: level,
           updatedAt: new Date(),
         })
-        .where(eq(cefrProgress.userId, userId));
+        .where(and(
+          eq(cefrProgress.userId, userId),
+          eq(cefrProgress.organizationId, organizationId)
+        ));
 
       revalidatePath("/practice/general");
       revalidatePath("/dashboard");
@@ -190,11 +225,16 @@ export async function setCEFRTargetLevel(level: CEFRLevel | null) {
 
 /**
  * Increment CEFR question completed count and add points
+ * Multi-tenant: Updates within user's organization only
  * @param pointsEarned - Points to add
  */
 export async function incrementCEFRStats(pointsEarned: number) {
-  return await fetchWithDrizzle(async (db, { userId }) => {
+  return await fetchWithDrizzle(async (db, { userId, organizationId }) => {
     try {
+      if (!organizationId) {
+        throw new Error("Organization context required");
+      }
+
       // Ensure progress exists
       const currentProgress = await getCEFRProgress();
 
@@ -205,7 +245,10 @@ export async function incrementCEFRStats(pointsEarned: number) {
           totalPoints: currentProgress.totalPoints + pointsEarned,
           updatedAt: new Date(),
         })
-        .where(eq(cefrProgress.userId, userId));
+        .where(and(
+          eq(cefrProgress.userId, userId),
+          eq(cefrProgress.organizationId, organizationId)
+        ));
 
       revalidatePath("/practice/general");
       revalidatePath("/dashboard");
@@ -224,10 +267,15 @@ export async function incrementCEFRStats(pointsEarned: number) {
 
 /**
  * Reset CEFR progress (for testing or user request)
+ * Multi-tenant: Resets within user's organization only
  */
 export async function resetCEFRProgress() {
-  return await fetchWithDrizzle(async (db, { userId }) => {
+  return await fetchWithDrizzle(async (db, { userId, organizationId }) => {
     try {
+      if (!organizationId) {
+        throw new Error("Organization context required");
+      }
+
       await db
         .update(cefrProgress)
         .set({
@@ -241,7 +289,10 @@ export async function resetCEFRProgress() {
           questionsCompleted: 0,
           updatedAt: new Date(),
         })
-        .where(eq(cefrProgress.userId, userId));
+        .where(and(
+          eq(cefrProgress.userId, userId),
+          eq(cefrProgress.organizationId, organizationId)
+        ));
 
       revalidatePath("/practice/general");
       revalidatePath("/dashboard");
