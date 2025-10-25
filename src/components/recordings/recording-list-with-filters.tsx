@@ -26,7 +26,6 @@ import { AudioPlayerWithTranscript } from "./audio-player-with-transcript";
 import { getTeacherStudentRecordings } from "@/actions/recordings";
 import {
   Search,
-  Filter,
   CheckCircle2,
   Circle,
   Eye,
@@ -36,6 +35,24 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { toast } from "sonner";
+
+interface RecordingData {
+  id: bigint;
+  recordingType: string;
+  recordedAt: Date;
+  student?: {
+    fullName: string;
+    email: string;
+  };
+  transcription?: {
+    transcribedText: string;
+  };
+  metadata?: {
+    teacherReviewed?: boolean;
+    [key: string]: unknown;
+  };
+  audioUrl?: string;
+}
 
 interface RecordingListWithFiltersProps {
   classId?: bigint;
@@ -48,14 +65,14 @@ export function RecordingListWithFilters({
   studentId,
   showFilters = true,
 }: RecordingListWithFiltersProps) {
-  const [recordings, setRecordings] = useState<any[]>([]);
-  const [filteredRecordings, setFilteredRecordings] = useState<any[]>([]);
+  const [recordings, setRecordings] = useState<RecordingData[]>([]);
+  const [filteredRecordings, setFilteredRecordings] = useState<RecordingData[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [dateRangeFilter, setDateRangeFilter] = useState<"7d" | "30d" | "all">("all");
   const [reviewStatusFilter, setReviewStatusFilter] = useState<string>("all");
-  const [selectedRecording, setSelectedRecording] = useState<any | null>(null);
+  const [selectedRecording, setSelectedRecording] = useState<RecordingData | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -119,7 +136,7 @@ export function RecordingListWithFilters({
     setFilteredRecordings(filtered);
   }
 
-  function handleViewRecording(recording: any) {
+  function handleViewRecording(recording: RecordingData) {
     setSelectedRecording(recording);
     setIsDialogOpen(true);
   }
@@ -373,11 +390,14 @@ export function RecordingListWithFilters({
             <DialogTitle>Recording Details</DialogTitle>
           </DialogHeader>
           {selectedRecording && (
-            <AudioPlayerWithTranscript
-              recording={selectedRecording}
-              showFeedback={true}
-              onReviewComplete={handleDialogClose}
-            />
+            <>
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+              <AudioPlayerWithTranscript
+                recording={selectedRecording as any}
+                showFeedback={true}
+                onReviewComplete={handleDialogClose}
+              />
+            </>
           )}
         </DialogContent>
       </Dialog>

@@ -2,7 +2,7 @@
 
 import { fetchWithDrizzle } from "@/lib/db";
 import * as schema from "@/lib/db/schema";
-import { eq, and, desc, or, inArray, gte, lte } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 
 /**
  * Assignment target type definition
@@ -22,6 +22,16 @@ type AssignmentRequirements = {
   daily_target?: number;
   specific_questions?: string[];
   diagnostic_test_id?: bigint;
+};
+
+/**
+ * Recurring pattern structure for recurring assignments
+ */
+type RecurringPattern = {
+  frequency?: "daily" | "weekly" | "monthly";
+  interval?: number;
+  daysOfWeek?: number[];
+  endDate?: Date;
 };
 
 /**
@@ -51,13 +61,17 @@ export async function createAssignment({
   requirements?: AssignmentRequirements;
   dueDate?: Date;
   isRecurring?: boolean;
-  recurringPattern?: any;
+  recurringPattern?: RecurringPattern;
   pointsReward?: number;
   targets: AssignmentTarget[];
 }) {
   return fetchWithDrizzle(async (db, { userId, organizationId, enhancedUser }) => {
     if (!organizationId) {
       throw new Error("Organization context required");
+    }
+
+    if (!enhancedUser) {
+      throw new Error("User context required");
     }
 
     // Validate user is a teacher
@@ -168,6 +182,10 @@ export async function getTeacherAssignments(filters?: {
       throw new Error("Organization context required");
     }
 
+    if (!enhancedUser) {
+      throw new Error("User context required");
+    }
+
     // Validate user is a teacher
     if (enhancedUser.role !== "teacher") {
       throw new Error("Access denied: Teacher role required");
@@ -234,6 +252,10 @@ export async function getStudentAssignments(status?: string) {
       throw new Error("Organization context required");
     }
 
+    if (!enhancedUser) {
+      throw new Error("User context required");
+    }
+
     // Validate user is a student
     if (enhancedUser.role !== "student") {
       throw new Error("Access denied: Student role required");
@@ -286,13 +308,17 @@ export async function submitAssignmentWork({
   submissionType: "practice_session" | "diagnostic_test" | "custom_content";
   practiceSessionId?: bigint;
   diagnosticAttemptId?: bigint;
-  content?: any;
+  content?: Record<string, unknown>;
   audioRecordingIds?: bigint[];
   transcriptionIds?: bigint[];
 }) {
   return fetchWithDrizzle(async (db, { userId, organizationId, enhancedUser }) => {
     if (!organizationId) {
       throw new Error("Organization context required");
+    }
+
+    if (!enhancedUser) {
+      throw new Error("User context required");
     }
 
     // Validate user is a student
@@ -380,6 +406,10 @@ export async function updateStudentAssignmentStatus(
       throw new Error("Organization context required");
     }
 
+    if (!enhancedUser) {
+      throw new Error("User context required");
+    }
+
     // Validate user is a teacher
     if (enhancedUser.role !== "teacher") {
       throw new Error("Access denied: Teacher role required");
@@ -434,6 +464,10 @@ export async function provideTeacherFeedback(
       throw new Error("Organization context required");
     }
 
+    if (!enhancedUser) {
+      throw new Error("User context required");
+    }
+
     // Validate user is a teacher
     if (enhancedUser.role !== "teacher") {
       throw new Error("Access denied: Teacher role required");
@@ -485,6 +519,10 @@ export async function getAssignmentSubmissions(assignmentId: bigint) {
   return fetchWithDrizzle(async (db, { userId, organizationId, enhancedUser }) => {
     if (!organizationId) {
       throw new Error("Organization context required");
+    }
+
+    if (!enhancedUser) {
+      throw new Error("User context required");
     }
 
     // Validate user is a teacher and owns this assignment
@@ -543,6 +581,10 @@ export async function getAssignmentDetails(assignmentId: bigint) {
       throw new Error("Organization context required");
     }
 
+    if (!enhancedUser) {
+      throw new Error("User context required");
+    }
+
     // Validate teacher access
     if (enhancedUser.role !== "teacher") {
       throw new Error("Access denied: Teacher role required");
@@ -580,6 +622,10 @@ export async function getAssignmentStudentStatuses(assignmentId: bigint) {
   return fetchWithDrizzle(async (db, { userId, organizationId, enhancedUser }) => {
     if (!organizationId) {
       throw new Error("Organization context required");
+    }
+
+    if (!enhancedUser) {
+      throw new Error("User context required");
     }
 
     // Validate teacher access
@@ -633,6 +679,10 @@ export async function getAssignmentAnalytics(assignmentId: bigint) {
   return fetchWithDrizzle(async (db, { userId, organizationId, enhancedUser }) => {
     if (!organizationId) {
       throw new Error("Organization context required");
+    }
+
+    if (!enhancedUser) {
+      throw new Error("User context required");
     }
 
     // Validate teacher access
@@ -705,6 +755,10 @@ export async function deleteAssignment(assignmentId: bigint) {
       throw new Error("Organization context required");
     }
 
+    if (!enhancedUser) {
+      throw new Error("User context required");
+    }
+
     // Validate teacher access
     if (enhancedUser.role !== "teacher") {
       throw new Error("Access denied: Teacher role required");
@@ -753,6 +807,10 @@ export async function updateAssignment(
   return fetchWithDrizzle(async (db, { userId, organizationId, enhancedUser }) => {
     if (!organizationId) {
       throw new Error("Organization context required");
+    }
+
+    if (!enhancedUser) {
+      throw new Error("User context required");
     }
 
     // Validate teacher access

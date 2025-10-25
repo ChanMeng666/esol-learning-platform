@@ -184,7 +184,8 @@ export async function getPracticeSessionWithAnswers(sessionId: bigint) {
       ),
       with: {
         answers: {
-          orderBy: (answers, { asc }) => [asc(answers.answeredAt)],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          orderBy: (answers: any, { asc }: any) => [asc(answers.answeredAt)],
         },
       },
     });
@@ -511,7 +512,8 @@ export async function getPracticeSessionsWithFilters(
       limit,
       with: {
         answers: {
-          orderBy: (answers, { asc }) => [asc(answers.answeredAt)],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          orderBy: (answers: any, { asc }: any) => [asc(answers.answeredAt)],
         },
       },
     });

@@ -288,11 +288,13 @@ export default function TeacherAssignmentsPage() {
             </div>
           ) : (
             <EmptyState
-              icon={ClipboardList}
+              icon={<ClipboardList className="w-16 h-16" />}
               title="No assignments yet"
               description="Create your first assignment to get started"
-              actionLabel="Create Assignment"
-              onAction={handleCreateAssignment}
+              action={{
+                label: "Create Assignment",
+                onClick: handleCreateAssignment,
+              }}
             />
           )
         ) : (

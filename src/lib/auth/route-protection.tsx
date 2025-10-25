@@ -118,7 +118,7 @@ function DefaultUnauthorizedComponent() {
         <div className="text-6xl mb-4">🔒</div>
         <h1 className="text-3xl font-bold mb-2">Access Denied</h1>
         <p className="text-muted-foreground mb-6">
-          You don't have permission to access this page.
+          You do not have permission to access this page.
         </p>
         <button
           onClick={() => router.push("/")}

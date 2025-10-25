@@ -98,6 +98,10 @@ export async function startDiagnosticAttempt(testId: bigint) {
       throw new Error("Organization context required");
     }
 
+    if (!enhancedUser) {
+      throw new Error("User context required");
+    }
+
     // Validate test exists and is accessible
     const test = await db.query.diagnosticTests.findFirst({
       where: eq(schema.diagnosticTests.id, testId),
@@ -157,6 +161,10 @@ export async function submitDiagnosticAnswer({
   return fetchWithDrizzle(async (db, { userId, organizationId, enhancedUser }) => {
     if (!organizationId) {
       throw new Error("Organization context required");
+    }
+
+    if (!enhancedUser) {
+      throw new Error("User context required");
     }
 
     // Validate attempt belongs to current user and organization
@@ -247,6 +255,10 @@ export async function completeDiagnosticAttempt(attemptId: bigint) {
   return fetchWithDrizzle(async (db, { userId, organizationId, enhancedUser }) => {
     if (!organizationId) {
       throw new Error("Organization context required");
+    }
+
+    if (!enhancedUser) {
+      throw new Error("User context required");
     }
 
     // Validate attempt

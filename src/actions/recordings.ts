@@ -3,7 +3,7 @@
 import { fetchWithDrizzle } from "@/lib/db";
 import * as schema from "@/lib/db/schema";
 import { uploadAudioFile } from "@/lib/blob/audio-storage";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 
 /**
  * Save user recording with transcription
@@ -336,7 +336,8 @@ export async function getTeacherStudentRecordings(
         },
       });
 
-      if (!enrollment || enrollment.class.teacherId !== enhancedUser.id) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (!enrollment || (enrollment as any).class?.teacherId !== enhancedUser.id) {
         throw new Error("Access denied: Student not in your classes");
       }
 
@@ -393,7 +394,7 @@ export async function getTeacherStudentRecordings(
 
     // Build query conditions
     const conditions = [
-      inArray(schema.userRecordings.userId, accessibleStudentIds),
+      inArray(schema.userRecordings.userId, accessibleStudentIds.map(id => id.toString())),
       eq(schema.userRecordings.organizationId, organizationId),
     ];
 
@@ -424,7 +425,7 @@ export async function getTeacherStudentRecordings(
     const recordingsWithStudents = await Promise.all(
       recordings.map(async (recording) => {
         const student = await db.query.users.findFirst({
-          where: eq(schema.users.id, recording.userId),
+          where: eq(schema.users.id, BigInt(recording.userId)),
         });
 
         return {
@@ -479,7 +480,7 @@ export async function getTeacherAccessRecording(recordingId: bigint) {
     // Validate teacher has access to this student
     const enrollment = await db.query.classEnrollments.findFirst({
       where: and(
-        eq(schema.classEnrollments.studentId, recording.userId),
+        eq(schema.classEnrollments.studentId, BigInt(recording.userId)),
         eq(schema.classEnrollments.status, "active")
       ),
       with: {
@@ -487,13 +488,14 @@ export async function getTeacherAccessRecording(recordingId: bigint) {
       },
     });
 
-    if (!enrollment || enrollment.class.teacherId !== enhancedUser.id) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (!enrollment || (enrollment as any).class?.teacherId !== enhancedUser.id) {
       throw new Error("Access denied: Student not in your classes");
     }
 
     // Get student details
     const student = await db.query.users.findFirst({
-      where: eq(schema.users.id, recording.userId),
+      where: eq(schema.users.id, BigInt(recording.userId)),
     });
 
     return {
@@ -541,7 +543,7 @@ export async function markRecordingReviewed(recordingId: bigint, feedback?: stri
     // Validate teacher has access to this student
     const enrollment = await db.query.classEnrollments.findFirst({
       where: and(
-        eq(schema.classEnrollments.studentId, recording.userId),
+        eq(schema.classEnrollments.studentId, BigInt(recording.userId)),
         eq(schema.classEnrollments.status, "active")
       ),
       with: {
@@ -549,14 +551,17 @@ export async function markRecordingReviewed(recordingId: bigint, feedback?: stri
       },
     });
 
-    if (!enrollment || enrollment.class.teacherId !== enhancedUser.id) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (!enrollment || (enrollment as any).class?.teacherId !== enhancedUser.id) {
       throw new Error("Access denied: Student not in your classes");
     }
 
     // Update recording metadata
-    const currentMetadata = (recording.metadata as Record<string, unknown>) || {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const currentMetadata = ((recording as any).metadata as Record<string, unknown>) || {};
     const [updated] = await db
       .update(schema.userRecordings)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .set({
         metadata: {
           ...currentMetadata,
@@ -564,8 +569,8 @@ export async function markRecordingReviewed(recordingId: bigint, feedback?: stri
           reviewedBy: enhancedUser.id.toString(),
           reviewedAt: new Date().toISOString(),
           teacherFeedback: feedback,
-        } as Record<string, unknown>,
-      })
+        },
+      } as any)
       .where(eq(schema.userRecordings.id, recordingId))
       .returning();
 
@@ -629,7 +634,7 @@ export async function getClassRecordingStats(classId: bigint) {
     // Get all recordings for these students
     const recordings = await db.query.userRecordings.findMany({
       where: and(
-        inArray(schema.userRecordings.userId, studentIds),
+        inArray(schema.userRecordings.userId, studentIds.map(id => id.toString())),
         eq(schema.userRecordings.organizationId, organizationId)
       ),
     });

@@ -37,7 +37,7 @@ export interface Permission {
   resource: Resource;
   action: Action;
   scope: PermissionScope;
-  conditions?: Record<string, any>;
+  conditions?: Record<string, unknown>;
 }
 
 /**

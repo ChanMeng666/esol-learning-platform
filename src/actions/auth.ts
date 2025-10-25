@@ -15,6 +15,10 @@ export async function getCurrentUserRole() {
       throw new Error("Organization context required");
     }
 
+    if (!enhancedUser) {
+      throw new Error("User context required");
+    }
+
     return {
       userId,
       organizationId: organizationId.toString(),
@@ -37,6 +41,10 @@ export async function checkPermission(resource: Resource, action: Action) {
   return fetchWithDrizzle(async (db, { userId, organizationId, enhancedUser }) => {
     if (!organizationId) {
       throw new Error("Organization context required");
+    }
+
+    if (!enhancedUser) {
+      throw new Error("User context required");
     }
 
     const userRole = enhancedUser.role as UserRole;
@@ -88,6 +96,10 @@ export async function getUsersByRole(role: UserRole) {
       throw new Error("Organization context required");
     }
 
+    if (!enhancedUser) {
+      throw new Error("User context required");
+    }
+
     // Validate requester has permission to view users
     if (enhancedUser.role !== "teacher" && enhancedUser.role !== "school_admin") {
       throw new Error("Access denied: Insufficient permissions to view users");
@@ -126,6 +138,7 @@ export async function getOrganizationStudents() {
  */
 export async function isTeacher() {
   return fetchWithDrizzle(async (db, { enhancedUser }) => {
+    if (!enhancedUser) return false;
     return enhancedUser.role === "teacher";
   });
 }
@@ -135,6 +148,7 @@ export async function isTeacher() {
  */
 export async function isStudent() {
   return fetchWithDrizzle(async (db, { enhancedUser }) => {
+    if (!enhancedUser) return false;
     return enhancedUser.role === "student";
   });
 }
@@ -144,6 +158,7 @@ export async function isStudent() {
  */
 export async function isAdmin() {
   return fetchWithDrizzle(async (db, { enhancedUser }) => {
+    if (!enhancedUser) return false;
     return (
       enhancedUser.role === "school_admin" ||
       enhancedUser.role === "system_admin"
@@ -159,6 +174,10 @@ export async function validateTeacherStudentAccess(studentId: bigint) {
   return fetchWithDrizzle(async (db, { userId, organizationId, enhancedUser }) => {
     if (!organizationId) {
       throw new Error("Organization context required");
+    }
+
+    if (!enhancedUser) {
+      return false;
     }
 
     // Must be a teacher
@@ -199,6 +218,10 @@ export async function validateTeacherClassAccess(classId: bigint) {
   return fetchWithDrizzle(async (db, { userId, organizationId, enhancedUser }) => {
     if (!organizationId) {
       throw new Error("Organization context required");
+    }
+
+    if (!enhancedUser) {
+      return false;
     }
 
     // Must be a teacher
@@ -244,6 +267,10 @@ export async function grantUserPermission(
   return fetchWithDrizzle(async (db, { userId, organizationId, enhancedUser }) => {
     if (!organizationId) {
       throw new Error("Organization context required");
+    }
+
+    if (!enhancedUser) {
+      throw new Error("User context required");
     }
 
     // Only admins can grant permissions
@@ -295,6 +322,10 @@ export async function revokeUserPermission(
   return fetchWithDrizzle(async (db, { userId, organizationId, enhancedUser }) => {
     if (!organizationId) {
       throw new Error("Organization context required");
+    }
+
+    if (!enhancedUser) {
+      throw new Error("User context required");
     }
 
     // Only admins can revoke permissions

@@ -1,15 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LoadingState } from "@/components/shared/loading-state";
 import {
   Lightbulb,
-  TrendingUp,
-  TrendingDown,
   AlertCircle,
   CheckCircle2,
   Info,
@@ -25,6 +22,17 @@ interface Insight {
   description: string;
 }
 
+interface MetricsData {
+  skills?: {
+    [key: string]: number;
+  };
+  engagement?: {
+    totalSessions?: number;
+    avgAccuracy?: number;
+    streak?: number;
+  };
+}
+
 interface InsightsPanelProps {
   title?: string;
   description?: string;
@@ -33,7 +41,7 @@ interface InsightsPanelProps {
   recommendations?: string[];
   strengths?: Insight[];
   challenges?: Insight[];
-  metrics?: any;
+  metrics?: MetricsData;
   onRefresh?: () => Promise<void>;
   showMetrics?: boolean;
   isLoading?: boolean;
@@ -298,7 +306,7 @@ export function InsightsPanel({
               <Lightbulb className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
               <h3 className="text-lg font-semibold mb-2">No Insights Available</h3>
               <p className="text-muted-foreground mb-4">
-                There isn't enough data yet to generate meaningful insights.
+                There is not enough data yet to generate meaningful insights.
               </p>
               {onRefresh && (
                 <Button onClick={handleRefresh} disabled={refreshing}>

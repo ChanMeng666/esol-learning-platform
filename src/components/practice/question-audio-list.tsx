@@ -41,7 +41,8 @@ export function QuestionAudioList() {
     try {
       const data = await getUserQuestionAudioHistory({}, 50);
       console.log("[QuestionAudioList] Loaded audio entries:", data);
-      setAudioEntries(data as QuestionAudioEntry[]);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setAudioEntries(data as any);
     } catch (error) {
       console.error("[QuestionAudioList] Failed to load audio:", error);
     } finally {

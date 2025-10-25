@@ -196,7 +196,7 @@ export function Navbar() {
                                 <Link key={item.href} href={item.href}>
                                     <Button
                                         variant={isActive ? "default" : "ghost"}
-                                        className={`relative ${isActive ? 'bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90' : 'text-black dark:text-white'} ${item.featured ? 'font-semibold' : ''}`}
+                                        className={`relative ${isActive ? 'bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90' : 'text-black dark:text-white'} ${'featured' in item && item.featured ? 'font-semibold' : ''}`}
                                     >
                                         {item.label}
                                     </Button>
@@ -373,7 +373,7 @@ export function Navbar() {
                                                 <Link key={item.href} href={item.href} onClick={() => setIsOpen(false)}>
                                                     <Button
                                                         variant={isActive ? "default" : "ghost"}
-                                                        className={`w-full justify-start ${isActive ? 'bg-black dark:bg-white text-white dark:text-black' : 'text-black dark:text-white'} ${item.featured ? 'font-semibold' : ''}`}
+                                                        className={`w-full justify-start ${isActive ? 'bg-black dark:bg-white text-white dark:text-black' : 'text-black dark:text-white'} ${'featured' in item && item.featured ? 'font-semibold' : ''}`}
                                                     >
                                                         {item.label}
                                                     </Button>

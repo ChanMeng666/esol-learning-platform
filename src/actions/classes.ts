@@ -14,6 +14,10 @@ export async function getTeacherClasses() {
       throw new Error("Organization context required");
     }
 
+    if (!enhancedUser) {
+      throw new Error("User context required");
+    }
+
     // Validate user is a teacher
     if (enhancedUser.role !== "teacher") {
       throw new Error("Access denied: Teacher role required");
@@ -88,6 +92,10 @@ export async function getClassStudents(
   return fetchWithDrizzle(async (db, { userId, organizationId, enhancedUser }) => {
     if (!organizationId) {
       throw new Error("Organization context required");
+    }
+
+    if (!enhancedUser) {
+      throw new Error("User context required");
     }
 
     // Validate user is a teacher
@@ -219,6 +227,10 @@ export async function getStudentDetailedProgress(studentId: bigint) {
       throw new Error("Organization context required");
     }
 
+    if (!enhancedUser) {
+      throw new Error("User context required");
+    }
+
     // Validate user is a teacher
     if (enhancedUser.role !== "teacher") {
       throw new Error("Access denied: Teacher role required");
@@ -330,6 +342,10 @@ export async function getClassAnalyticsSummary(
       throw new Error("Organization context required");
     }
 
+    if (!enhancedUser) {
+      throw new Error("User context required");
+    }
+
     // Validate user is a teacher with access to this class
     if (enhancedUser.role !== "teacher") {
       throw new Error("Access denied: Teacher role required");
@@ -439,6 +455,10 @@ export async function enrollStudentsToClass(classId: bigint, studentIds: bigint[
       throw new Error("Organization context required");
     }
 
+    if (!enhancedUser) {
+      throw new Error("User context required");
+    }
+
     // Validate user is a teacher
     if (enhancedUser.role !== "teacher" && enhancedUser.role !== "school_admin") {
       throw new Error("Access denied: Teacher or admin role required");
@@ -511,6 +531,10 @@ export async function createStudentGroup(name: string, description: string, stud
       throw new Error("Organization context required");
     }
 
+    if (!enhancedUser) {
+      throw new Error("User context required");
+    }
+
     // Validate user is a teacher
     if (enhancedUser.role !== "teacher") {
       throw new Error("Access denied: Teacher role required");
@@ -564,6 +588,10 @@ export async function getTeacherStudentGroups() {
   return fetchWithDrizzle(async (db, { userId, organizationId, enhancedUser }) => {
     if (!organizationId) {
       throw new Error("Organization context required");
+    }
+
+    if (!enhancedUser) {
+      throw new Error("User context required");
     }
 
     // Validate user is a teacher

@@ -197,7 +197,8 @@ export async function getConversationWithMessages(conversationId: bigint) {
       ),
       with: {
         messages: {
-          orderBy: (messages, { asc }) => [asc(messages.createdAt)],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          orderBy: (messages: any, { asc }: any) => [asc(messages.createdAt)],
         },
       },
     });
