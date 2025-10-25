@@ -134,20 +134,38 @@ function DefaultUnauthorizedComponent() {
 /**
  * Simplified route protection for common roles
  */
-export const withTeacherProtection = <P extends object>(Component: ComponentType<P>) =>
-  withRoleProtection(Component, {
-    allowedRoles: ["teacher", "school_admin", "system_admin"],
-    redirectTo: "/dashboard",
-  });
-
 export const withStudentProtection = <P extends object>(Component: ComponentType<P>) =>
   withRoleProtection(Component, {
     allowedRoles: ["student"],
     redirectTo: "/",
   });
 
-export const withAdminProtection = <P extends object>(Component: ComponentType<P>) =>
+export const withTeacherProtection = <P extends object>(Component: ComponentType<P>) =>
+  withRoleProtection(Component, {
+    allowedRoles: ["teacher", "school_admin", "system_admin"],
+    redirectTo: "/",
+  });
+
+export const withParentProtection = <P extends object>(Component: ComponentType<P>) =>
+  withRoleProtection(Component, {
+    allowedRoles: ["parent", "school_admin", "system_admin"],
+    redirectTo: "/",
+  });
+
+export const withDepartmentHeadProtection = <P extends object>(Component: ComponentType<P>) =>
+  withRoleProtection(Component, {
+    allowedRoles: ["department_head", "school_admin", "system_admin"],
+    redirectTo: "/",
+  });
+
+export const withSchoolAdminProtection = <P extends object>(Component: ComponentType<P>) =>
   withRoleProtection(Component, {
     allowedRoles: ["school_admin", "system_admin"],
+    redirectTo: "/",
+  });
+
+export const withSystemAdminProtection = <P extends object>(Component: ComponentType<P>) =>
+  withRoleProtection(Component, {
+    allowedRoles: ["system_admin"],
     redirectTo: "/",
   });
