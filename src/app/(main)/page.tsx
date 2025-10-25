@@ -194,9 +194,13 @@ export default function HomePage() {
           </p>
 
           {user ? (
-            // Logged in user - show Go to Dashboard
+            // Logged in user - show Go to Dashboard (role-based redirect)
             <Button
-              onClick={() => router.push("/dashboard")}
+              onClick={() => {
+                const userRole = (user.clientMetadata?.role as string) || "student";
+                const dashboardPath = userRole === "teacher" ? "/teacher/dashboard" : "/dashboard";
+                router.push(dashboardPath);
+              }}
               size="lg"
               className="mt-4 bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90 transition-transform hover:scale-105 active:scale-95"
             >

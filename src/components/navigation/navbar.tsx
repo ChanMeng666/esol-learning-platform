@@ -25,12 +25,12 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useState, useEffect } from 'react'
 
-// Navigation structure - only visible to authenticated users
-const navigationStructure = [
+// Navigation structure for students
+const studentNavigation = [
     {
         label: 'Speaking',
         href: '/speaking',
-        featured: true, // Highlighted main feature
+        featured: true,
     },
     {
         label: 'Practice',
@@ -41,8 +41,35 @@ const navigationStructure = [
         ],
     },
     {
+        label: 'Diagnostic',
+        href: '/diagnostic',
+    },
+    {
         label: 'Dashboard',
         href: '/dashboard',
+    },
+]
+
+// Navigation structure for teachers
+const teacherNavigation = [
+    {
+        label: 'Dashboard',
+        href: '/teacher/dashboard',
+    },
+    {
+        label: 'Classes',
+        href: '/teacher/classes',
+    },
+    {
+        label: 'Assignments',
+        href: '/teacher/assignments',
+    },
+    {
+        label: 'Students',
+        subItems: [
+            { href: '/teacher/classes', label: 'By Class' },
+            { href: '/teacher/students', label: 'All Students', disabled: true },
+        ],
     },
 ]
 
@@ -59,6 +86,12 @@ export function Navbar() {
     // No redirect - allow unauthenticated users to access public pages
     const user = useUser()
     const app = useStackApp()
+
+    // Get user role from Stack Auth clientMetadata
+    const userRole = (user?.clientMetadata?.role as string) || 'student'
+
+    // Select navigation based on role
+    const navigationStructure = userRole === 'teacher' ? teacherNavigation : studentNavigation
 
     // Show navigation only for authenticated users
     const showNavigation = !!user
