@@ -46,7 +46,7 @@ const studentNavigation = [
     },
     {
         label: 'Dashboard',
-        href: '/dashboard',
+        href: '/dashboard', // Unified dashboard entry point
     },
 ]
 
@@ -54,7 +54,7 @@ const studentNavigation = [
 const teacherNavigation = [
     {
         label: 'Dashboard',
-        href: '/teacher/dashboard',
+        href: '/dashboard', // Unified dashboard entry point
     },
     {
         label: 'Classes',

@@ -56,7 +56,7 @@ export const studentDashboardConfig: DashboardConfig = {
   navMain: [
     {
       title: "Dashboard",
-      url: "/dashboard",
+      url: "/student/dashboard",
       icon: LayoutDashboard,
     },
     {
@@ -81,7 +81,7 @@ export const studentDashboardConfig: DashboardConfig = {
     },
     {
       title: "My Progress",
-      url: "/progress",
+      url: "/student/progress",
       icon: TrendingUp,
     },
   ],
@@ -93,7 +93,7 @@ export const studentDashboardConfig: DashboardConfig = {
     },
     {
       title: "Settings",
-      url: "/settings",
+      url: "/student/settings",
       icon: Settings,
     },
   ],
@@ -256,44 +256,44 @@ export const schoolAdminDashboardConfig: DashboardConfig = {
   navMain: [
     {
       title: "Dashboard",
-      url: "/admin/dashboard",
+      url: "/school-admin/dashboard",
       icon: LayoutDashboard,
     },
     {
       title: "Departments",
-      url: "/admin/departments",
+      url: "/school-admin/departments",
       icon: Building2,
     },
     {
       title: "Users",
-      url: "/admin/users",
+      url: "/school-admin/users",
       icon: Users,
     },
     {
       title: "Classes",
-      url: "/admin/classes",
+      url: "/school-admin/classes",
       icon: GraduationCap,
     },
     {
       title: "Analytics",
-      url: "/admin/analytics",
+      url: "/school-admin/analytics",
       icon: BarChart3,
     },
     {
       title: "Announcements",
-      url: "/admin/announcements",
+      url: "/school-admin/announcements",
       icon: Bell,
     },
     {
       title: "Reports",
-      url: "/admin/reports",
+      url: "/school-admin/reports",
       icon: FileText,
     },
   ],
   navSecondary: [
     {
       title: "Organization Settings",
-      url: "/admin/settings",
+      url: "/school-admin/settings",
       icon: Settings,
     },
   ],
@@ -306,44 +306,44 @@ export const systemAdminDashboardConfig: DashboardConfig = {
   navMain: [
     {
       title: "Dashboard",
-      url: "/system/dashboard",
+      url: "/system-admin/dashboard",
       icon: LayoutDashboard,
     },
     {
       title: "Organizations",
-      url: "/system/organizations",
+      url: "/system-admin/organizations",
       icon: Building2,
     },
     {
       title: "System Health",
-      url: "/system/health",
+      url: "/system-admin/health",
       icon: Activity,
     },
     {
       title: "User Management",
-      url: "/system/users",
+      url: "/system-admin/users",
       icon: Users,
     },
     {
       title: "Permissions",
-      url: "/system/permissions",
+      url: "/system-admin/permissions",
       icon: Shield,
     },
     {
       title: "Audit Logs",
-      url: "/system/audit",
+      url: "/system-admin/audit",
       icon: FileText,
     },
     {
       title: "Database",
-      url: "/system/database",
+      url: "/system-admin/database",
       icon: Database,
     },
   ],
   navSecondary: [
     {
       title: "System Tools",
-      url: "/system/tools",
+      url: "/system-admin/tools",
       icon: Settings,
     },
   ],
@@ -366,13 +366,13 @@ export function getDashboardConfig(role: UserRole): DashboardConfig {
 // Get default dashboard route by role
 export function getDefaultDashboardRoute(role: UserRole): string {
   const routes: Record<UserRole, string> = {
-    student: "/dashboard",
+    student: "/student/dashboard",
     teacher: "/teacher/dashboard",
     parent: "/parent/dashboard",
     department_head: "/department/dashboard",
-    school_admin: "/admin/dashboard",
-    system_admin: "/system/dashboard",
+    school_admin: "/school-admin/dashboard",
+    system_admin: "/system-admin/dashboard",
   };
 
-  return routes[role] || "/dashboard";
+  return routes[role] || "/student/dashboard";
 }
