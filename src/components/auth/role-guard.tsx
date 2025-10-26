@@ -30,10 +30,11 @@ export async function RoleGuard({
   }
 
   // Check user role
-  const userRole = user.clientMetadata?.role as UserRole | undefined;
+  // Default to "student" for legacy users without roles
+  const userRole = (user.clientMetadata?.role as UserRole | undefined) || "student";
 
   // Redirect if role not allowed
-  if (!userRole || !allowedRoles.includes(userRole)) {
+  if (!allowedRoles.includes(userRole)) {
     redirect(redirectTo);
   }
 
@@ -50,7 +51,8 @@ export async function getDefaultRedirectForRole(): Promise<string> {
     return "/handler/sign-in";
   }
 
-  const userRole = user.clientMetadata?.role as UserRole | undefined;
+  // Default to "student" for legacy users without roles
+  const userRole = (user.clientMetadata?.role as UserRole | undefined) || "student";
 
   switch (userRole) {
     case "student":
@@ -58,14 +60,14 @@ export async function getDefaultRedirectForRole(): Promise<string> {
     case "teacher":
       return "/teacher/dashboard";
     case "parent":
-      return "/parent/dashboard";
+      return "/dashboard"; // Parents use main dashboard for now
     case "department_head":
-      return "/department/dashboard";
+      return "/dashboard"; // Department heads use main dashboard for now
     case "school_admin":
-      return "/admin/dashboard";
+      return "/dashboard"; // School admins use main dashboard for now
     case "system_admin":
-      return "/system/dashboard";
+      return "/dashboard"; // System admins use main dashboard for now
     default:
-      return "/";
+      return "/dashboard"; // Default to student dashboard
   }
 }

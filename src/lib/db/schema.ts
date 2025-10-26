@@ -1298,6 +1298,75 @@ export const organizationQuestionAccess = pgTable("organization_question_access"
   questionBankIdIdx: index("organization_question_access_question_bank_id_idx").on(table.questionBankId),
 }));
 
+/**
+ * Invitation Codes Table
+ * Manages invitation codes for user registration with specific roles and organizations
+ */
+export const invitationCodes = pgTable("invitation_codes", {
+  id: bigint("id", { mode: "bigint" }).primaryKey().generatedByDefaultAsIdentity(),
+  organizationId: bigint("organization_id", { mode: "bigint" }).notNull(), // FK to organizations
+
+  // Invitation code details
+  code: text("code").notNull().unique(), // e.g., "SCHOOL-2024-STUDENT", "TEACHER-JOHN-2024"
+  role: text("role").notNull(), // student, teacher, parent, school_admin, department_head
+  type: text("type").notNull(), // organization_general, teacher_specific, parent_specific
+
+  // Usage limits
+  maxUses: integer("max_uses"), // null = unlimited
+  usedCount: integer("used_count").notNull().default(0),
+
+  // Validity
+  expiresAt: timestamp("expires_at", { withTimezone: true }), // null = no expiration
+  isActive: boolean("is_active").notNull().default(true),
+
+  // Metadata
+  createdByUserId: bigint("created_by_user_id", { mode: "bigint" }), // FK to users (optional)
+  metadata: jsonb("metadata"), // Additional information (e.g., department, class, purpose)
+  // metadata structure example:
+  // {
+  //   department_id: bigint,
+  //   class_id: bigint,
+  //   notes: string,
+  //   auto_enroll_classes: [bigint, bigint]
+  // }
+
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+}, (table) => ({
+  organizationIdIdx: index("invitation_codes_organization_id_idx").on(table.organizationId),
+  codeIdx: index("invitation_codes_code_idx").on(table.code),
+  roleIdx: index("invitation_codes_role_idx").on(table.role),
+  isActiveIdx: index("invitation_codes_is_active_idx").on(table.isActive),
+  expiresAtIdx: index("invitation_codes_expires_at_idx").on(table.expiresAt),
+}));
+
+/**
+ * Invitation Usages Table
+ * Tracks who used which invitation codes and when
+ */
+export const invitationUsages = pgTable("invitation_usages", {
+  id: bigint("id", { mode: "bigint" }).primaryKey().generatedByDefaultAsIdentity(),
+  invitationCodeId: bigint("invitation_code_id", { mode: "bigint" }).notNull(), // FK to invitation_codes
+  userId: bigint("user_id", { mode: "bigint" }).notNull(), // FK to users
+  organizationId: bigint("organization_id", { mode: "bigint" }).notNull(), // FK to organizations (for multi-tenant isolation)
+
+  // Usage details
+  usedAt: timestamp("used_at", { withTimezone: true }).defaultNow().notNull(),
+  ipAddress: text("ip_address"), // Optional IP tracking for security
+  userAgent: text("user_agent"), // Optional browser/device info
+
+  // Result
+  success: boolean("success").notNull().default(true),
+  errorMessage: text("error_message"), // If usage failed, reason why
+
+  metadata: jsonb("metadata"), // Additional usage context
+}, (table) => ({
+  invitationCodeIdIdx: index("invitation_usages_invitation_code_id_idx").on(table.invitationCodeId),
+  userIdIdx: index("invitation_usages_user_id_idx").on(table.userId),
+  organizationIdIdx: index("invitation_usages_organization_id_idx").on(table.organizationId),
+  usedAtIdx: index("invitation_usages_used_at_idx").on(table.usedAt),
+}));
+
 // ============================================================================
 // SCHEMA EXPORT
 // ============================================================================
@@ -1368,4 +1437,8 @@ export const schema = {
   questionBanks,
   questionBankQuestions,
   organizationQuestionAccess,
+
+  // Invitation & Registration System
+  invitationCodes,
+  invitationUsages,
 };

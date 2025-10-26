@@ -6,8 +6,8 @@ export const stackServerApp = new StackServerApp({
   tokenStore: "nextjs-cookie",
   urls: {
     home: "/",
-    afterSignIn: "/dashboard",
-    afterSignUp: "/dashboard",
+    afterSignIn: "/auth/callback", // Check user status after sign in (handles OAuth)
+    afterSignUp: "/auth/callback", // Process invitation code after signup
     afterSignOut: "/",
   },
 });

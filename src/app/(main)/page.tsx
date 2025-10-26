@@ -207,8 +207,8 @@ export default function HomePage() {
               Go to Dashboard
             </Button>
           ) : (
-            // Guest user - show Get Started (leads to sign-up)
-            <Link href={app.urls.signUp}>
+            // Guest user - show Get Started (leads to registration with invitation code)
+            <Link href="/register">
               <Button
                 size="lg"
                 className="mt-4 bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90 transition-transform hover:scale-105 active:scale-95"

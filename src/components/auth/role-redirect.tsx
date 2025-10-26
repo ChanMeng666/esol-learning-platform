@@ -80,6 +80,7 @@ export function useHasRole(allowedRoles: string[]): boolean {
 
   if (!user) return false;
 
+  // Default to "student" for legacy users without roles
   const userRole = (user.clientMetadata?.role as string) || "student";
   return allowedRoles.includes(userRole);
 }

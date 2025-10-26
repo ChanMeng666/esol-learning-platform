@@ -13,7 +13,7 @@ export default async function DashboardLayout({
   const defaultOpen = cookieStore.get("sidebar:state")?.value !== "false";
 
   return (
-    <RoleGuard allowedRoles={["student"]}>
+    <RoleGuard allowedRoles={["student", "parent", "system_admin", "school_admin", "department_head"]}>
       <SidebarProvider defaultOpen={defaultOpen}>
         <AppSidebar userRole="student" />
         <SidebarInset>

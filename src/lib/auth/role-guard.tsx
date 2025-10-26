@@ -35,9 +35,10 @@ export function RoleGuard({
   // Get user role from custom data
   // Note: This assumes the role is stored in Stack Auth's custom data
   // In production, you might need to fetch from your users table
-  const userRole = user?.clientMetadata?.role as UserRole | undefined;
+  // Default to "student" for legacy users without roles
+  const userRole = (user?.clientMetadata?.role as UserRole | undefined) || "student";
 
-  if (!userRole || !allowedRoles.includes(userRole)) {
+  if (!allowedRoles.includes(userRole)) {
     return <>{fallback}</>;
   }
 
@@ -72,9 +73,10 @@ export function PermissionGuard({
     return <>{fallback}</>;
   }
 
-  const userRole = user.clientMetadata?.role as UserRole | undefined;
+  // Default to "student" for legacy users without roles
+  const userRole = (user.clientMetadata?.role as UserRole | undefined) || "student";
 
-  if (!userRole || !hasPermission(userRole, resource, action)) {
+  if (!hasPermission(userRole, resource, action)) {
     return <>{fallback}</>;
   }
 
@@ -107,9 +109,10 @@ export function useHasRole(allowedRoles: UserRole[]): boolean {
 
   if (!user) return false;
 
-  const userRole = user.clientMetadata?.role as UserRole | undefined;
+  // Default to "student" for legacy users without roles
+  const userRole = (user.clientMetadata?.role as UserRole | undefined) || "student";
 
-  return !!userRole && allowedRoles.includes(userRole);
+  return allowedRoles.includes(userRole);
 }
 
 /**
@@ -120,9 +123,10 @@ export function useHasPermission(resource: Resource, action: Action): boolean {
 
   if (!user) return false;
 
-  const userRole = user.clientMetadata?.role as UserRole | undefined;
+  // Default to "student" for legacy users without roles
+  const userRole = (user.clientMetadata?.role as UserRole | undefined) || "student";
 
-  return !!userRole && hasPermission(userRole, resource, action);
+  return hasPermission(userRole, resource, action);
 }
 
 /**
@@ -133,5 +137,6 @@ export function useUserRole(): UserRole | null {
 
   if (!user) return null;
 
-  return (user.clientMetadata?.role as UserRole | undefined) || null;
+  // Default to "student" for legacy users without roles
+  return (user.clientMetadata?.role as UserRole | undefined) || "student";
 }
