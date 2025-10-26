@@ -195,13 +195,15 @@ const Sidebar = React.forwardRef<
     return (
       <div
         ref={ref}
-        className="group peer hidden md:block"
+        className="group peer text-sidebar-foreground hidden md:block"
         data-state={state}
         data-collapsible={state === "collapsed" ? collapsible : ""}
         data-variant={variant}
         data-side={side}
+        data-slot="sidebar"
       >
         <div
+          data-slot="sidebar-gap"
           className={cn(
             "duration-200 relative h-svh w-[--sidebar-width] bg-transparent transition-[width] ease-linear",
             "group-data-[collapsible=offcanvas]:w-0",
@@ -212,6 +214,7 @@ const Sidebar = React.forwardRef<
           )}
         />
         <div
+          data-slot="sidebar-container"
           className={cn(
             "duration-200 fixed inset-y-0 z-10 hidden h-svh w-[--sidebar-width] transition-[left,right,width] ease-linear md:flex",
             side === "left"
@@ -226,6 +229,7 @@ const Sidebar = React.forwardRef<
         >
           <div
             data-sidebar="sidebar"
+            data-slot="sidebar-inner"
             className="flex h-full w-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow"
           >
             {children}
