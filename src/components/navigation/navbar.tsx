@@ -27,21 +27,13 @@ import {
 import { useState, useEffect } from 'react'
 
 // Navigation structure for students
-const studentNavigation = [
-    {
-        label: 'Dashboard',
-        href: '/dashboard', // Unified dashboard entry point
-        featured: true,
-    },
+const studentNavigation: Array<{label: string; href: string; featured?: boolean}> = [
+    // Dashboard link removed - available in user dropdown menu
 ]
 
 // Navigation structure for teachers
-const teacherNavigation = [
-    {
-        label: 'Dashboard',
-        href: '/dashboard', // Unified dashboard entry point
-        featured: true,
-    },
+const teacherNavigation: Array<{label: string; href: string; featured?: boolean}> = [
+    // Dashboard link removed - available in user dropdown menu
 ]
 
 export function Navbar() {
