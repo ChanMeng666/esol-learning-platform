@@ -54,27 +54,33 @@ export const studentDashboardConfig: DashboardConfig = {
       items: [
         {
           title: "General Practice",
-          url: "/practice/general",
+          url: "/student/dashboard/practice/general",
           icon: Globe,
         },
         {
           title: "NZCEL Exam Prep",
-          url: "/practice/nzcel",
+          url: "/student/dashboard/practice/nzcel",
           icon: GraduationCap,
           subItems: [
-            { title: "Skills Practice", url: "/practice/nzcel/skills" },
-            { title: "Conversation", url: "/practice/nzcel/conversation" },
-            { title: "Mock Exams", url: "/practice/nzcel/exams", comingSoon: true },
+            { title: "Overview", url: "/student/dashboard/practice/nzcel" },
+            { title: "Skills Practice", url: "/student/dashboard/practice/nzcel/skills" },
+            { title: "Conversation", url: "/student/dashboard/practice/nzcel/conversation" },
+            { title: "Mock Exams", url: "/student/dashboard/practice/nzcel/exams", comingSoon: true },
           ],
         },
         {
           title: "AI Speaking Coach",
-          url: "/speaking",
+          url: "/student/dashboard/speaking",
           icon: Mic,
         },
         {
+          title: "Diagnostic Tests",
+          url: "/student/dashboard/diagnostic",
+          icon: FileText,
+        },
+        {
           title: "Scenario Practice",
-          url: "/practice/scenarios",
+          url: "/student/dashboard/practice/scenarios",
           icon: Languages,
           comingSoon: true,
         },
@@ -86,12 +92,12 @@ export const studentDashboardConfig: DashboardConfig = {
       items: [
         {
           title: "Achievements",
-          url: "/student/achievements",
+          url: "/student/dashboard/achievements",
           icon: Award,
         },
         {
           title: "Assignments",
-          url: "/student/assignments",
+          url: "/student/dashboard/assignments",
           icon: ClipboardList,
         },
       ],
@@ -99,14 +105,10 @@ export const studentDashboardConfig: DashboardConfig = {
   ],
   navSecondary: [
     {
-      title: "Profile",
-      url: "/account",
-      icon: User,
-    },
-    {
-      title: "Settings",
-      url: "/student/settings",
-      icon: Settings,
+      title: "Help & Support",
+      url: "/student/dashboard/help",
+      icon: Bell,
+      comingSoon: true,
     },
   ],
 };
@@ -192,11 +194,6 @@ export const teacherDashboardConfig: DashboardConfig = {
       url: "/teacher/notifications",
       icon: Bell,
     },
-    {
-      title: "Settings",
-      url: "/settings",
-      icon: Settings,
-    },
   ],
 };
 
@@ -248,11 +245,6 @@ export const parentDashboardConfig: DashboardConfig = {
       title: "Messages",
       url: "/parent/messages",
       icon: Bell,
-    },
-    {
-      title: "Settings",
-      url: "/settings",
-      icon: Settings,
     },
   ],
 };
@@ -310,13 +302,7 @@ export const departmentHeadDashboardConfig: DashboardConfig = {
       ],
     },
   ],
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "/settings",
-      icon: Settings,
-    },
-  ],
+  navSecondary: [],
 };
 
 // School Admin Dashboard Configuration
@@ -383,13 +369,7 @@ export const schoolAdminDashboardConfig: DashboardConfig = {
       ],
     },
   ],
-  navSecondary: [
-    {
-      title: "Organization Settings",
-      url: "/school-admin/settings",
-      icon: Settings,
-    },
-  ],
+  navSecondary: [],
 };
 
 // System Admin Dashboard Configuration
@@ -456,13 +436,7 @@ export const systemAdminDashboardConfig: DashboardConfig = {
       ],
     },
   ],
-  navSecondary: [
-    {
-      title: "System Tools",
-      url: "/system-admin/tools",
-      icon: Settings,
-    },
-  ],
+  navSecondary: [],
 };
 
 // Get dashboard config by role
@@ -491,4 +465,18 @@ export function getDefaultDashboardRoute(role: UserRole): string {
   };
 
   return routes[role] || "/student/dashboard";
+}
+
+// Get settings route by role
+export function getSettingsRoute(role: UserRole): string {
+  const routes: Record<UserRole, string> = {
+    student: "/student/dashboard/settings",
+    teacher: "/teacher/dashboard/settings",
+    parent: "/parent/dashboard/settings",
+    department_head: "/department/dashboard/settings",
+    school_admin: "/school-admin/dashboard/settings",
+    system_admin: "/system-admin/dashboard/settings",
+  };
+
+  return routes[role] || "/student/dashboard/settings";
 }

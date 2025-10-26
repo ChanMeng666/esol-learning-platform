@@ -28,25 +28,9 @@ import { useState, useEffect } from 'react'
 // Navigation structure for students
 const studentNavigation = [
     {
-        label: 'Speaking',
-        href: '/speaking',
-        featured: true,
-    },
-    {
-        label: 'Practice',
-        subItems: [
-            { href: '/practice/nzcel', label: 'NZCEL Exam Prep' },
-            { href: '/practice/general', label: 'General Practice' },
-            { href: '/practice/scenarios', label: 'Scenarios', disabled: true },
-        ],
-    },
-    {
-        label: 'Diagnostic',
-        href: '/diagnostic',
-    },
-    {
         label: 'Dashboard',
         href: '/dashboard', // Unified dashboard entry point
+        featured: true,
     },
 ]
 
@@ -55,21 +39,7 @@ const teacherNavigation = [
     {
         label: 'Dashboard',
         href: '/dashboard', // Unified dashboard entry point
-    },
-    {
-        label: 'Classes',
-        href: '/teacher/classes',
-    },
-    {
-        label: 'Assignments',
-        href: '/teacher/assignments',
-    },
-    {
-        label: 'Students',
-        subItems: [
-            { href: '/teacher/classes', label: 'By Class' },
-            { href: '/teacher/students', label: 'All Students', disabled: true },
-        ],
+        featured: true,
     },
 ]
 
@@ -146,57 +116,13 @@ export function Navbar() {
                     {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center gap-1">
                         {showNavigation && navigationStructure.map((item) => {
-                            // Handle dropdown items (Practice menu)
-                            if (item.subItems) {
-                                const isActivePath = item.subItems.some(subItem => pathname.startsWith(subItem.href))
-
-                                return (
-                                    <DropdownMenu
-                                        key={item.label}
-                                        open={isPracticeDropdownOpen}
-                                        onOpenChange={setIsPracticeDropdownOpen}
-                                    >
-                                        <DropdownMenuTrigger asChild>
-                                            <div
-                                                onMouseEnter={() => setIsPracticeDropdownOpen(true)}
-                                                onMouseLeave={() => setIsPracticeDropdownOpen(false)}
-                                            >
-                                                <Button
-                                                    variant={isActivePath ? "default" : "ghost"}
-                                                    className={`relative ${isActivePath ? 'bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90' : 'text-black dark:text-white'}`}
-                                                >
-                                                    {item.label}
-                                                    <ChevronDown
-                                                        className={`ml-1 h-4 w-4 transition-transform duration-200 ${isPracticeDropdownOpen ? 'rotate-180' : ''}`}
-                                                    />
-                                                </Button>
-                                            </div>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent
-                                            align="end"
-                                            onMouseEnter={() => setIsPracticeDropdownOpen(true)}
-                                            onMouseLeave={() => setIsPracticeDropdownOpen(false)}
-                                        >
-                                            {item.subItems.map((subItem) => (
-                                                <DropdownMenuItem key={subItem.href} asChild disabled={subItem.disabled}>
-                                                    <Link href={subItem.disabled ? '#' : subItem.href}>
-                                                        {subItem.label}
-                                                        {subItem.disabled && <span className="ml-2 text-xs text-muted-foreground">(Soon)</span>}
-                                                    </Link>
-                                                </DropdownMenuItem>
-                                            ))}
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                )
-                            }
-
-                            // Handle simple links
+                            // Handle simple links (no more dropdown items)
                             const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
                             return (
                                 <Link key={item.href} href={item.href}>
                                     <Button
                                         variant={isActive ? "default" : "ghost"}
-                                        className={`relative ${isActive ? 'bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90' : 'text-black dark:text-white'} ${'featured' in item && item.featured ? 'font-semibold' : ''}`}
+                                        className={`relative ${isActive ? 'bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90' : 'text-black dark:text-white'} ${item.featured ? 'font-semibold' : ''}`}
                                     >
                                         {item.label}
                                     </Button>
@@ -244,7 +170,13 @@ export function Navbar() {
                                             </DropdownMenuLabel>
                                             <DropdownMenuSeparator />
                                             <DropdownMenuItem asChild>
-                                                <Link href={app.urls.accountSettings}>
+                                                <Link href="/dashboard">
+                                                    <User className="mr-2 h-4 w-4" />
+                                                    Dashboard
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/dashboard/settings">
                                                     <User className="mr-2 h-4 w-4" />
                                                     Account Settings
                                                 </Link>
@@ -312,7 +244,13 @@ export function Navbar() {
                                                     <p className="text-sm font-medium">{user.displayName || "User"}</p>
                                                     <p className="text-xs text-muted-foreground">{user.primaryEmail}</p>
                                                 </div>
-                                                <Link href={app.urls.accountSettings} onClick={() => setIsOpen(false)}>
+                                                <Link href="/dashboard" onClick={() => setIsOpen(false)}>
+                                                    <Button variant="ghost" className="w-full justify-start">
+                                                        <User className="mr-2 h-4 w-4" />
+                                                        Dashboard
+                                                    </Button>
+                                                </Link>
+                                                <Link href="/dashboard/settings" onClick={() => setIsOpen(false)}>
                                                     <Button variant="ghost" className="w-full justify-start">
                                                         <User className="mr-2 h-4 w-4" />
                                                         Account Settings
@@ -337,43 +275,12 @@ export function Navbar() {
 
                                         {/* Mobile Nav Links */}
                                         {showNavigation && navigationStructure.map((item) => {
-                                            // Handle items with sub-items (Practice menu)
-                                            if (item.subItems) {
-                                                return (
-                                                    <div key={item.label} className="space-y-1">
-                                                        <p className="px-4 py-2 text-sm font-semibold text-muted-foreground">
-                                                            {item.label}
-                                                        </p>
-                                                        {item.subItems.map((subItem) => {
-                                                            const isActive = pathname === subItem.href || pathname.startsWith(subItem.href + '/')
-                                                            return (
-                                                                <Link
-                                                                    key={subItem.href}
-                                                                    href={subItem.disabled ? '#' : subItem.href}
-                                                                    onClick={() => !subItem.disabled && setIsOpen(false)}
-                                                                >
-                                                                    <Button
-                                                                        variant={isActive ? "default" : "ghost"}
-                                                                        disabled={subItem.disabled}
-                                                                        className={`w-full justify-start pl-8 ${isActive ? 'bg-black dark:bg-white text-white dark:text-black' : 'text-black dark:text-white'}`}
-                                                                    >
-                                                                        {subItem.label}
-                                                                        {subItem.disabled && <span className="ml-2 text-xs">(Soon)</span>}
-                                                                    </Button>
-                                                                </Link>
-                                                            )
-                                                        })}
-                                                    </div>
-                                                )
-                                            }
-
-                                            // Handle simple links
                                             const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
                                             return (
                                                 <Link key={item.href} href={item.href} onClick={() => setIsOpen(false)}>
                                                     <Button
                                                         variant={isActive ? "default" : "ghost"}
-                                                        className={`w-full justify-start ${isActive ? 'bg-black dark:bg-white text-white dark:text-black' : 'text-black dark:text-white'} ${'featured' in item && item.featured ? 'font-semibold' : ''}`}
+                                                        className={`w-full justify-start ${isActive ? 'bg-black dark:bg-white text-white dark:text-black' : 'text-black dark:text-white'} ${item.featured ? 'font-semibold' : ''}`}
                                                     >
                                                         {item.label}
                                                     </Button>

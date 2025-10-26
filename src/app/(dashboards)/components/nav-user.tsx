@@ -4,11 +4,9 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@stackframe/stack";
 import {
   EllipsisVertical,
-  CircleUser,
   Bell,
   Settings,
   LogOut,
-  Award,
 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -29,6 +27,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
 import { type UserRole } from "@/types/navigation";
+import { getSettingsRoute } from "@/lib/dashboard-configs-v2";
 
 interface NavUserProps {
   role?: UserRole;
@@ -140,22 +139,6 @@ export function NavUser({ role, enhancedUser }: NavUserProps) {
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem
-                onClick={() => router.push("/account")}
-                className="cursor-pointer"
-              >
-                <CircleUser className="mr-2 h-4 w-4" />
-                Account
-              </DropdownMenuItem>
-              {role === "student" && (
-                <DropdownMenuItem
-                  onClick={() => router.push("/student/achievements")}
-                  className="cursor-pointer"
-                >
-                  <Award className="mr-2 h-4 w-4" />
-                  Achievements
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem
                 onClick={() => router.push("/notifications")}
                 className="cursor-pointer"
               >
@@ -163,7 +146,7 @@ export function NavUser({ role, enhancedUser }: NavUserProps) {
                 Notifications
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => router.push("/settings")}
+                onClick={() => router.push(getSettingsRoute(role || "student"))}
                 className="cursor-pointer"
               >
                 <Settings className="mr-2 h-4 w-4" />
