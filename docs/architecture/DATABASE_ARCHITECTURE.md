@@ -10,10 +10,10 @@ This document provides a comprehensive overview of the NZCEL Prep Platform's dat
 - **ORM**: Drizzle ORM v0.44.6
 - **Authentication**: Stack Auth v2.8.43
 - **File Storage**: Vercel Blob v2.0.0
-- **Total Tables**: **43 tables** across 12 categories
+- **Total Tables**: **44 tables** across 13 categories
 - **Architecture**: Multi-tenant with organization-based data isolation
 - **Data Isolation**: All tables include `organization_id` column for tenant separation
-- **Server Actions**: 58+ functions with complete multi-tenant support
+- **Server Actions**: 60+ functions with complete multi-tenant support
 - **Key Features**:
   - Intelligent audio caching system to minimize TTS API costs
   - Multi-module support with parallel progress tracking (NZCEL, CEFR)
@@ -42,7 +42,7 @@ This document provides a comprehensive overview of the NZCEL Prep Platform's dat
 ```mermaid
 mindmap
   root((ESOL Platform Database
-43 Tables - Multi-Tenant))
+44 Tables - Multi-Tenant))
     Organizations & User Management
       organizations
       users
@@ -115,13 +115,13 @@ mindmap
 | **Permissions & Access Control** (3) | `organization_question_access`, `organization_settings`, `user_roles` | Fine-grained permissions and organization configuration | ✅ |
 | **Notifications & Communication** (2) | `notifications`, `feedback_requests` | User notifications and feedback collection | ✅ |
 
-**Note**: All 43 tables include `organization_id` column for multi-tenant data isolation
+**Note**: All 44 tables include `organization_id` column for multi-tenant data isolation
 
 ---
 
 ## Entity Relationship Diagram
 
-> **Note**: This ERD focuses on the core learning and session tracking tables (16 tables). The complete database includes 43 tables across 12 categories, with all tables implementing multi-tenant isolation via `organization_id`. See [Tables by Category](#tables-by-category) for the full list.
+> **Note**: This ERD focuses on the core learning and session tracking tables (16 tables). The complete database includes 44 tables across 13 categories, with all tables implementing multi-tenant isolation via `organization_id`. See [Tables by Category](#tables-by-category) for the full list.
 
 ### Core Learning & Session Tracking ERD
 
@@ -666,7 +666,7 @@ Tracks overall usage statistics for each learning module/path.
 All database operations are performed through Next.js Server Actions with **multi-tenant support**, ensuring security, type safety, and complete data isolation.
 
 **Key Features**:
-- 58+ Server Actions across 8 files
+- 60+ Server Actions across 19 files
 - All actions enforce organization-level data isolation
 - Automatic `organizationId` injection via `fetchWithDrizzle()`
 - Type-safe database operations with Drizzle ORM
@@ -754,7 +754,7 @@ graph TB
 | **`actions/module-stats.ts`** (5 functions) | `getModuleStats()`, `updateModuleStats()`, `getAllModuleStats()`, `getSpeakingStats()`, `getGeneralPracticeStats()` | Multi-module statistics and dashboard data | ✅ All scoped |
 | **`actions/diagnostics.ts`** (2 functions) | `getUserDiagnostics()`, `createSampleData()` | System diagnostic and debugging utilities | ✅ All scoped |
 
-**Total**: 58 functions across 8 files, all with complete multi-tenant support
+**Total**: 60+ functions across 19 files, all with complete multi-tenant support
 
 ### Multi-Tenant Authentication Flow
 
@@ -1172,6 +1172,6 @@ For implementation details and integration examples, see:
 
 ---
 
-**Last Updated**: 2025-10-24
-**Version**: 2.0
+**Last Updated**: 2025-10-27
+**Version**: 2.1
 **Author**: ESOL Platform Development Team

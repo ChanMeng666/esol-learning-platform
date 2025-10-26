@@ -50,21 +50,22 @@ The application uses a **Neon PostgreSQL** serverless database with **Drizzle OR
 - **Production Migrations**: Always use `drizzle:generate` + `drizzle:migrate` workflow
 - **No Automated Schema Push**: `npx drizzle-kit push` cannot be automated via Server Actions or API routes
 
-**Schema Location**: `src/lib/db/schema.ts` (1371 lines, **43 tables**)
+**Schema Location**: `src/lib/db/schema.ts` (1,445 lines, **44 tables**)
 
 **Key Tables** (Organized by Category):
-1. **Organizations & User Management** (5 tables): `organizations`, `users`, `departments`, `classes`, `grade_level`
+1. **Organizations & User Management** (9 tables): `organizations`, `users`, `departments`, `grade_levels`, `classes`, `class_teachers`, `class_enrollments`, `student_groups`, `parent_student_relationships`
 2. **User Progress - NZCEL** (4 tables): `user_progress`, `completed_questions`, `badges`, `achievements`
 3. **User Progress - CEFR & Modules** (2 tables): `cefr_progress`, `module_progress`
 4. **CopilotKit Chat** (2 tables): `copilot_conversations`, `copilot_messages`
 5. **Audio Management** (4 tables): `audio_files`, `question_audio_cache`, `user_recordings`, `transcriptions`
 6. **Practice Sessions** (2 tables): `practice_sessions`, `session_answers`
 7. **Conversation Practice** (2 tables): `conversation_sessions`, `conversation_turns`
-8. **Education & Class Management** (7 tables): `assignments`, `assignment_submissions`, `student_class_enrollments`, `teacher_class_assignments`, `class_schedules`, `attendance_records`, `student_notes`
-9. **Diagnostic Testing** (4 tables): `diagnostic_tests`, `diagnostic_test_sections`, `diagnostic_test_questions`, `diagnostic_test_results`
-10. **Gamification & Engagement** (4 tables): `leaderboards`, `learning_paths`, `learning_path_milestones`, `user_learning_paths`
-11. **Permissions & Access Control** (3 tables): `organization_question_access`, `organization_settings`, `user_roles`
-12. **Notifications & Communication** (2 tables): `notifications`, `feedback_requests`
+8. **Diagnostic Testing** (6 tables): `diagnostic_tests`, `diagnostic_test_sections`, `diagnostic_test_questions`, `student_diagnostic_attempts`, `diagnostic_question_responses`, `student_diagnostic_results`
+9. **Teacher Assignments** (4 tables): `assignments`, `assignment_targets`, `assignment_student_status`, `assignment_submissions`
+10. **Teacher Insights & Analytics** (2 tables): `teacher_insights`, `class_analytics`
+11. **RBAC & Permissions** (2 tables): `role_permissions`, `user_permissions`
+12. **Question Banks** (3 tables): `question_banks`, `question_bank_questions`, `organization_question_access`
+13. **Invitations & Registration** (2 tables): `invitation_codes`, `invitation_usages`
 
 **Multi-Tenant Authentication & Data Isolation**: All Server Actions use `fetchWithDrizzle()` helper from `src/lib/db/index.ts` which:
 - Authenticates user via Stack Auth (`stackServerApp.getUser()`)
@@ -317,9 +318,17 @@ src/
 │   │   │   │   └── conversation/   # Conversation practice
 │   │   │   └── scenarios/          # Scenario learning (coming soon)
 │   │   ├── conversation/           # Redirect to /practice/nzcel/conversation
-│   │   ├── dashboard/              # Multi-module progress dashboard ✨
-│   │   │   └── page.tsx            # Tabs: Overview, NZCEL, General, Speaking
+│   │   ├── diagnostic/             # Diagnostic testing ✨
+│   │   │   ├── page.tsx            # Test list
+│   │   │   └── [testId]/           # Test execution
 │   │   └── test-realtime/          # Realtime API debug page
+│   ├── (dashboards)/               # Role-based dashboards ✨
+│   │   ├── student/dashboard/      # Student dashboard
+│   │   ├── teacher/dashboard/      # Teacher dashboard
+│   │   ├── parent/dashboard/       # Parent dashboard
+│   │   ├── school-admin/dashboard/ # School admin dashboard
+│   │   ├── department/dashboard/   # Department head dashboard
+│   │   └── system-admin/dashboard/ # System admin dashboard
 │   ├── handler/[...stack]/         # Stack Auth routes
 │   ├── api/openai/                 # OpenAI API routes
 │   │   ├── transcribe/             # Whisper STT
@@ -328,15 +337,26 @@ src/
 │   │   ├── conversation/           # Chat completions
 │   │   └── realtime/               # Realtime API integration
 │   └── layout.tsx                  # Root layout (Stack Auth + CopilotKit)
-├── actions/                        # Server Actions (database operations)
-│   ├── audio.ts                    # Audio caching & TTS
-│   ├── recordings.ts               # User recordings
-│   ├── copilot-chat.ts             # Chat history
-│   ├── sessions.ts                 # Session tracking
-│   ├── user-progress.ts            # NZCEL progress & gamification
-│   ├── cefr-progress.ts            # CEFR progress tracking ✨
-│   ├── module-stats.ts             # Module statistics ✨
-│   └── diagnostics.ts              # Diagnostic tools ✨
+├── actions/                        # Server Actions (60+ functions, 19 files)
+│   ├── audio.ts                    # Audio caching & TTS (7 functions)
+│   ├── recordings.ts               # User recordings (7 functions)
+│   ├── copilot-chat.ts             # Chat history (8 functions)
+│   ├── sessions.ts                 # Session tracking (12 functions)
+│   ├── user-progress.ts            # NZCEL progress & gamification (11 functions)
+│   ├── cefr-progress.ts            # CEFR progress tracking (6 functions) ✨
+│   ├── module-stats.ts             # Module statistics (5 functions) ✨
+│   ├── diagnostics.ts              # Diagnostic tools (2 functions) ✨
+│   ├── diagnostic-tests.ts         # Diagnostic test management ✨
+│   ├── assignments.ts              # Teacher assignments (8+ functions) ✨
+│   ├── classes.ts                  # Class management ✨
+│   ├── teacher-insights.ts         # Teacher insights & analytics ✨
+│   ├── organizations.ts            # Organization management ✨
+│   ├── users.ts                    # User & role management ✨
+│   ├── auth.ts                     # Authentication & permissions ✨
+│   ├── invitations.ts              # Invitation system ✨
+│   ├── registration.ts             # User registration ✨
+│   ├── fix-user-roles.ts           # Role fixing utility ✨
+│   └── cleanup-users.ts            # User cleanup utility ✨
 ├── components/
 │   ├── copilot/                    # CopilotKit context & actions
 │   ├── practice/                   # Question cards, voice recorder
@@ -352,7 +372,7 @@ src/
 │   └── providers.tsx               # App-level providers
 ├── lib/
 │   ├── db/
-│   │   ├── schema.ts               # Drizzle schema (43 tables, 1371 lines) ✨
+│   │   ├── schema.ts               # Drizzle schema (44 tables, 1445 lines) ✨
 │   │   └── index.ts                # fetchWithDrizzle helper (multi-tenant)
 │   ├── blob/
 │   │   └── audio-storage.ts        # Vercel Blob utilities
@@ -497,6 +517,7 @@ COPILOT_CLOUD_API_KEY="..."  # Optional, for CopilotKit Cloud
    - All INSERT operations MUST include `organizationId` field
    - All queries MUST filter by `organizationId` using `and(eq(schema.table.organizationId, organizationId))`
    - Never assume single-tenant—all data is organization-scoped
+   - All 44 tables include `organization_id` column for complete isolation
 4. **Audio caching**: Use `getQuestionAudio()` instead of calling TTS API directly
 5. **Organization data isolation**: Server Actions automatically scope to user's organization (not just userId)
 6. **Zustand is cache only**: Server Actions are the source of truth
@@ -523,12 +544,12 @@ COPILOT_CLOUD_API_KEY="..."  # Optional, for CopilotKit Cloud
 ## Additional Notes
 
 - The platform is **full-stack** with complete backend (database, authentication, file storage)
-- **Multi-tenant architecture** with organization-based data isolation (43 tables, all scoped by `organization_id`)
+- **Multi-tenant architecture** with organization-based data isolation (44 tables, all scoped by `organization_id`)
 - **Multi-module architecture** supports parallel learning paths (NZCEL, CEFR, Speaking, Scenarios)
 - **Dual progress tracking**: NZCEL and CEFR systems operate independently but share gamification
 - **Enhanced user system**: Links Stack Auth IDs to organizations via `users` table for multi-tenant support
 - User data persists across devices via cloud database (Neon PostgreSQL)
-- **Complete data isolation**: All 58+ Server Actions enforce organization-level filtering
+- **Complete data isolation**: All 60+ Server Actions enforce organization-level filtering
 - Audio caching reduces API costs by 90%+ for repeated questions
 - All user recordings and transcriptions are permanently stored (organization-scoped)
 - Complete session tracking enables learning analytics across all modules
@@ -663,3 +684,8 @@ Examples:
 **Clarity**: Explain what you're doing in conversation—don't silently create files
 
 **No Extra Files**: Don't create README updates, documentation, or extra markdown files unless explicitly requested
+
+---
+
+**Last Updated**: 2025-10-27
+**Version**: 2.1

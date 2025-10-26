@@ -45,8 +45,8 @@ The **AI-Powered ESOL Learning Platform** is a comprehensive solution for Englis
 - 🎯 **Dual Progress Tracking** - Separate CEFR and NZCEL progress systems
 - 🏆 **Gamification System** - Points, badges, streaks, and progressive achievements
 - 📊 **Multi-Module Dashboard** - Unified view of progress across all learning paths
-- 🗄️ **Full Database Integration** - Neon PostgreSQL with **43 tables** across 12 categories
-- 🏢 **Multi-Tenant Architecture** - Complete organization-based data isolation with 58+ Server Actions
+- 🗄️ **Full Database Integration** - Neon PostgreSQL with **44 tables** across 13 categories
+- 🏢 **Multi-Tenant Architecture** - Complete organization-based data isolation with 60+ Server Actions
 - 💾 **Intelligent Audio Caching** - 90%+ cost savings on TTS API calls
 - 🔐 **Secure Authentication** - Stack Auth with route protection
 - ☁️ **Cloud Storage** - Vercel Blob for audio files with CDN acceleration
@@ -504,8 +504,8 @@ The platform uses **Neon PostgreSQL** (serverless) with **Drizzle ORM** for type
 
 **Multi-Tenant Features**:
 - 🏢 Complete organization-based data isolation
-- 🔒 All 43 tables include `organization_id` column
-- ✅ 58+ Server Actions with automatic organization scoping
+- 🔒 All 44 tables include `organization_id` column
+- ✅ 60+ Server Actions with automatic organization scoping
 - 🛡️ Zero risk of cross-tenant data leakage
 
 ```mermaid
@@ -524,22 +524,23 @@ graph LR
     style G fill:#f59e0b,stroke:#d97706,color:#fff
 ```
 
-### Database Tables (43 Total - 12 Categories)
+### Database Tables (44 Total - 13 Categories)
 
 | Category | Tables | Purpose | Multi-Tenant |
 |----------|--------|---------|--------------|
-| **Organizations & User Management** (5) | `organizations`, `users`, `departments`, `classes`, `grade_level` | Multi-tenant infrastructure and user hierarchy | ✅ Core |
+| **Organizations & User Management** (9) | `organizations`, `users`, `departments`, `grade_levels`, `classes`, `class_teachers`, `class_enrollments`, `student_groups`, `parent_student_relationships` | Multi-tenant infrastructure and user hierarchy | ✅ Core |
 | **User Progress - NZCEL** (4) | `user_progress`, `completed_questions`, `badges`, `achievements` | Track NZCEL learning progress and gamification | ✅ |
 | **User Progress - CEFR & Modules** (2) | `cefr_progress`, `module_progress` | Track CEFR progress and module statistics | ✅ |
 | **CopilotKit Chat** (2) | `copilot_conversations`, `copilot_messages` | Persist AI chat history | ✅ |
 | **Audio Management** (4) | `audio_files`, `question_audio_cache`, `user_recordings`, `transcriptions` | Manage audio files and TTS caching | ✅ |
 | **Practice Sessions** (2) | `practice_sessions`, `session_answers` | Track practice sessions | ✅ |
 | **Conversation Practice** (2) | `conversation_sessions`, `conversation_turns` | Track conversation practice | ✅ |
-| **Education & Class Management** (7) | `assignments`, `assignment_submissions`, `student_class_enrollments`, `teacher_class_assignments`, `class_schedules`, `attendance_records`, `student_notes` | Classroom management and student tracking | ✅ |
-| **Diagnostic Testing** (4) | `diagnostic_tests`, `diagnostic_test_sections`, `diagnostic_test_questions`, `diagnostic_test_results` | Standardized testing and assessments | ✅ |
-| **Gamification & Engagement** (4) | `leaderboards`, `learning_paths`, `learning_path_milestones`, `user_learning_paths` | Competitive features and learning paths | ✅ |
-| **Permissions & Access Control** (3) | `organization_question_access`, `organization_settings`, `user_roles` | Fine-grained permissions and configuration | ✅ |
-| **Notifications & Communication** (2) | `notifications`, `feedback_requests` | User notifications and feedback | ✅ |
+| **Diagnostic Testing** (6) | `diagnostic_tests`, `diagnostic_test_sections`, `diagnostic_test_questions`, `student_diagnostic_attempts`, `diagnostic_question_responses`, `student_diagnostic_results` | Standardized testing and assessments | ✅ |
+| **Teacher Assignments** (4) | `assignments`, `assignment_targets`, `assignment_student_status`, `assignment_submissions` | Teacher assignment management | ✅ |
+| **Teacher Insights & Analytics** (2) | `teacher_insights`, `class_analytics` | Automated insights and analytics | ✅ |
+| **RBAC & Permissions** (2) | `role_permissions`, `user_permissions` | Role-based access control | ✅ |
+| **Question Banks** (3) | `question_banks`, `question_bank_questions`, `organization_question_access` | Question bank management | ✅ |
+| **Invitations & Registration** (2) | `invitation_codes`, `invitation_usages` | User invitations and onboarding | ✅ |
 
 ### Key Features
 
@@ -561,7 +562,7 @@ The platform implements a sophisticated audio caching system to minimize OpenAI 
 
 #### 🔐 Security & Privacy
 
-- **Multi-tenant isolation**: Complete organization-based data separation (43 tables)
+- **Multi-tenant isolation**: Complete organization-based data separation (44 tables)
 - **Stack Auth integration**: All Server Actions require authentication
 - **Enhanced user system**: Links Stack Auth IDs to organizations
 - **Automatic scoping**: All queries filtered by `organization_id`
@@ -587,7 +588,15 @@ nzcel-prep/
 │   │   │   │   ├── nzcel/          # NZCEL exam prep ✨
 │   │   │   │   └── scenarios/      # Scenario learning (coming soon)
 │   │   │   ├── conversation/       # Voice conversation (redirect)
-│   │   │   └── dashboard/          # Multi-module dashboard ✨
+│   │   │   ├── diagnostic/         # Diagnostic testing ✨
+│   │   │   └── test-realtime/      # Realtime API debug
+│   │   ├── (dashboards)/            # Role-based dashboards ✨
+│   │   │   ├── student/dashboard/  # Student dashboard
+│   │   │   ├── teacher/dashboard/  # Teacher dashboard
+│   │   │   ├── parent/dashboard/   # Parent dashboard
+│   │   │   ├── school-admin/       # School admin dashboard
+│   │   │   ├── department/         # Department head dashboard
+│   │   │   └── system-admin/       # System admin dashboard
 │   │   ├── handler/[...stack]/     # Stack Auth routes
 │   │   ├── api/openai/             # OpenAI API routes
 │   │   │   ├── transcribe/         # Whisper STT
@@ -597,7 +606,7 @@ nzcel-prep/
 │   │   │   └── realtime/           # Realtime API ✨
 │   │   └── layout.tsx              # Root layout
 │   │
-│   ├── actions/                     # Server Actions
+│   ├── actions/                     # Server Actions (60+ functions, 19 files)
 │   │   ├── audio.ts                # Audio caching & TTS
 │   │   ├── recordings.ts           # User recordings
 │   │   ├── copilot-chat.ts         # Chat history
@@ -605,11 +614,18 @@ nzcel-prep/
 │   │   ├── user-progress.ts        # NZCEL progress & gamification
 │   │   ├── cefr-progress.ts        # CEFR progress tracking ✨
 │   │   ├── module-stats.ts         # Module statistics ✨
-│   │   └── diagnostics.ts          # Diagnostic tools ✨
+│   │   ├── diagnostics.ts          # Diagnostic tools ✨
+│   │   ├── assignments.ts          # Teacher assignments ✨
+│   │   ├── classes.ts              # Class management ✨
+│   │   ├── teacher-insights.ts     # Teacher analytics ✨
+│   │   ├── organizations.ts        # Organization management ✨
+│   │   ├── users.ts                # User & role management ✨
+│   │   ├── invitations.ts          # Invitation system ✨
+│   │   └── [+ 5 more files]        # Auth, registration, utilities ✨
 │   │
 │   ├── lib/
 │   │   ├── db/
-│   │   │   ├── schema.ts           # Drizzle schema (43 tables, multi-tenant) ✨
+│   │   │   ├── schema.ts           # Drizzle schema (44 tables, multi-tenant) ✨
 │   │   │   └── index.ts            # fetchWithDrizzle helper (organization context)
 │   │   ├── blob/
 │   │   │   └── audio-storage.ts    # Vercel Blob utilities
