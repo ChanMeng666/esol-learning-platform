@@ -33,7 +33,7 @@ export function DashboardSidebar({ userRole, ...props }: DashboardSidebarProps) 
   const config = getDashboardConfig(userRole);
 
   return (
-    <Sidebar variant="inset" collapsible="icon" {...props}>
+    <Sidebar variant="sidebar" collapsible="icon" {...props}>
       {/* Header */}
       <SidebarHeader>
         <SidebarMenu>
