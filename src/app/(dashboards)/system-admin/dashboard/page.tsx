@@ -82,13 +82,13 @@ export default function SystemAdminDashboardPage() {
 
   // System metrics over time
   const metricsData = [
-    { date: "Mon", users: 1200, organizations: 45 },
-    { date: "Tue", users: 1280, organizations: 46 },
-    { date: "Wed", users: 1350, organizations: 47 },
-    { date: "Thu", users: 1420, organizations: 48 },
-    { date: "Fri", users: 1500, organizations: 50 },
-    { date: "Sat", users: 1450, organizations: 50 },
-    { date: "Sun", users: 1480, organizations: 51 },
+    { label: "Mon", users: 1200, organizations: 45 },
+    { label: "Tue", users: 1280, organizations: 46 },
+    { label: "Wed", users: 1350, organizations: 47 },
+    { label: "Thu", users: 1420, organizations: 48 },
+    { label: "Fri", users: 1500, organizations: 50 },
+    { label: "Sat", users: 1450, organizations: 50 },
+    { label: "Sun", users: 1480, organizations: 51 },
   ];
 
   const metricsConfig = {
