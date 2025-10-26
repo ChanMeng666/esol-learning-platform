@@ -7,6 +7,7 @@ import { Menu, Flame, Trophy, User, LogOut, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useUserProgress } from '@/lib/store/user-progress'
 import { useUser, useStackApp } from '@stackframe/stack'
+import { getDefaultDashboardRoute } from '@/lib/dashboard-configs'
 import {
     Sheet,
     SheetContent,
@@ -59,6 +60,10 @@ export function Navbar() {
 
     // Get user role from Stack Auth clientMetadata
     const userRole = (user?.clientMetadata?.role as string) || 'student'
+
+    // Get the correct dashboard route based on user role
+    const dashboardRoute = getDefaultDashboardRoute(userRole as any)
+    const settingsRoute = dashboardRoute + '/settings'
 
     // Select navigation based on role
     const navigationStructure = userRole === 'teacher' ? teacherNavigation : studentNavigation
@@ -170,13 +175,13 @@ export function Navbar() {
                                             </DropdownMenuLabel>
                                             <DropdownMenuSeparator />
                                             <DropdownMenuItem asChild>
-                                                <Link href="/dashboard">
+                                                <Link href={dashboardRoute}>
                                                     <User className="mr-2 h-4 w-4" />
                                                     Dashboard
                                                 </Link>
                                             </DropdownMenuItem>
                                             <DropdownMenuItem asChild>
-                                                <Link href="/dashboard/settings">
+                                                <Link href={settingsRoute}>
                                                     <User className="mr-2 h-4 w-4" />
                                                     Account Settings
                                                 </Link>
@@ -244,13 +249,13 @@ export function Navbar() {
                                                     <p className="text-sm font-medium">{user.displayName || "User"}</p>
                                                     <p className="text-xs text-muted-foreground">{user.primaryEmail}</p>
                                                 </div>
-                                                <Link href="/dashboard" onClick={() => setIsOpen(false)}>
+                                                <Link href={dashboardRoute} onClick={() => setIsOpen(false)}>
                                                     <Button variant="ghost" className="w-full justify-start">
                                                         <User className="mr-2 h-4 w-4" />
                                                         Dashboard
                                                     </Button>
                                                 </Link>
-                                                <Link href="/dashboard/settings" onClick={() => setIsOpen(false)}>
+                                                <Link href={settingsRoute} onClick={() => setIsOpen(false)}>
                                                     <Button variant="ghost" className="w-full justify-start">
                                                         <User className="mr-2 h-4 w-4" />
                                                         Account Settings

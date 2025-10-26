@@ -20,6 +20,9 @@ import {
   Settings,
   Shield,
   FileText,
+  UserCog,
+  Trash2,
+  Send,
 } from "lucide-react";
 
 export default function SystemAdminDashboardPage() {
@@ -328,7 +331,7 @@ export default function SystemAdminDashboardPage() {
           <CardDescription>Common system administration tasks</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-3">
             <Button
               onClick={() => router.push("/system-admin/users")}
               variant="outline"
@@ -373,6 +376,54 @@ export default function SystemAdminDashboardPage() {
                 <div className="font-semibold">Audit Logs</div>
                 <div className="text-sm text-muted-foreground mt-1">
                   Review system activity
+                </div>
+              </div>
+            </Button>
+
+            <Button
+              onClick={() => router.push("/system-admin/dashboard/fix-roles")}
+              variant="outline"
+              className="h-auto p-6 flex flex-col items-start gap-3 hover:bg-primary/5 hover:border-primary/50 transition-colors"
+            >
+              <div className="p-2 rounded-lg bg-orange-500/10">
+                <UserCog className="w-5 h-5 text-orange-500" />
+              </div>
+              <div className="text-left">
+                <div className="font-semibold">Fix User Roles</div>
+                <div className="text-sm text-muted-foreground mt-1">
+                  Repair role assignments
+                </div>
+              </div>
+            </Button>
+
+            <Button
+              onClick={() => router.push("/system-admin/dashboard/invitations")}
+              variant="outline"
+              className="h-auto p-6 flex flex-col items-start gap-3 hover:bg-primary/5 hover:border-primary/50 transition-colors"
+            >
+              <div className="p-2 rounded-lg bg-green-500/10">
+                <Send className="w-5 h-5 text-green-500" />
+              </div>
+              <div className="text-left">
+                <div className="font-semibold">Invitation Codes</div>
+                <div className="text-sm text-muted-foreground mt-1">
+                  Manage invitation system
+                </div>
+              </div>
+            </Button>
+
+            <Button
+              onClick={() => router.push("/system-admin/dashboard/cleanup-users")}
+              variant="outline"
+              className="h-auto p-6 flex flex-col items-start gap-3 hover:bg-destructive/5 hover:border-destructive/50 transition-colors"
+            >
+              <div className="p-2 rounded-lg bg-destructive/10">
+                <Trash2 className="w-5 h-5 text-destructive" />
+              </div>
+              <div className="text-left">
+                <div className="font-semibold">Cleanup Users</div>
+                <div className="text-sm text-muted-foreground mt-1">
+                  Delete all test data
                 </div>
               </div>
             </Button>
