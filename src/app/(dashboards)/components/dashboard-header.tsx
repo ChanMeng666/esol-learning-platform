@@ -15,7 +15,6 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { ModeToggle } from "@/components/theme-toggle";
 import { UserStatsBadge } from "./user-stats-badge";
-import { UserNav } from "@/components/layout/user-nav";
 
 interface DashboardHeaderProps {
   title?: string;
@@ -24,8 +23,8 @@ interface DashboardHeaderProps {
 
 /**
  * Dashboard header component based on dashboard-03 design
- * Features: SidebarTrigger, Breadcrumbs, User Stats, Theme Toggle, User Menu
- * Removed: Search functionality
+ * Features: SidebarTrigger, Breadcrumbs, User Stats, Theme Toggle
+ * Removed: Search functionality, User Menu (moved to sidebar footer)
  */
 export function DashboardHeader({
   title,
@@ -101,16 +100,13 @@ export function DashboardHeader({
           </Breadcrumb>
         )}
 
-        {/* Right side: User Stats, Theme Toggle, User Menu */}
+        {/* Right side: User Stats, Theme Toggle */}
         <div className="ml-auto flex items-center gap-2">
           {/* User Statistics Badge */}
           <UserStatsBadge />
 
           {/* Theme Toggle */}
           <ModeToggle />
-
-          {/* User Menu */}
-          <UserNav />
         </div>
       </div>
     </header>

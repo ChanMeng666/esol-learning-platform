@@ -17,8 +17,8 @@ import {
   SidebarMenuItem,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { UserNav } from "@/components/layout/user-nav";
 import { getDashboardConfig, type UserRole } from "@/lib/dashboard-configs";
+import { SidebarUserNav } from "./sidebar-user-nav";
 
 interface DashboardSidebarProps extends React.ComponentProps<typeof Sidebar> {
   userRole: UserRole;
@@ -108,11 +108,11 @@ export function DashboardSidebar({ userRole, ...props }: DashboardSidebarProps) 
         </SidebarGroup>
       </SidebarContent>
 
-      {/* Footer */}
+      {/* Footer - User Navigation */}
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <UserNav />
+            <SidebarUserNav />
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
