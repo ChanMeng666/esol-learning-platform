@@ -75,25 +75,26 @@ export async function completeRegistration(params: CompleteRegistrationParams) {
     if (role === "student" || role === "teacher") {
       // Initialize user progress (NZCEL)
       await db.insert(schema.userProgress).values({
-        userId: enhancedUser.id,
+        userId: user.id, // Stack Auth user ID
         organizationId: BigInt(organizationId),
         currentLevel: role === "student" ? "foundation" : "level-1",
         targetLevel: role === "student" ? "level-3-general" : "level-5-general",
         totalPoints: 0,
         questionsCompleted: 0,
-        currentStreak: 0,
-        longestStreak: 0,
+        correctAnswers: 0,
+        streak: 0,
+        perfectStreak: 0,
         lastStudyDate: new Date(),
         listeningProgress: 0,
         speakingProgress: 0,
         readingProgress: 0,
         writingProgress: 0,
-        averageAccuracy: 0,
+        totalStudyTime: 0,
       });
 
       // Initialize CEFR progress
       await db.insert(schema.cefrProgress).values({
-        userId: enhancedUser.id,
+        userId: user.id, // Stack Auth user ID
         organizationId: BigInt(organizationId),
         currentLevel: "A1",
         targetLevel: "B2",
@@ -103,7 +104,6 @@ export async function completeRegistration(params: CompleteRegistrationParams) {
         speakingProgress: 0,
         readingProgress: 0,
         writingProgress: 0,
-        averageAccuracy: 0,
       });
     }
 

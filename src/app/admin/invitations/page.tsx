@@ -55,7 +55,7 @@ import {
 } from "@/actions/invitations";
 import type { UserRole } from "@/lib/auth/permissions";
 import type { InvitationCodeType } from "@/lib/invitations/code-generator";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export default function InvitationsPage() {
   const [loading, setLoading] = useState(false);
@@ -63,7 +63,6 @@ export default function InvitationsPage() {
   const [selectedInvitation, setSelectedInvitation] = useState<any>(null);
   const [statsDialogOpen, setStatsDialogOpen] = useState(false);
   const [stats, setStats] = useState<any>(null);
-  const { toast } = useToast();
 
   // Create invitation dialog state
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -82,11 +81,7 @@ export default function InvitationsPage() {
       const data = await getOrganizationInvitationCodes();
       setInvitations(data);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to load invitations",
-        variant: "destructive",
-      });
+      toast.error(error instanceof Error ? error.message : "Failed to load invitations");
     }
   };
 
@@ -109,20 +104,13 @@ export default function InvitationsPage() {
         customPrefix: customPrefix || undefined,
       });
 
-      toast({
-        title: "Success",
-        description: "Invitation code created successfully",
-      });
+      toast.success("Invitation code created successfully");
 
       setCreateDialogOpen(false);
       resetForm();
       loadInvitations();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to create invitation",
-        variant: "destructive",
-      });
+      toast.error(error instanceof Error ? error.message : "Failed to create invitation");
     } finally {
       setLoading(false);
     }
@@ -142,53 +130,32 @@ export default function InvitationsPage() {
       setStats(data);
       setStatsDialogOpen(true);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to load stats",
-        variant: "destructive",
-      });
+      toast.error(error instanceof Error ? error.message : "Failed to load stats");
     }
   };
 
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code);
-    toast({
-      title: "Copied",
-      description: "Invitation code copied to clipboard",
-    });
+    toast.success("Invitation code copied to clipboard");
   };
 
   const handleDeactivate = async (invitationId: bigint) => {
     try {
       await deactivateInvitationCode(invitationId);
-      toast({
-        title: "Success",
-        description: "Invitation code deactivated",
-      });
+      toast.success("Invitation code deactivated");
       loadInvitations();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to deactivate",
-        variant: "destructive",
-      });
+      toast.error(error instanceof Error ? error.message : "Failed to deactivate");
     }
   };
 
   const handleReactivate = async (invitationId: bigint) => {
     try {
       await reactivateInvitationCode(invitationId);
-      toast({
-        title: "Success",
-        description: "Invitation code reactivated",
-      });
+      toast.success("Invitation code reactivated");
       loadInvitations();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to reactivate",
-        variant: "destructive",
-      });
+      toast.error(error instanceof Error ? error.message : "Failed to reactivate");
     }
   };
 
@@ -199,17 +166,10 @@ export default function InvitationsPage() {
 
     try {
       await deleteInvitationCode(invitationId);
-      toast({
-        title: "Success",
-        description: "Invitation code deleted",
-      });
+      toast.success("Invitation code deleted");
       loadInvitations();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to delete",
-        variant: "destructive",
-      });
+      toast.error(error instanceof Error ? error.message : "Failed to delete");
     }
   };
 
