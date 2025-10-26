@@ -66,13 +66,13 @@ export default function HomePage() {
           </div>
           <div className="flex gap-4">
             <Button
-              onClick={() => router.push("/speaking")}
+              onClick={() => user ? router.push("/speaking") : router.push("/register")}
               className="flex-1 md:flex-initial"
             >
               Start Practice
             </Button>
             <Button
-              onClick={() => router.push("/dashboard")}
+              onClick={() => user ? router.push("/dashboard") : router.push("/register")}
               variant="outline"
               className="flex-1 md:flex-initial"
             >
@@ -100,13 +100,13 @@ export default function HomePage() {
           </div>
           <div className="flex gap-4">
             <Button
-              onClick={() => router.push("/practice/nzcel")}
+              onClick={() => user ? router.push("/practice/nzcel") : router.push("/register")}
               className="flex-1 md:flex-initial"
             >
               Start Prep
             </Button>
             <Button
-              onClick={() => router.push("/dashboard")}
+              onClick={() => user ? router.push("/dashboard") : router.push("/register")}
               variant="outline"
               className="flex-1 md:flex-initial"
             >
@@ -134,13 +134,13 @@ export default function HomePage() {
           </div>
           <div className="flex gap-4">
             <Button
-              onClick={() => router.push("/practice/general")}
+              onClick={() => user ? router.push("/practice/general") : router.push("/register")}
               className="flex-1 md:flex-initial"
             >
               Start Practice
             </Button>
             <Button
-              onClick={() => router.push("/dashboard")}
+              onClick={() => user ? router.push("/dashboard") : router.push("/register")}
               variant="outline"
               className="flex-1 md:flex-initial"
             >
@@ -221,42 +221,7 @@ export default function HomePage() {
       </BackgroundCircles>
 
       {/* Learning Paths Section - Timeline Design */}
-      {user && (
-        <Timeline data={timelineData} />
-      )}
-
-      {/* Features Section for Guest Users */}
-      {!user && (
-        <div className="container mx-auto px-4 py-16 max-w-7xl">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Professional English Learning Platform</h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Comprehensive ESOL preparation powered by AI technology
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-12 max-w-5xl mx-auto">
-            <div className="space-y-3">
-              <h3 className="text-xl font-semibold">AI-Powered Learning</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Personalized feedback and adaptive difficulty based on your performance
-              </p>
-            </div>
-            <div className="space-y-3">
-              <h3 className="text-xl font-semibold">Real-time Speaking Practice</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Practice speaking with AI coach and get instant pronunciation feedback
-              </p>
-            </div>
-            <div className="space-y-3">
-              <h3 className="text-xl font-semibold">Exam Preparation</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Comprehensive prep for NZCEL and other English proficiency exams
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+      <Timeline data={timelineData} />
 
       {/* Student Success Stories */}
       <AnimatedTestimonials
