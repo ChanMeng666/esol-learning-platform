@@ -2,18 +2,107 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { BookOpen, MessageCircle, LayoutDashboard, Mic } from 'lucide-react'
+import {
+    BookOpen,
+    MessageCircle,
+    LayoutDashboard,
+    Mic,
+    Users,
+    ClipboardList,
+    TrendingUp,
+    GraduationCap,
+    Building2,
+    Shield,
+    FileText,
+    Settings,
+    LogIn,
+    UserPlus,
+    Info
+} from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
+import { useUser, useStackApp } from '@stackframe/stack'
 
 export function Footer() {
     const currentYear = new Date().getFullYear()
+    const user = useUser()
+    const app = useStackApp()
+    const userRole = (user?.clientMetadata?.role as string) || 'student'
 
-    const footerLinks = [
+    // Guest/Unauthenticated Quick Links
+    const guestLinks = [
+        { href: '/register', label: 'Get Started', icon: UserPlus },
+        { href: app.urls.signIn, label: 'Sign In', icon: LogIn },
         { href: '/speaking', label: 'AI Speaking Coach', icon: Mic },
-        { href: '/practice', label: 'Practice', icon: BookOpen },
-        { href: '/conversation', label: 'Conversation', icon: MessageCircle },
-        { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { href: '/practice', label: 'Practice Demo', icon: BookOpen },
+        { href: '/about', label: 'About Us', icon: Info },
     ]
+
+    // Student Quick Links
+    const studentLinks = [
+        { href: '/student/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { href: '/speaking', label: 'AI Speaking Coach', icon: Mic },
+        { href: '/practice/general', label: 'General Practice', icon: BookOpen },
+        { href: '/practice/nzcel', label: 'NZCEL Prep', icon: GraduationCap },
+        { href: '/conversation', label: 'Conversation', icon: MessageCircle },
+        { href: '/student/progress', label: 'My Progress', icon: TrendingUp },
+    ]
+
+    // Teacher Quick Links
+    const teacherLinks = [
+        { href: '/teacher/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { href: '/teacher/classes', label: 'My Classes', icon: Users },
+        { href: '/teacher/assignments', label: 'Assignments', icon: ClipboardList },
+        { href: '/teacher/students', label: 'Student Progress', icon: TrendingUp },
+        { href: '/teacher/resources', label: 'Resources', icon: BookOpen },
+        { href: '/teacher/analytics', label: 'Analytics', icon: FileText },
+    ]
+
+    // Parent Quick Links
+    const parentLinks = [
+        { href: '/parent/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { href: '/parent/children', label: 'Children Progress', icon: Users },
+        { href: '/parent/assignments', label: 'Assignments', icon: ClipboardList },
+        { href: '/parent/feedback', label: 'Teacher Feedback', icon: MessageCircle },
+        { href: '/parent/reports', label: 'Reports', icon: FileText },
+    ]
+
+    // School Admin Quick Links
+    const schoolAdminLinks = [
+        { href: '/school-admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { href: '/school-admin/departments', label: 'Departments', icon: Building2 },
+        { href: '/school-admin/users', label: 'User Management', icon: Users },
+        { href: '/school-admin/analytics', label: 'Analytics', icon: TrendingUp },
+        { href: '/school-admin/reports', label: 'Reports', icon: FileText },
+        { href: '/school-admin/settings', label: 'Settings', icon: Settings },
+    ]
+
+    // Department Head Quick Links
+    const departmentHeadLinks = [
+        { href: '/department/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { href: '/department/teachers', label: 'Teachers', icon: Users },
+        { href: '/department/classes', label: 'Classes', icon: GraduationCap },
+        { href: '/department/analytics', label: 'Analytics', icon: TrendingUp },
+        { href: '/department/reports', label: 'Reports', icon: FileText },
+    ]
+
+    // System Admin Quick Links
+    const systemAdminLinks = [
+        { href: '/system-admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { href: '/system-admin/organizations', label: 'Organizations', icon: Building2 },
+        { href: '/system-admin/users', label: 'User Management', icon: Users },
+        { href: '/system-admin/permissions', label: 'Permissions', icon: Shield },
+        { href: '/system-admin/audit', label: 'Audit Logs', icon: FileText },
+        { href: '/system-admin/database', label: 'Database', icon: Settings },
+    ]
+
+    // Select appropriate links based on user status and role
+    const footerLinks = !user ? guestLinks :
+                        userRole === 'teacher' ? teacherLinks :
+                        userRole === 'parent' ? parentLinks :
+                        userRole === 'school_admin' ? schoolAdminLinks :
+                        userRole === 'department_head' ? departmentHeadLinks :
+                        userRole === 'system_admin' ? systemAdminLinks :
+                        studentLinks
 
     const schools = [
         {
@@ -69,9 +158,18 @@ export function Footer() {
 
                     {/* Quick Links */}
                     <div className="flex flex-col space-y-4">
-                        <h3 className="font-semibold text-foreground">Quick Links</h3>
-                        <div className="flex flex-col space-y-2">
-                            {footerLinks.map((link) => {
+                        <div>
+                            <h3 className="font-semibold text-foreground">Quick Links</h3>
+                            {!user && <p className="text-xs text-muted-foreground mt-1">Get started with our platform</p>}
+                            {user && userRole === 'student' && <p className="text-xs text-muted-foreground mt-1">Student resources</p>}
+                            {user && userRole === 'teacher' && <p className="text-xs text-muted-foreground mt-1">Teaching tools</p>}
+                            {user && userRole === 'parent' && <p className="text-xs text-muted-foreground mt-1">Parent portal</p>}
+                            {user && userRole === 'school_admin' && <p className="text-xs text-muted-foreground mt-1">School administration</p>}
+                            {user && userRole === 'department_head' && <p className="text-xs text-muted-foreground mt-1">Department management</p>}
+                            {user && userRole === 'system_admin' && <p className="text-xs text-muted-foreground mt-1">System administration</p>}
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
+                            {footerLinks.slice(0, 6).map((link) => {
                                 const Icon = link.icon
                                 return (
                                     <Link

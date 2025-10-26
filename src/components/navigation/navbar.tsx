@@ -3,9 +3,8 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Menu, Flame, Trophy, User, LogOut, ChevronDown } from 'lucide-react'
+import { Menu, User, LogOut, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useUserProgress } from '@/lib/store/user-progress'
 import { useUser, useStackApp } from '@stackframe/stack'
 import { getDefaultDashboardRoute } from '@/lib/dashboard-configs'
 import {
@@ -38,7 +37,6 @@ const teacherNavigation: Array<{label: string; href: string; featured?: boolean}
 
 export function Navbar() {
     const pathname = usePathname()
-    const { totalPoints, streak } = useUserProgress()
     const [isOpen, setIsOpen] = useState(false)
     const [mounted, setMounted] = useState(false)
     const [isVisible, setIsVisible] = useState(true)
@@ -128,26 +126,8 @@ export function Navbar() {
                         })}
                     </div>
 
-                    {/* User Stats & Auth & Mobile Menu */}
+                    {/* Auth & Mobile Menu */}
                     <div className="flex items-center gap-3">
-                        {/* User Stats - only show if logged in */}
-                        {user && (
-                            <div className="hidden sm:flex items-center gap-3">
-                                <div className="flex items-center gap-1.5 rounded-full bg-black/5 dark:bg-white/10 px-3 py-1.5 border border-black/10 dark:border-white/20">
-                                    <Trophy className="h-4 w-4 text-black dark:text-white" />
-                                    <span className="text-sm font-semibold text-black dark:text-white">
-                                        {totalPoints}
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-orange-500 to-red-500 px-3 py-1.5">
-                                    <Flame className="h-4 w-4 text-white" />
-                                    <span className="text-sm font-semibold text-white">
-                                        {streak}
-                                    </span>
-                                </div>
-                            </div>
-                        )}
-
                         {/* Auth Button - Desktop */}
                         {mounted && (
                             <div className="hidden md:flex items-center gap-2">
@@ -220,20 +200,6 @@ export function Navbar() {
                                         </SheetDescription>
                                     </SheetHeader>
                                     <div className="mt-6 flex flex-col gap-2">
-                                        {/* Mobile Stats - only show if logged in */}
-                                        {user && (
-                                            <div className="mb-4 flex items-center justify-between rounded-lg bg-muted p-4">
-                                                <div className="flex items-center gap-2">
-                                                    <Trophy className="h-5 w-5 text-black dark:text-white" />
-                                                    <span className="font-semibold text-black dark:text-white">{totalPoints} Points</span>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <Flame className="h-5 w-5 text-orange-500" />
-                                                    <span className="font-semibold text-orange-500">{streak} Days</span>
-                                                </div>
-                                            </div>
-                                        )}
-
                                         {/* Mobile Auth */}
                                         {user ? (
                                             <>
