@@ -189,11 +189,6 @@ export const teacherDashboardConfig: DashboardConfig = {
       url: "/teacher/calendar",
       icon: Calendar,
     },
-    {
-      title: "Notifications",
-      url: "/teacher/notifications",
-      icon: Bell,
-    },
   ],
 };
 
@@ -240,13 +235,7 @@ export const parentDashboardConfig: DashboardConfig = {
       ],
     },
   ],
-  navSecondary: [
-    {
-      title: "Messages",
-      url: "/parent/messages",
-      icon: Bell,
-    },
-  ],
+  navSecondary: [],
 };
 
 // Department Head Dashboard Configuration
@@ -353,14 +342,9 @@ export const schoolAdminDashboardConfig: DashboardConfig = {
       ],
     },
     {
-      id: "communication",
-      label: "Communication",
+      id: "reports",
+      label: "Reports",
       items: [
-        {
-          title: "Announcements",
-          url: "/school-admin/announcements",
-          icon: Bell,
-        },
         {
           title: "Reports",
           url: "/school-admin/reports",

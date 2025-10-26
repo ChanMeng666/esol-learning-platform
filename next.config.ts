@@ -10,6 +10,29 @@ const nextConfig: NextConfig = {
     // Ignore TypeScript errors during builds (not recommended for production)
     // ignoreBuildErrors: true,
   },
+  // Optimize for development memory usage
+  experimental: {
+    // Reduce memory usage by using a smaller worker pool
+    workerThreads: false,
+    cpus: 2,
+  },
+  // Webpack configuration for memory optimization
+  webpack: (config, { dev, isServer }) => {
+    if (dev && !isServer) {
+      // Reduce memory usage in development
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            default: false,
+            vendors: false,
+          },
+        },
+      };
+    }
+    return config;
+  },
   images: {
     remotePatterns: [
       {
