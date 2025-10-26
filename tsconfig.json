@@ -25,5 +25,5 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "scripts", "src/scripts", "dashboard", "dashboard-03"]
+  "exclude": ["node_modules", "scripts", "src/scripts", "dashboard", "dashboard-03", "next-shadcn-admin-dashboard"]
 }
