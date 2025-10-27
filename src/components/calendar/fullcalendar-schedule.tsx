@@ -212,7 +212,7 @@ export function ClassScheduleCalendar({
       toast.success("Event updated successfully");
     } else {
       // Create new event
-      const newEvent = {
+      const newEvent: any = {
         ...eventData,
         id: Date.now().toString(),
       };

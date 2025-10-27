@@ -217,43 +217,38 @@ export default function EnhancedTeacherDashboard() {
           title="Total Students"
           value="156"
           description="Active learners"
-          icon={<Users className="h-4 w-4" />}
-          trend={{ value: 12, isPositive: true }}
-          gradient="blue"
+          icon={Users}
+          trend={{ value: 12, label: "+12% this month" }}
+          variant="info"
         />
         <StatCard
           title="Avg Progress"
           value="78%"
           description="Class average"
-          icon={<TrendingUp className="h-4 w-4" />}
-          trend={{ value: 5, isPositive: true }}
-          gradient="emerald"
-          footer={
-            <div className="text-xs text-muted-foreground">
-              +5% from last week
-            </div>
-          }
+          icon={TrendingUp}
+          trend={{ value: 5, label: "+5% from last week" }}
+          variant="success"
+          footer={{
+            label: "On track to meet goals"
+          }}
         />
         <StatCard
           title="Lessons Completed"
           value="1,284"
           description="This month"
-          icon={<BookOpen className="h-4 w-4" />}
-          trend={{ value: 8, isPositive: true }}
-          gradient="purple"
+          icon={BookOpen}
+          trend={{ value: 8, label: "+8% increase" }}
+          variant="primary"
         />
         <StatCard
           title="Achievements"
           value="342"
           description="Badges earned"
-          icon={<Trophy className="h-4 w-4" />}
-          gradient="amber"
-          footer={
-            <div className="flex items-center gap-1">
-              <span className="text-xs">🏆</span>
-              <span className="text-xs">42 this week</span>
-            </div>
-          }
+          icon={Trophy}
+          variant="warning"
+          footer={{
+            label: "🏆 42 this week"
+          }}
         />
       </div>
 

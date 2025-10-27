@@ -219,46 +219,46 @@ export default function EnhancedParentDashboard() {
           title="Overall Progress"
           value={`${selectedChild.progress}%`}
           description={`${selectedChild.name}'s progress`}
-          icon={<TrendingUp className="h-4 w-4" />}
+          icon={TrendingUp}
           trend={{
             value: 5,
-            isPositive: true
+            label: "+5% from last week"
           }}
-          gradient="blue"
+          variant="info"
         />
 
         <StatCard
           title="Current Level"
           value={selectedChild.level}
           description={`CEFR: ${selectedChild.cefrLevel}`}
-          icon={<Award className="h-4 w-4" />}
-          gradient="emerald"
-          footer={
-            <Badge variant="secondary">On track</Badge>
-          }
+          icon={Award}
+          variant="success"
+          footer={{
+            label: "On track"
+          }}
         />
 
         <StatCard
           title="Study Time"
           value="5.2 hrs"
           description="This week"
-          icon={<Clock className="h-4 w-4" />}
+          icon={Clock}
           trend={{
             value: -10,
-            isPositive: false
+            label: "-10% from last week"
           }}
-          gradient="purple"
+          variant="primary"
         />
 
         <StatCard
           title="Assignments"
           value="3/5"
           description="Completed this week"
-          icon={<BookOpen className="h-4 w-4" />}
-          gradient="amber"
-          footer={
-            <Progress value={60} className="h-1.5" />
-          }
+          icon={BookOpen}
+          variant="warning"
+          footer={{
+            label: "3 of 5 completed"
+          }}
         />
       </div>
 

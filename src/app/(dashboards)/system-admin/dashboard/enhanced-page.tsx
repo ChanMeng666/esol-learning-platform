@@ -326,53 +326,50 @@ export default function EnhancedSystemAdminDashboard() {
           title="Total Organizations"
           value={organizations.length.toString()}
           description="Active accounts"
-          icon={<Building2 className="h-4 w-4" />}
+          icon={Building2}
           trend={{
             value: 15,
-            isPositive: true
+            label: "+15% growth"
           }}
-          gradient="blue"
+          variant="info"
         />
 
         <StatCard
           title="Total Users"
           value={totalUsers.toLocaleString()}
           description={`${totalActiveUsers.toLocaleString()} active`}
-          icon={<Users className="h-4 w-4" />}
+          icon={Users}
           trend={{
             value: 12,
-            isPositive: true
+            label: "+12% this month"
           }}
-          gradient="emerald"
-          footer={
-            <Progress value={(totalActiveUsers / totalUsers) * 100} className="h-1.5" />
-          }
+          variant="success"
+          footer={{
+            label: `${((totalActiveUsers / totalUsers) * 100).toFixed(1)}% active users`
+          }}
         />
 
         <StatCard
           title="Storage Used"
           value={`${totalStorage.toFixed(1)} GB`}
           description="Across all organizations"
-          icon={<HardDrive className="h-4 w-4" />}
-          gradient="purple"
-          footer={
-            <span className="text-xs text-muted-foreground">
-              {(totalStorage / 1000 * 100).toFixed(1)}% of 1TB
-            </span>
-          }
+          icon={HardDrive}
+          variant="primary"
+          footer={{
+            label: `${(totalStorage / 1000 * 100).toFixed(1)}% of 1TB`,
+            sublabel: "SLA compliant"
+          }}
         />
 
         <StatCard
           title="System Uptime"
           value={`${systemMetrics.uptime}%`}
           description="Last 30 days"
-          icon={<Activity className="h-4 w-4" />}
-          gradient="amber"
-          footer={
-            <Badge variant="secondary" className="text-xs">
-              SLA: 99.9%
-            </Badge>
-          }
+          icon={Activity}
+          variant="warning"
+          footer={{
+            label: "SLA: 99.9%"
+          }}
         />
       </div>
 

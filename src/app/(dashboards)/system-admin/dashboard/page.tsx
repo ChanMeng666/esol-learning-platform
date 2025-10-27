@@ -216,32 +216,32 @@ export default function SystemAdminDashboardPage() {
               value={totalOrganizations}
               description="Total organizations"
               icon={Building2}
-              trend={{value: mockTrends.organizations.value, isPositive: mockTrends.organizations.value >= 0}}
-              gradient="blue"
+              trend={mockTrends.organizations}
+              variant="info"
             />
             <StatCard
               title="Total Users"
               value={totalUsers}
               description="Across all organizations"
               icon={Users}
-              trend={{value: mockTrends.users.value, isPositive: mockTrends.users.value >= 0}}
-              gradient="emerald"
+              trend={mockTrends.users}
+              variant="success"
             />
             <StatCard
               title="Active Orgs"
               value={activeOrganizations}
               description="Currently active"
               icon={Activity}
-              trend={{value: mockTrends.active.value, isPositive: mockTrends.active.value >= 0}}
-              gradient="amber"
+              trend={mockTrends.active}
+              variant="warning"
             />
             <StatCard
               title="Database"
               value={databaseSize}
               description="Total storage used"
               icon={Database}
-              trend={{value: mockTrends.storage.value, isPositive: mockTrends.storage.value >= 0}}
-              gradient="purple"
+              trend={mockTrends.storage}
+              variant="primary"
             />
           </div>
 

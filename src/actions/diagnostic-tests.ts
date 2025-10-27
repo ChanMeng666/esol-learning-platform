@@ -448,8 +448,8 @@ export async function completeDiagnosticAttempt(attemptId: bigint) {
             Math.round((skillScores.writing?.earned / skillScores.writing?.total) * 100) : 0,
           totalPoints: totalScore,
           questionsCompleted: responses.length,
-          streakDays: 0,
-          lastActivityDate: new Date(),
+          streak: 0,
+          lastStudyDate: new Date(),
         });
       }
     } else if (test.levelSystem === "cefr") {

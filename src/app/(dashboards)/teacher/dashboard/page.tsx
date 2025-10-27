@@ -222,41 +222,36 @@ export default function TeacherDashboardPage() {
               value={totalClasses}
               description="Active classes you're teaching"
               icon={GraduationCap}
-              trend={{value: mockTrends.classes.value, isPositive: mockTrends.classes.value >= 0}}
-              gradient="blue"
+              trend={mockTrends.classes}
+              variant="info"
             />
             <StatCard
               title="Total Students"
               value={totalStudents}
               description="Across all your classes"
               icon={Users}
-              trend={{value: mockTrends.students.value, isPositive: mockTrends.students.value >= 0}}
-              gradient="emerald"
+              trend={mockTrends.students}
+              variant="success"
             />
             <StatCard
               title="Active Assignments"
               value={activeAssignments}
               description="Currently assigned"
               icon={ClipboardList}
-              trend={{value: mockTrends.assignments.value, isPositive: mockTrends.assignments.value >= 0}}
-              gradient="amber"
+              trend={mockTrends.assignments}
+              variant="warning"
             />
             <StatCard
               title="Pending Reviews"
               value={pendingReviews}
               description="Submissions to review"
               icon={Clock}
-              trend={{value: mockTrends.reviews.value, isPositive: mockTrends.reviews.value >= 0}}
-              gradient="purple"
-              footer={
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => router.push("/teacher/assignments")}
-                >
-                  Review Now →
-                </Button>
-              }
+              trend={mockTrends.reviews}
+              variant="primary"
+              footer={{
+                label: "Review Now",
+                sublabel: "→"
+              }}
             />
           </div>
 
@@ -482,12 +477,9 @@ export default function TeacherDashboardPage() {
             </CardHeader>
             <CardContent>
               <GradeSpreadsheet
+                organizationId={BigInt(1)}
+                classId="class-1"
                 className="h-[600px]"
-                editable={true}
-                onSave={(data) => {
-                  console.log("Saving grades:", data);
-                  toast.success("Grades saved successfully");
-                }}
               />
             </CardContent>
           </Card>

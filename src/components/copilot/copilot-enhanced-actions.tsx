@@ -1,23 +1,19 @@
 "use client";
 
 import { useCopilotAction } from "@copilotkit/react-core";
-import { useUserProgressStore } from "@/lib/store/user-progress";
-import { useCEFRProgressStore } from "@/lib/store/cefr-progress";
+import { useUserProgress } from "@/lib/store/user-progress";
+import { useCEFRProgress } from "@/lib/store/cefr-progress";
 import { toast } from "sonner";
-import { getNZCELLevelById } from "@/data/nzcel-levels";
-import { getCEFRLevelById } from "@/data/cefr-levels";
-import { getQuestionsByLevelAndSkill, getRandomQuestion } from "@/data/questions";
-import { getCEFRQuestionsByLevelAndSkill, getRandomCEFRQuestion } from "@/data/cefr-questions";
-import { getScenariosByLevel, getRandomScenario } from "@/data/conversation-scenarios";
-import { getActiveModules } from "@/data/learning-modules";
+import { getRandomQuestion } from "@/data/questions";
+import { getRandomScenario } from "@/data/conversation-scenarios";
 
 /**
  * Enhanced CopilotKit Actions Component
  * Provides 20+ AI-powered actions for the ESOL learning platform
  */
 export function CopilotEnhancedActions() {
-  const nzcelProgress = useUserProgressStore();
-  const cefrProgress = useCEFRProgressStore();
+  const nzcelProgress = useUserProgress();
+  const cefrProgress = useCEFRProgress();
 
   // ============ Learning Content Generation Actions ============
 
@@ -426,8 +422,8 @@ export function CopilotEnhancedActions() {
         newAchievements,
         unlockedBadges,
         nextTargets,
-        totalPoints: nzcelProgress.points,
-        rank: calculateRank(nzcelProgress.points),
+        totalPoints: nzcelProgress.totalPoints,
+        rank: calculateRank(nzcelProgress.totalPoints),
       };
     },
   });
@@ -649,7 +645,7 @@ export function CopilotEnhancedActions() {
   // ============ Helper Functions (These would normally be in separate files) ============
 
   function identifyWeakestSkill() {
-    const skills = nzcelProgress.skills;
+    const skills = nzcelProgress.skillProgress;
     let weakest = "listening";
     let lowestScore = skills.listening;
 
@@ -686,7 +682,7 @@ export function CopilotEnhancedActions() {
   }
 
   async function generateScenario(context: string, level: string, participants: number) {
-    return getRandomScenario(level);
+    return getRandomScenario(level as any);
   }
 
   function getSuggestedPhrases(context: string, level: string) {
@@ -780,7 +776,7 @@ export function CopilotEnhancedActions() {
 
   function calculateNZCELStats(period: string) {
     return {
-      questionsCompleted: nzcelProgress.questionsCompleted,
+      questionsCompleted: nzcelProgress.completedQuestions.length,
       averageScore: 85,
       improvement: 15,
     };
@@ -789,7 +785,8 @@ export function CopilotEnhancedActions() {
   function calculateCEFRStats(period: string) {
     return {
       currentLevel: cefrProgress.currentLevel,
-      progress: cefrProgress.overallProgress,
+      questionsCompleted: cefrProgress.questionsCompleted,
+      totalPoints: cefrProgress.totalPoints,
     };
   }
 
@@ -962,8 +959,10 @@ export function CopilotEnhancedActions() {
     return achievements.map(a => ({
       id: a.toLowerCase().replace(/ /g, "-"),
       name: a,
+      description: `Earned for: ${a}`,
       rarity: "common" as const,
       icon: "🏆",
+      earnedAt: new Date().toISOString(),
     }));
   }
 
@@ -1105,7 +1104,7 @@ export function CopilotEnhancedActions() {
   function getCurrentLearningState() {
     return {
       level: nzcelProgress.currentLevel,
-      skills: nzcelProgress.skills,
+      skills: nzcelProgress.skillProgress,
     };
   }
 

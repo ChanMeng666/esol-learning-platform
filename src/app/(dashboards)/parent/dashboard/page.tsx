@@ -214,68 +214,64 @@ export default function ParentDashboardPage() {
               value={totalChildren}
               description="Currently enrolled"
               icon={Users}
-              trend={{value: mockTrends.children.value, isPositive: mockTrends.children.value >= 0}}
-              gradient="blue"
+              trend={mockTrends.children}
+              variant="info"
             />
             <StatCard
               title="Completed Tasks"
               value={completedAssignments}
               description="This month"
               icon={CheckCircle2}
-              trend={{value: mockTrends.completed.value, isPositive: mockTrends.completed.value >= 0}}
-              gradient="emerald"
+              trend={mockTrends.completed}
+              variant="success"
             />
             <StatCard
               title="Pending Tasks"
               value={pendingAssignments}
               description="Due this week"
               icon={Clock}
-              trend={{value: mockTrends.pending.value, isPositive: mockTrends.pending.value >= 0}}
-              gradient="amber"
+              trend={mockTrends.pending}
+              variant="warning"
             />
             <StatCard
               title="Unread Messages"
               value={unreadMessages}
               description="From teachers"
               icon={MessageCircle}
-              trend={{value: mockTrends.messages.value, isPositive: mockTrends.messages.value >= 0}}
-              gradient="purple"
-              footer={
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => router.push("/parent/messages")}
-                >
-                  View Messages →
-                </Button>
-              }
+              trend={mockTrends.messages}
+              variant="primary"
+              footer={{
+                label: "View Messages",
+                sublabel: "→"
+              }}
             />
           </div>
 
           {/* Charts Row */}
           {children.length > 0 && (
             <div className="grid gap-4 md:grid-cols-2">
-              <ProgressLineChart
-                title="Academic Progress"
-                description="Weekly performance trends"
-                data={progressData}
-                lines={[
-                  { key: "alice", label: "Alice", color: "hsl(var(--chart-1))" },
-                  { key: "bob", label: "Bob", color: "hsl(var(--chart-2))" },
-                ]}
-                showGoalLine={true}
-                goalValue={80}
-                goalLabel="Target: 80%"
-              />
-              <SkillRadarChart
-                title="Skills Overview"
-                description="Performance across different skills"
-                data={skillsData}
-                series={[
-                  { key: "alice", label: "Alice", color: "hsl(var(--chart-1))" },
-                  { key: "bob", label: "Bob", color: "hsl(var(--chart-2))" },
-                ]}
-              />
+              <Card>
+                <CardHeader>
+                  <CardTitle>Academic Progress</CardTitle>
+                  <CardDescription>Weekly performance trends</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-sm text-muted-foreground">
+                    Charts feature coming soon
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Skills Overview</CardTitle>
+                  <CardDescription>Performance across different skills</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-sm text-muted-foreground">
+                    Charts feature coming soon
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           )}
 
@@ -440,18 +436,13 @@ export default function ParentDashboardPage() {
               <CardDescription>Detailed performance analytics for your children</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <ProgressLineChart
-                title="Overall Progress Trend"
-                description="Monthly academic performance"
-                data={progressData}
-                lines={[
-                  { key: "alice", label: "Alice", color: "hsl(var(--chart-1))" },
-                  { key: "bob", label: "Bob", color: "hsl(var(--chart-2))" },
-                ]}
-                showGoalLine={true}
-                goalValue={80}
-                goalLabel="School Target: 80%"
-              />
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium">Overall Progress Trend</h3>
+                <p className="text-xs text-muted-foreground">Monthly academic performance</p>
+                <div className="flex items-center justify-center h-48 text-sm text-muted-foreground border rounded-lg">
+                  Charts feature coming soon
+                </div>
+              </div>
 
               <div className="grid gap-4 md:grid-cols-2">
                 {children.map((child) => (
@@ -460,14 +451,9 @@ export default function ParentDashboardPage() {
                       <CardTitle className="text-base">{child.name}'s Skills</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <SkillRadarChart
-                        title=""
-                        description=""
-                        data={skillsData}
-                        series={[
-                          { key: child.name.toLowerCase().split(" ")[0], label: child.name, color: "hsl(var(--chart-1))" },
-                        ]}
-                      />
+                      <div className="flex items-center justify-center h-48 text-sm text-muted-foreground border rounded-lg">
+                        Charts feature coming soon
+                      </div>
                     </CardContent>
                   </Card>
                 ))}

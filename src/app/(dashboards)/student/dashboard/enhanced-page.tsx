@@ -29,7 +29,6 @@ import {
 import { getUserProgress } from "@/actions/user-progress";
 import { getCEFRProgress } from "@/actions/cefr-progress";
 import { getAggregatedStats } from "@/actions/module-stats";
-import { getPracticeSessionStats } from "@/actions/sessions";
 
 interface DashboardData {
   nzcelProgress: any;
@@ -178,56 +177,54 @@ export default function EnhancedStudentDashboard() {
           title="Total Points"
           value={aggregatedStats?.totalPoints?.toLocaleString() || "0"}
           description="Lifetime achievement"
-          icon={<Trophy className="h-4 w-4" />}
+          icon={Trophy}
           trend={{
             value: 12,
-            isPositive: true
+            label: "+12% this week"
           }}
-          gradient="amber"
-          footer={
-            <Progress value={75} className="h-1.5" />
-          }
+          variant="warning"
+          footer={{
+            label: "75% to next milestone"
+          }}
         />
 
         <StatCard
           title="Study Streak"
           value={`${nzcelProgress?.streak || 0} days`}
           description="Keep it going!"
-          icon={<Zap className="h-4 w-4" />}
+          icon={Zap}
           trend={{
             value: nzcelProgress?.streak > 0 ? 100 : -100,
-            isPositive: nzcelProgress?.streak > 0
+            label: nzcelProgress?.streak > 0 ? "🔥 On fire!" : "Start today!"
           }}
-          gradient="emerald"
-          footer={
-            <div className="flex items-center gap-1">
-              {"🔥".repeat(Math.min(nzcelProgress?.streak || 0, 5))}
-            </div>
-          }
+          variant="success"
+          footer={{
+            label: "🔥".repeat(Math.min(nzcelProgress?.streak || 0, 5)) || "Start your streak!"
+          }}
         />
 
         <StatCard
           title="Questions"
           value={(nzcelProgress?.questionsCompleted || 0).toLocaleString()}
           description="Total completed"
-          icon={<BookOpen className="h-4 w-4" />}
+          icon={BookOpen}
           trend={{
             value: 8,
-            isPositive: true
+            label: "+8% this week"
           }}
-          gradient="blue"
+          variant="info"
         />
 
         <StatCard
           title="Study Time"
           value={formatTime(aggregatedStats?.totalTime || 0)}
           description="Total learning time"
-          icon={<Clock className="h-4 w-4" />}
+          icon={Clock}
           trend={{
             value: 5,
-            isPositive: true
+            label: "+5% this week"
           }}
-          gradient="purple"
+          variant="primary"
         />
       </div>
 

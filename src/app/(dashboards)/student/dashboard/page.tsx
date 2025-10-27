@@ -61,8 +61,8 @@ function DashboardPageContent() {
   const [data, setData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { ref, isLgUp, isMdUp } = useContainerQuery<HTMLDivElement>();
-  const userProgress = useUserProgressStore();
-  const cefrProgress = useCEFRProgressStore();
+  const userProgress = useUserProgress();
+  const cefrProgress = useCEFRProgress();
 
   useEffect(() => {
     const loadDashboardData = async () => {
@@ -116,14 +116,19 @@ function DashboardPageContent() {
 
   // Helper function to generate skill balance data
   const generateSkillBalance = (nzcelProgress: any, cefrProgress: any) => {
-    const skills = nzcelProgress?.skills || cefrProgress?.skills || userProgress.skills;
+    const skills = nzcelProgress?.skillProgress || cefrProgress?.skillProgress || userProgress.skillProgress || {
+      listening: 0,
+      speaking: 0,
+      reading: 0,
+      writing: 0
+    };
     return [
       { skill: "Listening", current: skills.listening || 0, target: 85 },
       { skill: "Speaking", current: skills.speaking || 0, target: 85 },
       { skill: "Reading", current: skills.reading || 0, target: 90 },
       { skill: "Writing", current: skills.writing || 0, target: 85 },
-      { skill: "Grammar", current: Math.round((skills.reading + skills.writing) / 2) || 0, target: 88 },
-      { skill: "Vocabulary", current: Math.round((skills.reading + skills.listening) / 2) || 0, target: 85 }
+      { skill: "Grammar", current: Math.round(((skills.reading || 0) + (skills.writing || 0)) / 2), target: 88 },
+      { skill: "Vocabulary", current: Math.round(((skills.reading || 0) + (skills.listening || 0)) / 2), target: 85 }
     ];
   };
 
@@ -180,58 +185,56 @@ function DashboardPageContent() {
       <div className={`grid gap-4 ${isLgUp ? "grid-cols-4" : isMdUp ? "grid-cols-2" : "grid-cols-1"}`}>
         <StatCard
           title="Total Points"
-          value={aggregatedStats?.totalPoints?.toLocaleString() || userProgress.points.toLocaleString()}
+          value={aggregatedStats?.totalPoints?.toLocaleString() || userProgress.totalPoints.toLocaleString()}
           description="Lifetime achievement"
-          icon={<Trophy className="h-4 w-4" />}
+          icon={Trophy}
           trend={{
             value: 12,
-            isPositive: true
+            label: "+12% this week"
           }}
-          gradient="amber"
-          footer={
-            <Progress value={75} className="h-1.5" />
-          }
+          variant="warning"
+          footer={{
+            label: "75% to next milestone"
+          }}
         />
 
         <StatCard
           title="Study Streak"
           value={`${userProgress.streak || 0} days`}
           description="Keep it going!"
-          icon={<Zap className="h-4 w-4" />}
+          icon={Zap}
           trend={{
             value: userProgress.streak > 0 ? 100 : -100,
-            isPositive: userProgress.streak > 0
+            label: userProgress.streak > 0 ? "🔥 On fire!" : "Start today!"
           }}
-          gradient="emerald"
-          footer={
-            <div className="flex items-center gap-1">
-              {"🔥".repeat(Math.min(userProgress.streak || 0, 5))}
-            </div>
-          }
+          variant="success"
+          footer={{
+            label: "🔥".repeat(Math.min(userProgress.streak || 0, 5)) || "Start your streak!"
+          }}
         />
 
         <StatCard
           title="Questions"
-          value={userProgress.questionsCompleted.toLocaleString()}
+          value={userProgress.completedQuestions.length.toLocaleString()}
           description="Total completed"
-          icon={<BookOpen className="h-4 w-4" />}
+          icon={BookOpen}
           trend={{
             value: 8,
-            isPositive: true
+            label: "+8% this week"
           }}
-          gradient="blue"
+          variant="info"
         />
 
         <StatCard
           title="Study Time"
           value={formatTime(aggregatedStats?.totalTime || 0)}
           description="Total learning time"
-          icon={<Clock className="h-4 w-4" />}
+          icon={Clock}
           trend={{
             value: 5,
-            isPositive: true
+            label: "+5% this week"
           }}
-          gradient="purple"
+          variant="primary"
         />
       </div>
 
@@ -354,7 +357,7 @@ function DashboardPageContent() {
                       <Award className={`h-6 w-6 ${achievement.progress >= achievement.target ? "text-primary" : "text-muted-foreground"}`} />
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-semibold">{achievement.name}</h4>
+                      <h4 className="font-semibold">{achievement.title}</h4>
                       <p className="text-xs text-muted-foreground">{achievement.description}</p>
                     </div>
                   </div>
