@@ -57,7 +57,7 @@ export async function getTeacherClasses() {
       new Map(allClasses.map((c) => [c.id, c])).values()
     );
 
-    // Get student counts for each class
+    // Get student counts and average scores for each class
     const classesWithCounts = await Promise.all(
       uniqueClasses.map(async (cls) => {
         const enrollments = await db.query.classEnrollments.findMany({
@@ -67,9 +67,39 @@ export async function getTeacherClasses() {
           ),
         });
 
+        // Calculate average score based on student progress
+        let averageScore = 75; // Default score
+        if (enrollments.length > 0) {
+          const studentIds = enrollments.map(e => e.studentId);
+
+          // Get progress for all students in this class
+          const studentProgress = await db.query.userProgress.findMany({
+            where: and(
+              inArray(schema.userProgress.userId, studentIds.map(id => id.toString())),
+              eq(schema.userProgress.organizationId, organizationId)
+            ),
+          });
+
+          if (studentProgress.length > 0) {
+            // Calculate average of all skill progress
+            const totalScore = studentProgress.reduce((sum, progress) => {
+              const skillAverage = (
+                progress.listeningProgress +
+                progress.speakingProgress +
+                progress.readingProgress +
+                progress.writingProgress
+              ) / 4;
+              return sum + skillAverage;
+            }, 0);
+
+            averageScore = Math.round(totalScore / studentProgress.length);
+          }
+        }
+
         return {
           ...cls,
           studentCount: enrollments.length,
+          averageScore,
         };
       })
     );

@@ -4,13 +4,17 @@
  * Seed Script for Diagnostic Tests
  * Populates the database with sample diagnostic tests
  *
- * Run with: npx ts-node scripts/seed-diagnostic-tests.ts
+ * Run with: npx tsx scripts/seed-diagnostic-tests.ts
  */
 
+import { config } from "dotenv";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "../src/lib/db/schema";
 import { sampleDiagnosticTests } from "../src/data/diagnostic-test-data";
+
+// Load environment variables from .env.local
+config({ path: ".env.local" });
 
 // Database connection
 const connectionString = process.env.DATABASE_URL;

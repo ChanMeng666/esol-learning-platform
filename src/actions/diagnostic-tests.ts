@@ -400,6 +400,108 @@ export async function completeDiagnosticAttempt(attemptId: bigint) {
       })
       .returning();
 
+    // Update user's NZCEL or CEFR level based on diagnostic results
+    if (test.levelSystem === "nzcel") {
+      // Check if user has existing NZCEL progress
+      const existingProgress = await db.query.userProgress.findFirst({
+        where: and(
+          eq(schema.userProgress.userId, userId),
+          eq(schema.userProgress.organizationId, organizationId)
+        ),
+      });
+
+      if (existingProgress) {
+        // Update existing progress with new level
+        await db
+          .update(schema.userProgress)
+          .set({
+            currentLevel: overallLevel,
+            // Update skill progress based on scores
+            listeningProgress: skillLevels.listening ?
+              Math.round((skillScores.listening?.earned / skillScores.listening?.total) * 100) :
+              existingProgress.listeningProgress,
+            speakingProgress: skillLevels.speaking ?
+              Math.round((skillScores.speaking?.earned / skillScores.speaking?.total) * 100) :
+              existingProgress.speakingProgress,
+            readingProgress: skillLevels.reading ?
+              Math.round((skillScores.reading?.earned / skillScores.reading?.total) * 100) :
+              existingProgress.readingProgress,
+            writingProgress: skillLevels.writing ?
+              Math.round((skillScores.writing?.earned / skillScores.writing?.total) * 100) :
+              existingProgress.writingProgress,
+          })
+          .where(eq(schema.userProgress.id, existingProgress.id));
+      } else {
+        // Create new progress record
+        await db.insert(schema.userProgress).values({
+          userId,
+          organizationId,
+          currentLevel: overallLevel,
+          targetLevel: overallLevel, // Set same as current initially
+          listeningProgress: skillLevels.listening ?
+            Math.round((skillScores.listening?.earned / skillScores.listening?.total) * 100) : 0,
+          speakingProgress: skillLevels.speaking ?
+            Math.round((skillScores.speaking?.earned / skillScores.speaking?.total) * 100) : 0,
+          readingProgress: skillLevels.reading ?
+            Math.round((skillScores.reading?.earned / skillScores.reading?.total) * 100) : 0,
+          writingProgress: skillLevels.writing ?
+            Math.round((skillScores.writing?.earned / skillScores.writing?.total) * 100) : 0,
+          totalPoints: totalScore,
+          questionsCompleted: responses.length,
+          streakDays: 0,
+          lastActivityDate: new Date(),
+        });
+      }
+    } else if (test.levelSystem === "cefr") {
+      // Update CEFR progress
+      const existingCEFR = await db.query.cefrProgress.findFirst({
+        where: and(
+          eq(schema.cefrProgress.userId, userId),
+          eq(schema.cefrProgress.organizationId, organizationId)
+        ),
+      });
+
+      if (existingCEFR) {
+        // Update existing CEFR progress
+        await db
+          .update(schema.cefrProgress)
+          .set({
+            currentLevel: overallLevel,
+            listeningProgress: skillLevels.listening ?
+              Math.round((skillScores.listening?.earned / skillScores.listening?.total) * 100) :
+              existingCEFR.listeningProgress,
+            speakingProgress: skillLevels.speaking ?
+              Math.round((skillScores.speaking?.earned / skillScores.speaking?.total) * 100) :
+              existingCEFR.speakingProgress,
+            readingProgress: skillLevels.reading ?
+              Math.round((skillScores.reading?.earned / skillScores.reading?.total) * 100) :
+              existingCEFR.readingProgress,
+            writingProgress: skillLevels.writing ?
+              Math.round((skillScores.writing?.earned / skillScores.writing?.total) * 100) :
+              existingCEFR.writingProgress,
+          })
+          .where(eq(schema.cefrProgress.id, existingCEFR.id));
+      } else {
+        // Create new CEFR progress record
+        await db.insert(schema.cefrProgress).values({
+          userId,
+          organizationId,
+          currentLevel: overallLevel,
+          targetLevel: overallLevel, // Set same as current initially
+          listeningProgress: skillLevels.listening ?
+            Math.round((skillScores.listening?.earned / skillScores.listening?.total) * 100) : 0,
+          speakingProgress: skillLevels.speaking ?
+            Math.round((skillScores.speaking?.earned / skillScores.speaking?.total) * 100) : 0,
+          readingProgress: skillLevels.reading ?
+            Math.round((skillScores.reading?.earned / skillScores.reading?.total) * 100) : 0,
+          writingProgress: skillLevels.writing ?
+            Math.round((skillScores.writing?.earned / skillScores.writing?.total) * 100) : 0,
+          totalPoints: totalScore,
+          questionsCompleted: responses.length,
+        });
+      }
+    }
+
     return results;
   });
 }
