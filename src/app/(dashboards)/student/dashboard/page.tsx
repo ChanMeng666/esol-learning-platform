@@ -16,6 +16,7 @@ import { OverviewTabNew as OverviewTab } from "@/components/dashboard/overview-t
 import { NZCELTab } from "@/components/dashboard/nzcel-tab";
 import { GeneralPracticeTab } from "@/components/dashboard/general-practice-tab";
 import { SpeakingTab } from "@/components/dashboard/speaking-tab";
+import { ClassScheduleCalendar } from "@/components/calendar/fullcalendar-schedule";
 import { useContainerQuery } from "@/hooks/use-container-query";
 import { useUserProgress } from "@/lib/store/user-progress";
 import { useCEFRProgress } from "@/lib/store/cefr-progress";
@@ -395,55 +396,13 @@ function DashboardPageContent() {
         </TabsContent>
 
         {/* Schedule Tab */}
-        <TabsContent value="schedule" className="mt-6 space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Study Schedule</CardTitle>
-              <p className="text-sm text-muted-foreground">Your upcoming sessions and deadlines</p>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 rounded-lg border">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/20">
-                      <BookOpen className="h-4 w-4 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium">Reading Practice</p>
-                      <p className="text-sm text-muted-foreground">Today at 3:00 PM</p>
-                    </div>
-                  </div>
-                  <Button size="sm">Join</Button>
-                </div>
-
-                <div className="flex items-center justify-between p-4 rounded-lg border">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/20">
-                      <MessageSquare className="h-4 w-4 text-green-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium">Speaking Session</p>
-                      <p className="text-sm text-muted-foreground">Tomorrow at 10:00 AM</p>
-                    </div>
-                  </div>
-                  <Button size="sm" variant="outline">Schedule</Button>
-                </div>
-
-                <div className="flex items-center justify-between p-4 rounded-lg border">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/20">
-                      <PenTool className="h-4 w-4 text-purple-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium">Writing Assignment Due</p>
-                      <p className="text-sm text-muted-foreground">Friday at 5:00 PM</p>
-                    </div>
-                  </div>
-                  <Badge>2 days left</Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <TabsContent value="schedule" className="mt-6">
+          <ClassScheduleCalendar
+            organizationId={BigInt(1)}
+            userId="student-user"
+            userRole="student"
+            className="w-full"
+          />
         </TabsContent>
       </Tabs>
 

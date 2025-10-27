@@ -11,6 +11,7 @@ import { StatCard } from "@/components/dashboard/stat-card";
 import { ProgressLineChart } from "@/components/charts/progress-line-chart";
 import { SkillRadarChart } from "@/components/charts/skill-radar-chart";
 import { DataTable } from "@/components/data-table/data-table";
+import { ClassScheduleCalendar } from "@/components/calendar/fullcalendar-schedule";
 import {
   Users,
   BookOpen,
@@ -197,6 +198,10 @@ export default function ParentDashboardPage() {
           <TabsTrigger value="messages" className="gap-2">
             <MessageCircle className="h-4 w-4" />
             <span className="hidden sm:inline">Messages</span>
+          </TabsTrigger>
+          <TabsTrigger value="schedule" className="gap-2">
+            <Calendar className="h-4 w-4" />
+            <span className="hidden sm:inline">Schedule</span>
           </TabsTrigger>
         </TabsList>
 
@@ -578,6 +583,16 @@ export default function ParentDashboardPage() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Schedule Tab */}
+        <TabsContent value="schedule" className="mt-6">
+          <ClassScheduleCalendar
+            organizationId={BigInt(1)}
+            userId="parent-user"
+            userRole="parent"
+            className="w-full"
+          />
         </TabsContent>
       </Tabs>
 
