@@ -4,6 +4,8 @@ import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useUser } from "@stackframe/stack";
 import { LoadingState } from "@/components/shared/loading-state";
+import { getDefaultDashboardRoute } from "@/lib/dashboard-configs";
+import type { UserRole } from "@/types/navigation";
 
 /**
  * Role-based redirect component
@@ -43,7 +45,7 @@ export function RoleRedirect({
 
     // Redirect to appropriate dashboard
     if (redirectTo === "dashboard") {
-      const targetPath = userRole === "teacher" ? "/teacher/dashboard" : "/dashboard";
+      const targetPath = getDefaultDashboardRoute(userRole as UserRole);
       router.push(targetPath);
     }
   }, [user, router, pathname, redirectTo]);

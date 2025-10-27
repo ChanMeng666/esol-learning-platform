@@ -11,6 +11,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, CheckCircle2, AlertCircle, Info } from "lucide-react";
 import { validateInvitationCode } from "@/actions/invitations";
 import { completeRegistration } from "@/actions/registration";
+import { getDefaultDashboardRoute } from "@/lib/dashboard-configs";
+import type { UserRole } from "@/types/navigation";
 
 /**
  * Invitation Code Verification for OAuth Users
@@ -80,9 +82,7 @@ export default function VerifyInvitationPage() {
         }
 
         // Redirect to appropriate dashboard
-        const dashboardPath = validatedInvitation.role === "teacher"
-          ? "/teacher/dashboard"
-          : "/dashboard";
+        const dashboardPath = getDefaultDashboardRoute(validatedInvitation.role as UserRole);
         router.push(dashboardPath);
       }
     } catch (error) {

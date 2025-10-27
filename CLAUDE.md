@@ -301,6 +301,8 @@ Located in `src/app/api/openai/`:
 
 ### Component Organization
 
+**⚠️ IMPORTANT**: Follow the [Component Placement Guidelines](docs/COMPONENT_PLACEMENT_GUIDELINES.md) when creating or moving components to maintain consistency and prevent duplication.
+
 ```
 src/
 ├── app/
@@ -323,6 +325,12 @@ src/
 │   │   │   └── [testId]/           # Test execution
 │   │   └── test-realtime/          # Realtime API debug page
 │   ├── (dashboards)/               # Role-based dashboards ✨
+│   │   ├── components/             # Shared dashboard components
+│   │   │   ├── app-sidebar.tsx    # Dashboard sidebar (all 6 roles)
+│   │   │   ├── dashboard-header-v2.tsx # Enhanced dashboard header
+│   │   │   ├── nav-main.tsx       # Main navigation
+│   │   │   ├── nav-user.tsx       # User profile menu
+│   │   │   └── theme-switcher.tsx # Theme toggle component
 │   │   ├── student/dashboard/      # Student dashboard
 │   │   ├── teacher/dashboard/      # Teacher dashboard
 │   │   ├── parent/dashboard/       # Parent dashboard
@@ -358,18 +366,40 @@ src/
 │   ├── fix-user-roles.ts           # Role fixing utility ✨
 │   └── cleanup-users.ts            # User cleanup utility ✨
 ├── components/
+│   ├── ui/                         # shadcn/ui primitives (DO NOT EDIT)
+│   ├── shared/                     # Shared across entire app
+│   │   ├── empty-state.tsx        # Generic empty state
+│   │   └── loading-state.tsx      # Loading indicators
+│   ├── dashboard/                  # Dashboard-specific widgets ✨
+│   │   ├── overview-tab-new.tsx   # Multi-module overview
+│   │   ├── nzcel-tab.tsx          # NZCEL progress (uses hooks)
+│   │   ├── general-practice-tab.tsx # CEFR progress
+│   │   ├── speaking-tab.tsx       # Speaking stats
+│   │   ├── skill-radar-chart.tsx  # Self-contained chart
+│   │   └── progress-line-chart.tsx # Self-contained chart
+│   ├── charts/                     # Reusable chart components ✨
+│   │   ├── skill-radar-chart.tsx  # Prop-based radar chart
+│   │   ├── progress-line-chart.tsx # Prop-based line chart
+│   │   ├── chart-revenue.tsx      # Revenue chart
+│   │   └── chart-visitors.tsx     # Visitor chart
+│   ├── practice/                   # Practice module components
+│   │   ├── question-card.tsx      # Question display
+│   │   ├── audio-player.tsx       # Practice-specific (with transcripts)
+│   │   └── voice-recorder.tsx     # Voice recording
+│   ├── audio/                      # General audio utilities
+│   │   └── audio-player.tsx       # Basic audio playback
+│   ├── history/                    # History-specific components
+│   │   └── empty-state.tsx        # Simplified empty state
 │   ├── copilot/                    # CopilotKit context & actions
-│   ├── practice/                   # Question cards, voice recorder
 │   ├── conversation/               # Real-time conversation UI
 │   ├── speaking/                   # AI Speaking Coach components ✨
-│   ├── dashboard/                  # Dashboard tab components ✨
-│   │   ├── overview-tab.tsx        # Multi-module overview
-│   │   ├── nzcel-tab.tsx           # NZCEL progress
-│   │   ├── general-practice-tab.tsx# CEFR progress
-│   │   └── speaking-tab.tsx        # Speaking stats
-│   ├── navigation/                 # Navbar with dropdown menus
-│   ├── ui/                         # shadcn/ui components (25+)
-│   └── providers.tsx               # App-level providers
+│   ├── navigation/                 # Navbar components
+│   ├── auth/                       # Authentication components
+│   ├── filters/                    # Filter components
+│   ├── data-table/                 # Data table (TanStack Table)
+│   ├── calendar/                   # Calendar components
+│   ├── spreadsheet/                # Spreadsheet components
+│   └── providers.tsx               # App-level providers (with ThemeProvider)
 ├── lib/
 │   ├── db/
 │   │   ├── schema.ts               # Drizzle schema (44 tables, 1445 lines) ✨
@@ -379,6 +409,7 @@ src/
 │   ├── store/                      # Zustand state management
 │   │   ├── user-progress.ts        # NZCEL progress store
 │   │   └── cefr-progress.ts        # CEFR progress store ✨
+│   ├── dashboard-configs.ts        # Dashboard navigation configs (unified)
 │   ├── stack.ts                    # Stack Auth config
 │   └── openai.ts                   # OpenAI client
 ├── data/                           # Content and configuration
@@ -394,6 +425,13 @@ src/
 │   └── use-copilot-chat-history.ts
 └── types/index.ts                  # TypeScript definitions (CEFRLevel, LearningModule, etc.) ✨
 ```
+
+**Component Duplication Notes**:
+- Some components appear in multiple locations (e.g., `skill-radar-chart.tsx` in both `dashboard/` and `charts/`)
+- This is **intentional** - they serve different architectural patterns:
+  - `dashboard/` versions: Self-contained, use hooks internally (e.g., `useUserProgress()`)
+  - `charts/` versions: Reusable, accept data via props
+- See [Component Placement Guidelines](docs/COMPONENT_PLACEMENT_GUIDELINES.md) for details
 
 ## Key Implementation Patterns
 
@@ -518,20 +556,26 @@ COPILOT_CLOUD_API_KEY="..."  # Optional, for CopilotKit Cloud
    - All queries MUST filter by `organizationId` using `and(eq(schema.table.organizationId, organizationId))`
    - Never assume single-tenant—all data is organization-scoped
    - All 44 tables include `organization_id` column for complete isolation
-4. **Audio caching**: Use `getQuestionAudio()` instead of calling TTS API directly
-5. **Organization data isolation**: Server Actions automatically scope to user's organization (not just userId)
-6. **Zustand is cache only**: Server Actions are the source of truth
-7. **Voice recording state management**: Use refs for async callback values
-8. **Achievement logic**: Already auto-runs on `submitAnswer()`, don't duplicate
-9. **CopilotKit context**: Changes to NZCEL data structure require updating `copilot-context.tsx`
-10. **API routes**: All OpenAI routes should use `getOpenAIClient()` helper
-11. **Transcription edge cases**: Handle empty/null audio blobs gracefully
-12. **Database migrations**:
+4. **Component organization** (⚠️ IMPORTANT):
+   - Follow [Component Placement Guidelines](docs/COMPONENT_PLACEMENT_GUIDELINES.md) strictly
+   - Never create version suffixes (`-v2`, `-new`, `-old`) - delete old code instead
+   - Use the decision tree to determine correct component location
+   - Check for existing components before creating new ones
+   - Keep self-contained dashboard components separate from reusable chart components
+5. **Audio caching**: Use `getQuestionAudio()` instead of calling TTS API directly
+6. **Organization data isolation**: Server Actions automatically scope to user's organization (not just userId)
+7. **Zustand is cache only**: Server Actions are the source of truth
+8. **Voice recording state management**: Use refs for async callback values
+9. **Achievement logic**: Already auto-runs on `submitAnswer()`, don't duplicate
+10. **CopilotKit context**: Changes to NZCEL data structure require updating `copilot-context.tsx`
+11. **API routes**: All OpenAI routes should use `getOpenAIClient()` helper
+12. **Transcription edge cases**: Handle empty/null audio blobs gracefully
+13. **Database migrations**:
     - Development: Use `npm run drizzle:push` (requires manual terminal execution)
     - Production: Use `drizzle:generate` + `drizzle:migrate` workflow
     - ⚠️ CRITICAL: `drizzle:push` CANNOT be automated via Server Actions or API routes
     - Database: Neon PostgreSQL (serverless) with Drizzle ORM
-    - All 43 tables have `organization_id` column for multi-tenant isolation
+    - All 44 tables have `organization_id` column for multi-tenant isolation
 
 ## UI & Styling
 
@@ -561,12 +605,17 @@ COPILOT_CLOUD_API_KEY="..."  # Optional, for CopilotKit Cloud
 - **Module system** allows easy addition of new learning paths (IELTS, TOEFL planned)
 - **Education features**: Assignments, class management, diagnostic testing, attendance tracking (all multi-tenant)
 
-## Database Documentation
+## Documentation
 
-For comprehensive database architecture documentation, see:
+For comprehensive project documentation, see:
+
+### Database & Architecture
 - **[DATABASE_ARCHITECTURE.md](docs/architecture/DATABASE_ARCHITECTURE.md)** - Complete schema, ERD diagrams, Server Actions catalog, data flow, integration examples
 - **[DATABASE_SCHEMA_IMPLEMENTATION.md](docs/architecture/DATABASE_SCHEMA_IMPLEMENTATION.md)** - Implementation guide with real-world integration examples
 - **[STACK_AUTH_INTEGRATION.md](docs/guides/STACK_AUTH_INTEGRATION.md)** - Stack Auth setup and migration guide
+
+### Development Guidelines
+- **[COMPONENT_PLACEMENT_GUIDELINES.md](docs/COMPONENT_PLACEMENT_GUIDELINES.md)** - Component organization rules, decision trees, anti-patterns, migration guide
 
 ## Development Guidelines
 
@@ -688,4 +737,11 @@ Examples:
 ---
 
 **Last Updated**: 2025-10-27
-**Version**: 2.1
+**Version**: 2.2
+
+**Recent Changes**:
+- Added Component Placement Guidelines documentation
+- Cleaned up duplicate components (removed 7 files)
+- Consolidated dashboard-configs (merged v1 and v2)
+- Updated component organization structure
+- Added ThemeProvider to root providers

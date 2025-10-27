@@ -6,6 +6,8 @@ import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { completeRegistration } from "@/actions/registration";
+import { getDefaultDashboardRoute } from "@/lib/dashboard-configs";
+import type { UserRole } from "@/types/navigation";
 
 export default function AuthCallbackPage() {
   const router = useRouter();
@@ -31,9 +33,7 @@ export default function AuthCallbackPage() {
           }
 
           // Existing user, redirect to appropriate dashboard
-          const dashboardPath = status.role === "teacher"
-            ? "/teacher/dashboard"
-            : "/dashboard";
+          const dashboardPath = getDefaultDashboardRoute(status.role as UserRole);
           router.push(dashboardPath);
           return;
         }
@@ -55,9 +55,7 @@ export default function AuthCallbackPage() {
           setStatus("success");
 
           // Redirect to dashboard after a brief delay
-          const dashboardPath = pendingInvitation.role === "teacher"
-            ? "/teacher/dashboard"
-            : "/dashboard";
+          const dashboardPath = getDefaultDashboardRoute(pendingInvitation.role as UserRole);
 
           setTimeout(() => {
             router.push(dashboardPath);

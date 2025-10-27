@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { stackServerApp } from "@/lib/stack";
 import { UserRole } from "@/lib/auth/permissions";
+import { getDefaultDashboardRoute } from "@/lib/dashboard-configs";
 
 interface RoleGuardProps {
   allowedRoles: UserRole[];
@@ -54,20 +55,6 @@ export async function getDefaultRedirectForRole(): Promise<string> {
   // Default to "student" for legacy users without roles
   const userRole = (user.clientMetadata?.role as UserRole | undefined) || "student";
 
-  switch (userRole) {
-    case "student":
-      return "/dashboard";
-    case "teacher":
-      return "/teacher/dashboard";
-    case "parent":
-      return "/dashboard"; // Parents use main dashboard for now
-    case "department_head":
-      return "/dashboard"; // Department heads use main dashboard for now
-    case "school_admin":
-      return "/dashboard"; // School admins use main dashboard for now
-    case "system_admin":
-      return "/dashboard"; // System admins use main dashboard for now
-    default:
-      return "/dashboard"; // Default to student dashboard
-  }
+  // Use centralized dashboard route mapping
+  return getDefaultDashboardRoute(userRole);
 }
