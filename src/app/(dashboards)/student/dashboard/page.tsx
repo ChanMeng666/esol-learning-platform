@@ -440,14 +440,6 @@ function DashboardPageContent() {
               <Target className="h-5 w-5" />
               <span className="text-xs">Test</span>
             </Button>
-            <Button
-              variant="outline"
-              className="h-auto p-4 flex flex-col items-center gap-2"
-              onClick={() => window.location.href = "/student/dashboard/enhanced-page"}
-            >
-              <Zap className="h-5 w-5" />
-              <span className="text-xs">Enhanced</span>
-            </Button>
           </div>
         </CardContent>
       </Card>

@@ -14,6 +14,9 @@ import { ChartVisitors } from "@/components/charts/chart-visitors";
 import { ClassScheduleCalendar } from "@/components/calendar/fullcalendar-schedule";
 import { GradeSpreadsheet } from "@/components/spreadsheet/grade-spreadsheet";
 import { DataTable } from "@/components/data-table/data-table";
+import { AdvancedFilter, type FilterConfig, type FilterValue } from "@/components/filters/advanced-filter";
+import { ProgressLineChart } from "@/components/charts/progress-line-chart";
+import { SkillRadarChart } from "@/components/charts/skill-radar-chart";
 import { getTeacherClasses } from "@/actions/classes";
 import { getTeacherAssignments } from "@/actions/assignments";
 import {
@@ -28,9 +31,9 @@ import {
   BarChart3,
   FileText,
   Lightbulb,
-  FlaskConical,
   Eye,
   BookOpen,
+  Target,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -58,12 +61,46 @@ const studentColumns = [
   },
 ];
 
+// Filter configuration for student management
+const filterConfig: FilterConfig[] = [
+  {
+    id: "level",
+    label: "Level",
+    type: "multiselect",
+    options: [
+      { value: "level-1", label: "Level 1" },
+      { value: "level-2", label: "Level 2" },
+      { value: "level-3", label: "Level 3" },
+      { value: "level-4", label: "Level 4" },
+    ],
+  },
+  {
+    id: "status",
+    label: "Status",
+    type: "select",
+    options: [
+      { value: "active", label: "Active" },
+      { value: "inactive", label: "Inactive" },
+      { value: "pending", label: "Pending" },
+    ],
+  },
+  {
+    id: "progress",
+    label: "Progress",
+    type: "range",
+    min: 0,
+    max: 100,
+    step: 10,
+  },
+];
+
 export default function TeacherDashboardPage() {
   const router = useRouter();
   const [classes, setClasses] = useState<any[]>([]);
   const [assignments, setAssignments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
+  const [filterValues, setFilterValues] = useState<FilterValue>({});
 
   useEffect(() => {
     loadDashboardData();
@@ -406,10 +443,14 @@ export default function TeacherDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {/* Filter placeholder - can be implemented later */}
-                <div className="text-sm text-muted-foreground">
-                  Filter functionality coming soon
-                </div>
+                {/* Advanced Filter */}
+                <AdvancedFilter
+                  filters={filterConfig}
+                  values={filterValues}
+                  onChange={setFilterValues}
+                  onApply={(values) => console.log("Filters applied:", values)}
+                  onReset={() => setFilterValues({})}
+                />
                 <DataTable
                   columns={studentColumns}
                   data={mockStudentData}
@@ -431,15 +472,9 @@ export default function TeacherDashboardPage() {
             <CardContent className="space-y-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-semibold">All Assignments</h3>
-                <div className="flex gap-2">
-                  <Button onClick={() => router.push("/teacher/assignments/create")}>
-                    Create Assignment
-                  </Button>
-                  <Button variant="outline" onClick={() => router.push("/teacher/dashboard/enhanced-page")}>
-                    <FlaskConical className="w-4 h-4 mr-2" />
-                    Advanced View
-                  </Button>
-                </div>
+                <Button onClick={() => router.push("/teacher/assignments/create")}>
+                  Create Assignment
+                </Button>
               </div>
               {assignments.map((assignment) => (
                 <Card key={assignment.id.toString()}>
@@ -562,10 +597,10 @@ export default function TeacherDashboardPage() {
       <Card>
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>Common tasks and advanced features</CardDescription>
+          <CardDescription>Common tasks for teachers</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-3">
             <Button
               onClick={() => router.push("/teacher/assignments")}
               variant="outline"
@@ -610,22 +645,6 @@ export default function TeacherDashboardPage() {
                 <div className="font-semibold">Student Progress</div>
                 <div className="text-sm text-muted-foreground mt-1">
                   Track performance
-                </div>
-              </div>
-            </Button>
-
-            <Button
-              onClick={() => router.push("/teacher/dashboard/enhanced-page")}
-              variant="outline"
-              className="h-auto p-6 flex flex-col items-start gap-3 hover:bg-emerald-500/5 hover:border-emerald-500/50 transition-colors"
-            >
-              <div className="p-2 rounded-lg bg-emerald-500/10">
-                <FlaskConical className="w-5 h-5 text-emerald-500" />
-              </div>
-              <div className="text-left">
-                <div className="font-semibold">Enhanced Dashboard</div>
-                <div className="text-sm text-muted-foreground mt-1">
-                  Test new features
                 </div>
               </div>
             </Button>

@@ -12,6 +12,9 @@ import { ProgressLineChart } from "@/components/charts/progress-line-chart";
 import { SkillRadarChart } from "@/components/charts/skill-radar-chart";
 import { DataTable } from "@/components/data-table/data-table";
 import { ClassScheduleCalendar } from "@/components/calendar/fullcalendar-schedule";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
 import {
   Users,
   BookOpen,
@@ -24,11 +27,14 @@ import {
   BarChart3,
   Calendar,
   Award,
-  FlaskConical,
   Eye,
   Activity,
+  Target,
+  FileText,
+  XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
+import { type ColumnDef } from "@tanstack/react-table";
 
 // Define columns for children data table
 const childrenColumns = [
@@ -58,6 +64,66 @@ const childrenColumns = [
   },
 ];
 
+// Activity log data structure
+interface ActivityLog {
+  id: string;
+  childName: string;
+  action: string;
+  details: string;
+  timestamp: Date;
+  type: "achievement" | "practice" | "test" | "alert";
+}
+
+// Columns for activity table
+const activityColumns: ColumnDef<ActivityLog>[] = [
+  {
+    accessorKey: "childName",
+    header: "Child",
+    cell: ({ row }) => (
+      <div className="font-medium">{row.getValue("childName")}</div>
+    )
+  },
+  {
+    accessorKey: "action",
+    header: "Activity",
+    cell: ({ row }) => {
+      const type = row.original.type;
+      const icons = {
+        achievement: <Award className="h-4 w-4 text-amber-500" />,
+        practice: <BookOpen className="h-4 w-4 text-blue-500" />,
+        test: <FileText className="h-4 w-4 text-purple-500" />,
+        alert: <AlertCircle className="h-4 w-4 text-red-500" />
+      };
+
+      return (
+        <div className="flex items-center gap-2">
+          {icons[type]}
+          <span>{row.getValue("action")}</span>
+        </div>
+      );
+    }
+  },
+  {
+    accessorKey: "details",
+    header: "Details"
+  },
+  {
+    accessorKey: "timestamp",
+    header: "Time",
+    cell: ({ row }) => {
+      const timestamp = row.getValue("timestamp") as Date;
+      const now = new Date();
+      const diff = now.getTime() - timestamp.getTime();
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const days = Math.floor(hours / 24);
+
+      if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
+      if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+      return "Just now";
+    }
+  }
+];
+
 export default function ParentDashboardPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("overview");
@@ -71,10 +137,15 @@ export default function ParentDashboardPage() {
       class: "5A",
       avgScore: "85%",
       attendance: "95%",
-      status: "Active",
+      status: "active",
       gradeLevel: 5,
       className: "5A",
-      averageScore: 85
+      averageScore: 85,
+      avatar: "/avatars/alice.jpg",
+      cefrLevel: "B1",
+      level: "Level 3",
+      progress: 75,
+      lastActive: "2 hours ago"
     },
     {
       id: "2",
@@ -83,10 +154,46 @@ export default function ParentDashboardPage() {
       class: "3B",
       avgScore: "78%",
       attendance: "92%",
-      status: "Active",
+      status: "active",
       gradeLevel: 3,
       className: "3B",
-      averageScore: 78
+      averageScore: 78,
+      avatar: "/avatars/bob.jpg",
+      cefrLevel: "A2",
+      level: "Level 2",
+      progress: 62,
+      lastActive: "1 day ago"
+    }
+  ]);
+
+  // Selected child for detailed view
+  const [selectedChild, setSelectedChild] = useState(children[0]);
+
+  // Mock activity log
+  const [activityData] = useState<ActivityLog[]>([
+    {
+      id: "1",
+      childName: "Alice Johnson",
+      action: "Completed Practice",
+      details: "Finished Level 3 Reading Exercise with 85% accuracy",
+      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
+      type: "practice"
+    },
+    {
+      id: "2",
+      childName: "Bob Johnson",
+      action: "Achievement Unlocked",
+      details: "Earned 'Consistent Learner' badge - 7 day streak!",
+      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000),
+      type: "achievement"
+    },
+    {
+      id: "3",
+      childName: "Alice Johnson",
+      action: "Test Completed",
+      details: "NZCEL Diagnostic Test - Score: 78/100",
+      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+      type: "test"
     }
   ]);
 
@@ -168,17 +275,66 @@ export default function ParentDashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Header */}
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">Parent Dashboard</h1>
-        <p className="text-muted-foreground">
-          Monitor your children's learning progress and communicate with teachers
-        </p>
+      {/* Header with Child Selector */}
+      <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-3xl font-bold tracking-tight">Parent Dashboard</h1>
+          <p className="text-muted-foreground">
+            Monitor your children's learning progress and communicate with teachers
+          </p>
+        </div>
+
+        {/* Child Selector */}
+        <div className="flex items-center gap-2">
+          {children.map(child => (
+            <Button
+              key={child.id}
+              variant={selectedChild.id === child.id ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSelectedChild(child)}
+              className="flex items-center gap-2"
+            >
+              <Avatar className="h-6 w-6">
+                <AvatarImage src={child.avatar} />
+                <AvatarFallback>{child.name.split(' ').map((n: string) => n[0]).join('')}</AvatarFallback>
+              </Avatar>
+              {child.name}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      {/* Alerts Section */}
+      <div className="space-y-3">
+        <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-900/20">
+          <AlertCircle className="h-4 w-4 text-amber-600" />
+          <AlertDescription>
+            <strong>{selectedChild.name}</strong> has a diagnostic test scheduled for tomorrow at 3:00 PM
+          </AlertDescription>
+        </Alert>
+
+        {selectedChild.progress < 70 && (
+          <Alert className="border-red-200 bg-red-50 dark:bg-red-900/20">
+            <XCircle className="h-4 w-4 text-red-600" />
+            <AlertDescription>
+              <strong>{selectedChild.name}</strong>'s progress is below target. Consider scheduling extra practice sessions.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {selectedChild.status === "online" && (
+          <Alert className="border-green-200 bg-green-50 dark:bg-green-900/20">
+            <CheckCircle2 className="h-4 w-4 text-green-600" />
+            <AlertDescription>
+              <strong>{selectedChild.name}</strong> is currently online and practicing
+            </AlertDescription>
+          </Alert>
+        )}
       </div>
 
       {/* Tabs for different views */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full max-w-2xl grid-cols-5 lg:grid-cols-5">
+        <TabsList className="grid w-full grid-cols-3 md:grid-cols-7">
           <TabsTrigger value="overview" className="gap-2">
             <BarChart3 className="h-4 w-4" />
             <span className="hidden sm:inline">Overview</span>
@@ -190,6 +346,10 @@ export default function ParentDashboardPage() {
           <TabsTrigger value="progress" className="gap-2">
             <TrendingUp className="h-4 w-4" />
             <span className="hidden sm:inline">Progress</span>
+          </TabsTrigger>
+          <TabsTrigger value="activity" className="gap-2">
+            <Activity className="h-4 w-4" />
+            <span className="hidden sm:inline">Activity</span>
           </TabsTrigger>
           <TabsTrigger value="assignments" className="gap-2">
             <BookOpen className="h-4 w-4" />
@@ -430,36 +590,148 @@ export default function ParentDashboardPage() {
 
         {/* Progress Tab */}
         <TabsContent value="progress" className="space-y-6">
+          <div className="grid gap-4 md:grid-cols-2">
+            {/* NZCEL Progress */}
+            <Card>
+              <CardHeader>
+                <CardTitle>NZCEL Progress</CardTitle>
+                <CardDescription>New Zealand Certificate in English Language</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Current</p>
+                    <p className="text-2xl font-bold">{selectedChild.level}</p>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Target</p>
+                    <p className="text-2xl font-bold">Level 4</p>
+                  </div>
+                </div>
+                <Progress value={selectedChild.progress} className="h-3" />
+              </CardContent>
+            </Card>
+
+            {/* CEFR Progress */}
+            <Card>
+              <CardHeader>
+                <CardTitle>CEFR Progress</CardTitle>
+                <CardDescription>Common European Framework</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Current</p>
+                    <p className="text-2xl font-bold">{selectedChild.cefrLevel}</p>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Target</p>
+                    <p className="text-2xl font-bold">B2</p>
+                  </div>
+                </div>
+                <Progress value={65} className="h-3" />
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Recent Achievements */}
           <Card>
             <CardHeader>
-              <CardTitle>Academic Progress</CardTitle>
-              <CardDescription>Detailed performance analytics for your children</CardDescription>
+              <CardTitle>Recent Achievements</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <h3 className="text-sm font-medium">Overall Progress Trend</h3>
-                <p className="text-xs text-muted-foreground">Monthly academic performance</p>
-                <div className="flex items-center justify-center h-48 text-sm text-muted-foreground border rounded-lg">
-                  Charts feature coming soon
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="text-center p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20">
+                  <div className="text-3xl mb-2">🏆</div>
+                  <p className="text-sm font-medium">First Place</p>
+                  <p className="text-xs text-muted-foreground">Class Quiz</p>
                 </div>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                {children.map((child) => (
-                  <Card key={child.id}>
-                    <CardHeader>
-                      <CardTitle className="text-base">{child.name}'s Skills</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center justify-center h-48 text-sm text-muted-foreground border rounded-lg">
-                        Charts feature coming soon
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                <div className="text-center p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20">
+                  <div className="text-3xl mb-2">📚</div>
+                  <p className="text-sm font-medium">100 Questions</p>
+                  <p className="text-xs text-muted-foreground">Milestone</p>
+                </div>
+                <div className="text-center p-4 rounded-lg bg-green-50 dark:bg-green-900/20">
+                  <div className="text-3xl mb-2">🔥</div>
+                  <p className="text-sm font-medium">7 Day Streak</p>
+                  <p className="text-xs text-muted-foreground">Consistency</p>
+                </div>
+                <div className="text-center p-4 rounded-lg bg-purple-50 dark:bg-purple-900/20">
+                  <div className="text-3xl mb-2">⭐</div>
+                  <p className="text-sm font-medium">Perfect Score</p>
+                  <p className="text-xs text-muted-foreground">Writing Test</p>
+                </div>
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Activity Tab */}
+        <TabsContent value="activity" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Activity</CardTitle>
+              <CardDescription>
+                Track {selectedChild.name}'s learning activities
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <DataTable
+                columns={activityColumns}
+                data={activityData}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Activity Summary */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium">Today's Activity</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-2xl font-bold">2</p>
+                    <p className="text-xs text-muted-foreground">Sessions completed</p>
+                  </div>
+                  <Activity className="h-8 w-8 text-muted-foreground" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium">Weekly Stats</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-2xl font-bold">12</p>
+                    <p className="text-xs text-muted-foreground">Total sessions</p>
+                  </div>
+                  <Calendar className="h-8 w-8 text-muted-foreground" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium">Accuracy</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-2xl font-bold">82%</p>
+                    <p className="text-xs text-muted-foreground">Average score</p>
+                  </div>
+                  <Target className="h-8 w-8 text-muted-foreground" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         {/* Assignments Tab */}
@@ -586,10 +858,10 @@ export default function ParentDashboardPage() {
       <Card>
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>Common tasks and advanced features</CardDescription>
+          <CardDescription>Common tasks for parents</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-3">
             <Button
               onClick={() => router.push("/parent/progress")}
               variant="outline"
@@ -634,22 +906,6 @@ export default function ParentDashboardPage() {
                 <div className="font-semibold">Teacher Feedback</div>
                 <div className="text-sm text-muted-foreground mt-1">
                   Read feedback
-                </div>
-              </div>
-            </Button>
-
-            <Button
-              onClick={() => router.push("/parent/dashboard/enhanced-page")}
-              variant="outline"
-              className="h-auto p-6 flex flex-col items-start gap-3 hover:bg-emerald-500/5 hover:border-emerald-500/50 transition-colors"
-            >
-              <div className="p-2 rounded-lg bg-emerald-500/10">
-                <FlaskConical className="w-5 h-5 text-emerald-500" />
-              </div>
-              <div className="text-left">
-                <div className="font-semibold">Enhanced View</div>
-                <div className="text-sm text-muted-foreground mt-1">
-                  Test new features
                 </div>
               </div>
             </Button>

@@ -11,6 +11,7 @@ import { StatCard } from "@/components/dashboard/stat-card";
 import { ChartRevenue } from "@/components/charts/chart-revenue";
 import { ChartVisitors } from "@/components/charts/chart-visitors";
 import { DataTable } from "@/components/data-table/data-table";
+import { AdvancedFilter, type FilterConfig, type FilterValue } from "@/components/filters/advanced-filter";
 import {
   Building2,
   Users,
@@ -26,7 +27,6 @@ import {
   Trash2,
   Send,
   BarChart3,
-  FlaskConical,
   Bug,
   Terminal,
   Code2,
@@ -34,8 +34,13 @@ import {
   Gauge,
   Wrench,
   Eye,
+  Cpu,
+  HardDrive,
+  Server,
+  RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useEffect } from "react";
 
 // Define columns for organizations table
 const organizationColumns = [
@@ -61,9 +66,67 @@ const organizationColumns = [
   },
 ];
 
+// Filter configuration for organizations
+const filterConfig: FilterConfig[] = [
+  {
+    id: "type",
+    label: "Organization Type",
+    type: "multiselect",
+    options: [
+      { value: "school", label: "School" },
+      { value: "institution", label: "Institution" },
+      { value: "corporate", label: "Corporate" }
+    ]
+  },
+  {
+    id: "plan",
+    label: "Plan",
+    type: "multiselect",
+    options: [
+      { value: "free", label: "Free" },
+      { value: "basic", label: "Basic" },
+      { value: "premium", label: "Premium" },
+      { value: "trial", label: "Trial" }
+    ]
+  },
+  {
+    id: "status",
+    label: "Status",
+    type: "select",
+    options: [
+      { value: "active", label: "Active" },
+      { value: "suspended", label: "Suspended" },
+      { value: "trial", label: "Trial" }
+    ]
+  }
+];
+
+// System metrics interface
+interface SystemMetrics {
+  cpu: number;
+  memory: number;
+  storage: number;
+  requests: number;
+  responseTime: number;
+  uptime: number;
+  errors: number;
+}
+
 export default function SystemAdminDashboardPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("overview");
+  const [filterValues, setFilterValues] = useState<FilterValue>({});
+
+  // Real-time system metrics
+  const [systemMetrics, setSystemMetrics] = useState<SystemMetrics>({
+    cpu: 42,
+    memory: 68,
+    storage: 55,
+    requests: 12450,
+    responseTime: 145,
+    uptime: 99.98,
+    errors: 3
+  });
 
   // Mock data - replace with real API calls
   const [organizations] = useState<any[]>([
@@ -98,6 +161,23 @@ export default function SystemAdminDashboardPage() {
     uptime: "99.9%",
     lastBackup: "2 hours ago",
   });
+
+  // Real-time metrics update (every 5 seconds)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSystemMetrics(prev => ({
+        cpu: Math.min(100, Math.max(20, prev.cpu + (Math.random() - 0.5) * 10)),
+        memory: Math.min(100, Math.max(40, prev.memory + (Math.random() - 0.5) * 5)),
+        storage: prev.storage,
+        requests: prev.requests + Math.floor(Math.random() * 50),
+        responseTime: Math.max(50, prev.responseTime + (Math.random() - 0.5) * 20),
+        uptime: prev.uptime,
+        errors: prev.errors + (Math.random() > 0.9 ? 1 : 0)
+      }));
+    }, 5000); // Update every 5 seconds
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Calculate statistics
   const totalOrganizations = organizations.length;
@@ -209,6 +289,89 @@ export default function SystemAdminDashboardPage() {
 
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-6">
+          {/* Real-time System Monitoring */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Real-time System Monitoring</CardTitle>
+                <Badge variant="outline" className="gap-1">
+                  <Activity className="h-3 w-3 animate-pulse" />
+                  Live (Updates every 5s)
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <Card className="border-2">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <Cpu className="h-4 w-4 text-blue-500" />
+                        <span className="text-sm font-medium">CPU Usage</span>
+                      </div>
+                      <span className="text-2xl font-bold">{Math.round(systemMetrics.cpu)}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+                        style={{ width: `${systemMetrics.cpu}%` }}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-2">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <Server className="h-4 w-4 text-green-500" />
+                        <span className="text-sm font-medium">Memory</span>
+                      </div>
+                      <span className="text-2xl font-bold">{Math.round(systemMetrics.memory)}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-green-600 h-2 rounded-full transition-all duration-500"
+                        style={{ width: `${systemMetrics.memory}%` }}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-2">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <HardDrive className="h-4 w-4 text-purple-500" />
+                        <span className="text-sm font-medium">Storage</span>
+                      </div>
+                      <span className="text-2xl font-bold">{Math.round(systemMetrics.storage)}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-purple-600 h-2 rounded-full transition-all duration-500"
+                        style={{ width: `${systemMetrics.storage}%` }}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-2">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <RefreshCw className="h-4 w-4 text-amber-500" />
+                        <span className="text-sm font-medium">Requests</span>
+                      </div>
+                      <span className="text-2xl font-bold">{systemMetrics.requests.toLocaleString()}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Response time: {Math.round(systemMetrics.responseTime)}ms</p>
+                  </CardContent>
+                </Card>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Stats Grid */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <StatCard
@@ -424,10 +587,14 @@ export default function SystemAdminDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {/* Filter placeholder - can be implemented later */}
-                <div className="text-sm text-muted-foreground">
-                  Filter functionality coming soon
-                </div>
+                {/* Advanced Filter */}
+                <AdvancedFilter
+                  filters={filterConfig}
+                  values={filterValues}
+                  onChange={setFilterValues}
+                  onApply={(values) => console.log("Filters applied:", values)}
+                  onReset={() => setFilterValues({})}
+                />
                 <DataTable
                   columns={organizationColumns}
                   data={organizations}
