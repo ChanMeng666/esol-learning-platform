@@ -1,0 +1,448 @@
+/* Container Queries for responsive components */
+
+/* Base container setup */
+.container-responsive {
+  container-type: inline-size;
+}
+
+.container-responsive-block {
+  container-type: size;
+}
+
+/* Named containers */
+.dashboard-container {
+  container-type: inline-size;
+  container-name: dashboard;
+}
+
+.card-container {
+  container-type: inline-size;
+  container-name: card;
+}
+
+.chart-container {
+  container-type: inline-size;
+  container-name: chart;
+}
+
+/* StatCard responsive styles */
+@container card (min-width: 300px) {
+  .stat-card-content {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .stat-card-value {
+    font-size: 2rem;
+  }
+}
+
+@container card (max-width: 299px) {
+  .stat-card-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .stat-card-value {
+    font-size: 1.5rem;
+  }
+
+  .stat-card-icon {
+    display: none;
+  }
+}
+
+/* Chart responsive styles */
+@container chart (min-width: 600px) {
+  .chart-legend {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+  }
+
+  .chart-height {
+    height: 400px;
+  }
+}
+
+@container chart (min-width: 400px) and (max-width: 599px) {
+  .chart-legend {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+
+  .chart-height {
+    height: 300px;
+  }
+}
+
+@container chart (max-width: 399px) {
+  .chart-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .chart-height {
+    height: 250px;
+  }
+
+  .chart-title {
+    font-size: 0.875rem;
+  }
+}
+
+/* Data table responsive styles */
+@container (min-width: 768px) {
+  .data-table-container {
+    overflow: visible;
+  }
+
+  .data-table-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+
+  .data-table-column-toggle {
+    display: block;
+  }
+}
+
+@container (max-width: 767px) {
+  .data-table-container {
+    overflow-x: auto;
+  }
+
+  .data-table-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+
+  .data-table-column-toggle {
+    display: none;
+  }
+
+  .data-table-pagination {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+/* Calendar responsive styles */
+@container (min-width: 640px) {
+  .calendar-view-selector {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .calendar-legend {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .calendar-height {
+    height: 600px;
+  }
+}
+
+@container (max-width: 639px) {
+  .calendar-view-selector {
+    display: none;
+  }
+
+  .calendar-legend {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.25rem;
+    font-size: 0.75rem;
+  }
+
+  .calendar-height {
+    height: 400px;
+  }
+
+  .calendar-mobile-view {
+    display: block;
+  }
+}
+
+/* Spreadsheet responsive styles */
+@container (min-width: 768px) {
+  .spreadsheet-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .spreadsheet-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .spreadsheet-stats {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+@container (max-width: 767px) {
+  .spreadsheet-toolbar {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .spreadsheet-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.25rem;
+  }
+
+  .spreadsheet-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .spreadsheet-container {
+    font-size: 0.875rem;
+  }
+}
+
+/* Dashboard grid responsive layout */
+@container dashboard (min-width: 1024px) {
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+
+  .dashboard-main-content {
+    grid-column: span 3;
+  }
+
+  .dashboard-sidebar {
+    grid-column: span 1;
+  }
+}
+
+@container dashboard (min-width: 640px) and (max-width: 1023px) {
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .dashboard-main-content {
+    grid-column: span 2;
+  }
+
+  .dashboard-sidebar {
+    grid-column: span 2;
+  }
+}
+
+@container dashboard (max-width: 639px) {
+  .dashboard-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .dashboard-card {
+    width: 100%;
+  }
+}
+
+/* Filter component responsive styles */
+@container (min-width: 480px) {
+  .filter-popover {
+    width: 400px;
+  }
+
+  .filter-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+}
+
+@container (max-width: 479px) {
+  .filter-popover {
+    width: 100vw;
+    max-width: 100%;
+  }
+
+  .filter-tags {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+
+  .filter-button-text {
+    display: none;
+  }
+}
+
+/* Navigation responsive styles */
+@container (min-width: 768px) {
+  .nav-menu {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .nav-mobile-toggle {
+    display: none;
+  }
+}
+
+@container (max-width: 767px) {
+  .nav-menu {
+    display: none;
+  }
+
+  .nav-mobile-toggle {
+    display: block;
+  }
+
+  .nav-mobile-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Utility classes for container queries */
+.cq-sm\:hidden {
+  @container (max-width: 639px) {
+    display: none;
+  }
+}
+
+.cq-md\:hidden {
+  @container (max-width: 767px) {
+    display: none;
+  }
+}
+
+.cq-lg\:hidden {
+  @container (max-width: 1023px) {
+    display: none;
+  }
+}
+
+.cq-sm\:block {
+  @container (min-width: 640px) {
+    display: block;
+  }
+}
+
+.cq-md\:block {
+  @container (min-width: 768px) {
+    display: block;
+  }
+}
+
+.cq-lg\:block {
+  @container (min-width: 1024px) {
+    display: block;
+  }
+}
+
+.cq-sm\:flex {
+  @container (min-width: 640px) {
+    display: flex;
+  }
+}
+
+.cq-md\:flex {
+  @container (min-width: 768px) {
+    display: flex;
+  }
+}
+
+.cq-lg\:flex {
+  @container (min-width: 1024px) {
+    display: flex;
+  }
+}
+
+.cq-sm\:grid {
+  @container (min-width: 640px) {
+    display: grid;
+  }
+}
+
+.cq-md\:grid {
+  @container (min-width: 768px) {
+    display: grid;
+  }
+}
+
+.cq-lg\:grid {
+  @container (min-width: 1024px) {
+    display: grid;
+  }
+}
+
+/* Typography responsive scaling */
+@container (min-width: 640px) {
+  .cq-text-responsive {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .cq-heading-responsive {
+    font-size: 1.5rem;
+    line-height: 1.2;
+  }
+}
+
+@container (max-width: 639px) {
+  .cq-text-responsive {
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+
+  .cq-heading-responsive {
+    font-size: 1.25rem;
+    line-height: 1.2;
+  }
+}
+
+/* Spacing responsive utilities */
+@container (min-width: 640px) {
+  .cq-p-responsive {
+    padding: 1.5rem;
+  }
+
+  .cq-m-responsive {
+    margin: 1.5rem;
+  }
+
+  .cq-gap-responsive {
+    gap: 1rem;
+  }
+}
+
+@container (max-width: 639px) {
+  .cq-p-responsive {
+    padding: 1rem;
+  }
+
+  .cq-m-responsive {
+    margin: 1rem;
+  }
+
+  .cq-gap-responsive {
+    gap: 0.5rem;
+  }
+}
