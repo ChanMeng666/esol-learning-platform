@@ -50,8 +50,9 @@ The **AI-Powered ESOL Learning Platform** is a comprehensive solution for Englis
 - 💾 **Intelligent Audio Caching** - 90%+ cost savings on TTS API calls
 - 🔐 **Secure Authentication** - Stack Auth with route protection
 - ☁️ **Cloud Storage** - Vercel Blob for audio files with CDN acceleration
-- ✨ **Modern UI/UX** - Beautiful animations and responsive design
+- ✨ **Modern UI/UX** - Beautiful animations, theme switching, and responsive design
 - 📈 **Complete Session Tracking** - Every practice session, recording, and conversation permanently stored
+- 🏗️ **Clean Architecture** - Organized component structure with comprehensive placement guidelines
 
 ---
 
@@ -234,7 +235,7 @@ graph TB
     subgraph "Database Layer"
         R[Drizzle ORM]
         S[Neon PostgreSQL]
-        T[14 Tables]
+        T[44 Tables - Multi-Tenant]
     end
 
     subgraph "Storage Layer"
@@ -637,14 +638,23 @@ nzcel-prep/
 │   │   └── utils.ts                # Utilities
 │   │
 │   ├── components/
-│   │   ├── ui/                     # shadcn/ui (25+ components)
+│   │   ├── ui/                     # shadcn/ui primitives (DO NOT MODIFY)
+│   │   ├── shared/                 # Shared across entire app
 │   │   ├── copilot/                # CopilotKit integration
-│   │   ├── practice/               # Practice components
-│   │   ├── conversation/           # Conversation components
+│   │   ├── practice/               # Practice module components
+│   │   ├── conversation/           # Conversation module components
 │   │   ├── speaking/               # AI Speaking Coach components ✨
-│   │   ├── dashboard/              # Dashboard tab components ✨
-│   │   ├── navigation/             # Navbar, footer
-│   │   └── providers.tsx           # App providers
+│   │   ├── dashboard/              # Dashboard-specific widgets (self-contained) ✨
+│   │   ├── charts/                 # Generic, reusable chart components
+│   │   ├── audio/                  # General audio utilities
+│   │   ├── navigation/             # Navigation components
+│   │   ├── layout/                 # Layout components
+│   │   ├── auth/                   # Authentication components
+│   │   ├── filters/                # Filter components
+│   │   ├── data-table/             # Data table components (TanStack Table)
+│   │   ├── calendar/               # Calendar components
+│   │   ├── spreadsheet/            # Spreadsheet components
+│   │   └── providers.tsx           # App providers (includes ThemeProvider)
 │   │
 │   ├── data/
 │   │   ├── nzcel-levels.ts         # 13 NZCEL levels
@@ -672,10 +682,15 @@ nzcel-prep/
 ├── tsconfig.json                   # TypeScript config
 ├── tailwind.config.ts              # Tailwind config
 ├── next.config.ts                  # Next.js config
-├── DATABASE_ARCHITECTURE.md        # Database documentation
-├── STACK_AUTH_INTEGRATION.md       # Stack Auth guide
-├── CLAUDE.md                       # Development guidelines
-└── README.md                       # This file
+├── docs/
+│   ├── COMPONENT_PLACEMENT_GUIDELINES.md  # Component organization rules ✨
+│   ├── architecture/
+│   │   ├── DATABASE_ARCHITECTURE.md       # Database documentation
+│   │   └── DATABASE_SCHEMA_IMPLEMENTATION.md
+│   └── guides/
+│       └── STACK_AUTH_INTEGRATION.md      # Stack Auth guide
+├── CLAUDE.md                              # Development guidelines
+└── README.md                              # This file
 ```
 
 ---
@@ -1002,6 +1017,8 @@ We welcome contributions! Here's how you can help:
 - Write meaningful commit messages
 - Add comments for complex logic
 - Ensure responsive design
+- **Follow [Component Placement Guidelines](docs/COMPONENT_PLACEMENT_GUIDELINES.md)** when adding or moving components
+- Never create version suffixes (`-v2`, `-new`, `-old`) - delete old code instead
 
 ### Adding Questions
 
@@ -1025,19 +1042,21 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 Comprehensive documentation is available for developers and contributors:
 
 ### Architecture & Database
-- **[DATABASE_ARCHITECTURE.md](DATABASE_ARCHITECTURE.md)** - Complete database schema documentation with ERD diagrams, table definitions, Server Actions catalog, data flow architecture, and integration examples
-- **[DATABASE_SCHEMA_IMPLEMENTATION.md](DATABASE_SCHEMA_IMPLEMENTATION.md)** - Implementation guide with real-world integration examples and testing checklist
+- **[DATABASE_ARCHITECTURE.md](docs/architecture/DATABASE_ARCHITECTURE.md)** - Complete database schema documentation with ERD diagrams, table definitions, Server Actions catalog, data flow architecture, and integration examples
+- **[DATABASE_SCHEMA_IMPLEMENTATION.md](docs/architecture/DATABASE_SCHEMA_IMPLEMENTATION.md)** - Implementation guide with real-world integration examples and testing checklist
 
 ### Authentication & Integration
-- **[STACK_AUTH_INTEGRATION.md](STACK_AUTH_INTEGRATION.md)** - Stack Auth setup guide, migration guide, and testing checklist
-- **[IMPLEMENTATION_COMPLETE.md](IMPLEMENTATION_COMPLETE.md)** - Implementation status report with feature highlights and quick start guide
+- **[STACK_AUTH_INTEGRATION.md](docs/guides/STACK_AUTH_INTEGRATION.md)** - Stack Auth setup guide, migration guide, and testing checklist
+
+### Code Organization ✨
+- **[COMPONENT_PLACEMENT_GUIDELINES.md](docs/COMPONENT_PLACEMENT_GUIDELINES.md)** - Component organization rules, decision trees, anti-patterns, and migration procedures to prevent duplication and maintain clean architecture
 
 ### Development
 - **[CLAUDE.md](CLAUDE.md)** - Project guidelines for AI-assisted development with Claude Code
 - **[README.md](README.md)** - This file (overview, features, getting started)
 
 ### Quick Links
-- [Database Schema](/src/lib/db/schema.ts) - Drizzle ORM schema (43 tables, multi-tenant)
+- [Database Schema](/src/lib/db/schema.ts) - Drizzle ORM schema (44 tables, multi-tenant)
 - [Server Actions](/src/actions/) - All database operations
 - [API Routes](/src/app/api/openai/) - OpenAI integrations
 
