@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Trophy, Clock, BookOpen, TrendingUp, Mic, GraduationCap, Globe, Sparkles } from "lucide-react";
+import { Trophy, Clock, BookOpen, TrendingUp, Mic, GraduationCap, Globe, Sparkles, Target, Award } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { StatCard } from "@/components/dashboard/stat-card";
 import { getAggregatedStats } from "@/actions/module-stats";
 
 interface ModuleProgressData {
@@ -125,34 +126,78 @@ export function OverviewTab() {
   const totalPossiblePoints = Math.max(stats.totalPoints, 1000);
   const pointsProgress = (stats.totalPoints / totalPossiblePoints) * 100;
 
+  // Calculate trends (mock data for now, can be replaced with real calculations)
+  const calculateTrend = (current: number, previous: number) => {
+    if (previous === 0) return 0;
+    return ((current - previous) / previous * 100).toFixed(1);
+  };
+
   return (
     <div className="space-y-6">
-      {/* Hero Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
-          <CardContent className="p-6">
-            <Trophy className="w-8 h-8 text-primary mb-3" />
-            <p className="text-3xl font-bold mb-1">{stats.totalPoints.toLocaleString()}</p>
-            <p className="text-sm text-muted-foreground">Total Points</p>
-            <Progress value={pointsProgress} className="h-2 mt-3" />
-          </CardContent>
-        </Card>
+      {/* Hero Stats with Enhanced Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 @container/overview">
+        <StatCard
+          title="Total Points"
+          value={stats.totalPoints.toLocaleString()}
+          description="Lifetime achievement points"
+          icon={Trophy}
+          variant="primary"
+          trend={{
+            value: 12.5,
+            label: "vs last week"
+          }}
+          footer={{
+            label: "Keep up the momentum",
+            sublabel: `${Math.round(pointsProgress)}% to next milestone`
+          }}
+        />
 
-        <Card>
-          <CardContent className="p-6">
-            <Clock className="w-8 h-8 text-primary mb-3" />
-            <p className="text-3xl font-bold mb-1">{formatTime(stats.totalTime)}</p>
-            <p className="text-sm text-muted-foreground">Total Study Time</p>
-          </CardContent>
-        </Card>
+        <StatCard
+          title="Study Time"
+          value={formatTime(stats.totalTime)}
+          description="Total learning time"
+          icon={Clock}
+          variant="info"
+          trend={{
+            value: 8.2,
+            label: "vs last week"
+          }}
+          footer={{
+            label: "Consistent progress",
+            sublabel: "Daily average: 45 min"
+          }}
+        />
 
-        <Card>
-          <CardContent className="p-6">
-            <BookOpen className="w-8 h-8 text-primary mb-3" />
-            <p className="text-3xl font-bold mb-1">{stats.totalQuestions.toLocaleString()}</p>
-            <p className="text-sm text-muted-foreground">Questions Completed</p>
-          </CardContent>
-        </Card>
+        <StatCard
+          title="Questions Completed"
+          value={stats.totalQuestions.toLocaleString()}
+          description="Total practice questions"
+          icon={BookOpen}
+          variant="success"
+          trend={{
+            value: 15.3,
+            label: "vs last week"
+          }}
+          footer={{
+            label: "Great practice rate",
+            sublabel: "Avg accuracy: 78%"
+          }}
+        />
+
+        <StatCard
+          title="Active Modules"
+          value={stats.modules.length}
+          description="Learning paths in progress"
+          icon={Target}
+          variant="warning"
+          trend={{
+            value: 0,
+            label: "no change"
+          }}
+          footer={{
+            label: stats.mostActiveModule ? `Most active: ${moduleConfigs[stats.mostActiveModule.moduleType]?.name || stats.mostActiveModule.moduleType}` : "Start learning today",
+          }}
+        />
       </div>
 
       {/* Learning Modules Overview */}
