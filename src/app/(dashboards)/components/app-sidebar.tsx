@@ -13,7 +13,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { getDashboardConfig } from "@/lib/dashboard-configs-v2";
+import { getDashboardConfig } from "@/lib/dashboard-configs";
 import { type UserRole } from "@/types/navigation";
 import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";

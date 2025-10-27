@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
 import { type UserRole } from "@/types/navigation";
-import { getSettingsRoute } from "@/lib/dashboard-configs-v2";
+import { getSettingsRoute } from "@/lib/dashboard-configs";
 
 interface NavUserProps {
   role?: UserRole;

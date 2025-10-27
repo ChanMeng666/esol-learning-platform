@@ -20,34 +20,12 @@ import {
   Database,
   Activity,
   FolderKanban,
+  Target,
+  Languages,
+  HeadphonesIcon,
   type LucideIcon,
 } from "lucide-react";
-
-export type UserRole =
-  | "student"
-  | "teacher"
-  | "parent"
-  | "department_head"
-  | "school_admin"
-  | "system_admin";
-
-export interface NavItem {
-  title: string;
-  url: string;
-  icon: LucideIcon;
-  isActive?: boolean;
-  items?: {
-    title: string;
-    url: string;
-  }[];
-}
-
-export interface DashboardConfig {
-  navMain: NavItem[];
-  navSecondary: NavItem[];
-  dashboardTitle: string;
-  dashboardDescription: string;
-}
+import { type UserRole, type DashboardConfig, type NavGroup, type NavMainItem } from "@/types/navigation";
 
 // Student Dashboard Configuration
 export const studentDashboardConfig: DashboardConfig = {
@@ -55,46 +33,82 @@ export const studentDashboardConfig: DashboardConfig = {
   dashboardDescription: "Track your progress across all learning modules",
   navMain: [
     {
-      title: "Dashboard",
-      url: "/student/dashboard",
-      icon: LayoutDashboard,
+      id: "overview",
+      label: "Overview",
+      items: [
+        {
+          title: "Dashboard",
+          url: "/student/dashboard",
+          icon: LayoutDashboard,
+        },
+        {
+          title: "My Progress",
+          url: "/student/progress",
+          icon: TrendingUp,
+        },
+      ],
     },
     {
-      title: "General Practice",
-      url: "/practice/general",
-      icon: Globe,
+      id: "learning",
+      label: "Learning",
+      items: [
+        {
+          title: "General Practice",
+          url: "/student/dashboard/practice/general",
+          icon: Globe,
+        },
+        {
+          title: "NZCEL Exam Prep",
+          url: "/student/dashboard/practice/nzcel",
+          icon: GraduationCap,
+          subItems: [
+            { title: "Overview", url: "/student/dashboard/practice/nzcel" },
+            { title: "Skills Practice", url: "/student/dashboard/practice/nzcel/skills" },
+            { title: "Conversation", url: "/student/dashboard/practice/nzcel/conversation" },
+            { title: "Mock Exams", url: "/student/dashboard/practice/nzcel/exams", comingSoon: true },
+          ],
+        },
+        {
+          title: "AI Speaking Coach",
+          url: "/student/dashboard/speaking",
+          icon: Mic,
+        },
+        {
+          title: "Diagnostic Tests",
+          url: "/student/dashboard/diagnostic",
+          icon: FileText,
+        },
+        {
+          title: "Scenario Practice",
+          url: "/student/dashboard/practice/scenarios",
+          icon: Languages,
+          comingSoon: true,
+        },
+      ],
     },
     {
-      title: "NZCEL Exam Prep",
-      url: "/practice/nzcel",
-      icon: GraduationCap,
-    },
-    {
-      title: "AI Speaking Coach",
-      url: "/speaking",
-      icon: Mic,
-    },
-    {
-      title: "Conversation Practice",
-      url: "/conversation",
-      icon: MessageSquare,
-    },
-    {
-      title: "My Progress",
-      url: "/student/progress",
-      icon: TrendingUp,
+      id: "engagement",
+      label: "Engagement",
+      items: [
+        {
+          title: "Achievements",
+          url: "/student/dashboard/achievements",
+          icon: Award,
+        },
+        {
+          title: "Assignments",
+          url: "/student/dashboard/assignments",
+          icon: ClipboardList,
+        },
+      ],
     },
   ],
   navSecondary: [
     {
-      title: "Profile",
-      url: "/account",
-      icon: User,
-    },
-    {
-      title: "Settings",
-      url: "/student/settings",
-      icon: Settings,
+      title: "Help & Support",
+      url: "/student/dashboard/help",
+      icon: Bell,
+      comingSoon: true,
     },
   ],
 };
@@ -105,34 +119,68 @@ export const teacherDashboardConfig: DashboardConfig = {
   dashboardDescription: "Manage your classes and track student progress",
   navMain: [
     {
-      title: "Dashboard",
-      url: "/teacher/dashboard",
-      icon: LayoutDashboard,
+      id: "overview",
+      label: "Overview",
+      items: [
+        {
+          title: "Dashboard",
+          url: "/teacher/dashboard",
+          icon: LayoutDashboard,
+        },
+        {
+          title: "Analytics",
+          url: "/teacher/analytics",
+          icon: BarChart3,
+        },
+      ],
     },
     {
-      title: "My Classes",
-      url: "/teacher/classes",
-      icon: Users,
+      id: "classroom",
+      label: "Classroom Management",
+      items: [
+        {
+          title: "My Classes",
+          url: "/teacher/classes",
+          icon: Users,
+          subItems: [
+            { title: "Class Schedule", url: "/teacher/classes/schedule" },
+            { title: "Attendance", url: "/teacher/classes/attendance" },
+            { title: "Class Materials", url: "/teacher/classes/materials" },
+          ],
+        },
+        {
+          title: "Assignments",
+          url: "/teacher/assignments",
+          icon: ClipboardList,
+          subItems: [
+            { title: "Create Assignment", url: "/teacher/assignments/create" },
+            { title: "Grade Submissions", url: "/teacher/assignments/grade" },
+            { title: "Assignment History", url: "/teacher/assignments/history" },
+          ],
+        },
+        {
+          title: "Student Progress",
+          url: "/teacher/students",
+          icon: TrendingUp,
+        },
+      ],
     },
     {
-      title: "Assignments",
-      url: "/teacher/assignments",
-      icon: ClipboardList,
-    },
-    {
-      title: "Student Progress",
-      url: "/teacher/students",
-      icon: TrendingUp,
-    },
-    {
-      title: "Analytics",
-      url: "/teacher/analytics",
-      icon: BarChart3,
-    },
-    {
-      title: "Resources",
-      url: "/teacher/resources",
-      icon: BookOpen,
+      id: "resources",
+      label: "Resources",
+      items: [
+        {
+          title: "Teaching Resources",
+          url: "/teacher/resources",
+          icon: BookOpen,
+        },
+        {
+          title: "Curriculum",
+          url: "/teacher/curriculum",
+          icon: Target,
+          comingSoon: true,
+        },
+      ],
     },
   ],
   navSecondary: [
@@ -140,16 +188,6 @@ export const teacherDashboardConfig: DashboardConfig = {
       title: "Calendar",
       url: "/teacher/calendar",
       icon: Calendar,
-    },
-    {
-      title: "Notifications",
-      url: "/teacher/notifications",
-      icon: Bell,
-    },
-    {
-      title: "Settings",
-      url: "/settings",
-      icon: Settings,
     },
   ],
 };
@@ -160,43 +198,44 @@ export const parentDashboardConfig: DashboardConfig = {
   dashboardDescription: "Monitor your child's learning progress",
   navMain: [
     {
-      title: "Dashboard",
-      url: "/parent/dashboard",
-      icon: LayoutDashboard,
+      id: "overview",
+      label: "Overview",
+      items: [
+        {
+          title: "Dashboard",
+          url: "/parent/dashboard",
+          icon: LayoutDashboard,
+        },
+        {
+          title: "Children Progress",
+          url: "/parent/children",
+          icon: Users,
+        },
+      ],
     },
     {
-      title: "Children Progress",
-      url: "/parent/children",
-      icon: Users,
-    },
-    {
-      title: "Assignments",
-      url: "/parent/assignments",
-      icon: ClipboardList,
-    },
-    {
-      title: "Teacher Feedback",
-      url: "/parent/feedback",
-      icon: MessageSquare,
-    },
-    {
-      title: "Reports",
-      url: "/parent/reports",
-      icon: FileText,
+      id: "academic",
+      label: "Academic",
+      items: [
+        {
+          title: "Assignments",
+          url: "/parent/assignments",
+          icon: ClipboardList,
+        },
+        {
+          title: "Teacher Feedback",
+          url: "/parent/feedback",
+          icon: MessageSquare,
+        },
+        {
+          title: "Reports",
+          url: "/parent/reports",
+          icon: FileText,
+        },
+      ],
     },
   ],
-  navSecondary: [
-    {
-      title: "Messages",
-      url: "/parent/messages",
-      icon: Bell,
-    },
-    {
-      title: "Settings",
-      url: "/settings",
-      icon: Settings,
-    },
-  ],
+  navSecondary: [],
 };
 
 // Department Head Dashboard Configuration
@@ -205,48 +244,54 @@ export const departmentHeadDashboardConfig: DashboardConfig = {
   dashboardDescription: "Oversee your department's performance",
   navMain: [
     {
-      title: "Dashboard",
-      url: "/department/dashboard",
-      icon: LayoutDashboard,
+      id: "overview",
+      label: "Overview",
+      items: [
+        {
+          title: "Dashboard",
+          url: "/department/dashboard",
+          icon: LayoutDashboard,
+        },
+        {
+          title: "Analytics",
+          url: "/department/analytics",
+          icon: BarChart3,
+        },
+        {
+          title: "Reports",
+          url: "/department/reports",
+          icon: FileText,
+        },
+      ],
     },
     {
-      title: "Teachers",
-      url: "/department/teachers",
-      icon: Users,
-    },
-    {
-      title: "Classes",
-      url: "/department/classes",
-      icon: GraduationCap,
-    },
-    {
-      title: "Students",
-      url: "/department/students",
-      icon: User,
-    },
-    {
-      title: "Analytics",
-      url: "/department/analytics",
-      icon: BarChart3,
-    },
-    {
-      title: "Reports",
-      url: "/department/reports",
-      icon: FileText,
-    },
-    {
-      title: "Resources",
-      url: "/department/resources",
-      icon: FolderKanban,
+      id: "management",
+      label: "Management",
+      items: [
+        {
+          title: "Teachers",
+          url: "/department/teachers",
+          icon: Users,
+        },
+        {
+          title: "Classes",
+          url: "/department/classes",
+          icon: GraduationCap,
+        },
+        {
+          title: "Students",
+          url: "/department/students",
+          icon: User,
+        },
+        {
+          title: "Resources",
+          url: "/department/resources",
+          icon: FolderKanban,
+        },
+      ],
     },
   ],
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "/settings",
-      icon: Settings,
-    },
-  ],
+  navSecondary: [],
 };
 
 // School Admin Dashboard Configuration
@@ -255,48 +300,60 @@ export const schoolAdminDashboardConfig: DashboardConfig = {
   dashboardDescription: "Manage your entire school",
   navMain: [
     {
-      title: "Dashboard",
-      url: "/school-admin/dashboard",
-      icon: LayoutDashboard,
+      id: "overview",
+      label: "Overview",
+      items: [
+        {
+          title: "Dashboard",
+          url: "/school-admin/dashboard",
+          icon: LayoutDashboard,
+        },
+        {
+          title: "Analytics",
+          url: "/school-admin/analytics",
+          icon: BarChart3,
+        },
+      ],
     },
     {
-      title: "Departments",
-      url: "/school-admin/departments",
-      icon: Building2,
+      id: "administration",
+      label: "Administration",
+      items: [
+        {
+          title: "Departments",
+          url: "/school-admin/departments",
+          icon: Building2,
+        },
+        {
+          title: "Users",
+          url: "/school-admin/users",
+          icon: Users,
+          subItems: [
+            { title: "Teachers", url: "/school-admin/users/teachers" },
+            { title: "Students", url: "/school-admin/users/students" },
+            { title: "Parents", url: "/school-admin/users/parents" },
+          ],
+        },
+        {
+          title: "Classes",
+          url: "/school-admin/classes",
+          icon: GraduationCap,
+        },
+      ],
     },
     {
-      title: "Users",
-      url: "/school-admin/users",
-      icon: Users,
-    },
-    {
-      title: "Classes",
-      url: "/school-admin/classes",
-      icon: GraduationCap,
-    },
-    {
-      title: "Analytics",
-      url: "/school-admin/analytics",
-      icon: BarChart3,
-    },
-    {
-      title: "Announcements",
-      url: "/school-admin/announcements",
-      icon: Bell,
-    },
-    {
-      title: "Reports",
-      url: "/school-admin/reports",
-      icon: FileText,
+      id: "reports",
+      label: "Reports",
+      items: [
+        {
+          title: "Reports",
+          url: "/school-admin/reports",
+          icon: FileText,
+        },
+      ],
     },
   ],
-  navSecondary: [
-    {
-      title: "Organization Settings",
-      url: "/school-admin/settings",
-      icon: Settings,
-    },
-  ],
+  navSecondary: [],
 };
 
 // System Admin Dashboard Configuration
@@ -305,48 +362,65 @@ export const systemAdminDashboardConfig: DashboardConfig = {
   dashboardDescription: "Manage all organizations and system health",
   navMain: [
     {
-      title: "Dashboard",
-      url: "/system-admin/dashboard",
-      icon: LayoutDashboard,
+      id: "overview",
+      label: "Overview",
+      items: [
+        {
+          title: "Dashboard",
+          url: "/system-admin/dashboard",
+          icon: LayoutDashboard,
+        },
+        {
+          title: "System Health",
+          url: "/system-admin/health",
+          icon: Activity,
+        },
+      ],
     },
     {
-      title: "Organizations",
-      url: "/system-admin/organizations",
-      icon: Building2,
+      id: "management",
+      label: "Management",
+      items: [
+        {
+          title: "Organizations",
+          url: "/system-admin/organizations",
+          icon: Building2,
+          subItems: [
+            { title: "All Organizations", url: "/system-admin/organizations/all" },
+            { title: "Create Organization", url: "/system-admin/organizations/create" },
+            { title: "Billing", url: "/system-admin/organizations/billing" },
+          ],
+        },
+        {
+          title: "User Management",
+          url: "/system-admin/users",
+          icon: Users,
+        },
+        {
+          title: "Permissions",
+          url: "/system-admin/permissions",
+          icon: Shield,
+        },
+      ],
     },
     {
-      title: "System Health",
-      url: "/system-admin/health",
-      icon: Activity,
-    },
-    {
-      title: "User Management",
-      url: "/system-admin/users",
-      icon: Users,
-    },
-    {
-      title: "Permissions",
-      url: "/system-admin/permissions",
-      icon: Shield,
-    },
-    {
-      title: "Audit Logs",
-      url: "/system-admin/audit",
-      icon: FileText,
-    },
-    {
-      title: "Database",
-      url: "/system-admin/database",
-      icon: Database,
+      id: "technical",
+      label: "Technical",
+      items: [
+        {
+          title: "Audit Logs",
+          url: "/system-admin/audit",
+          icon: FileText,
+        },
+        {
+          title: "Database",
+          url: "/system-admin/database",
+          icon: Database,
+        },
+      ],
     },
   ],
-  navSecondary: [
-    {
-      title: "System Tools",
-      url: "/system-admin/tools",
-      icon: Settings,
-    },
-  ],
+  navSecondary: [],
 };
 
 // Get dashboard config by role
@@ -375,4 +449,18 @@ export function getDefaultDashboardRoute(role: UserRole): string {
   };
 
   return routes[role] || "/student/dashboard";
+}
+
+// Get settings route by role
+export function getSettingsRoute(role: UserRole): string {
+  const routes: Record<UserRole, string> = {
+    student: "/student/dashboard/settings",
+    teacher: "/teacher/dashboard/settings",
+    parent: "/parent/dashboard/settings",
+    department_head: "/department/dashboard/settings",
+    school_admin: "/school-admin/dashboard/settings",
+    system_admin: "/system-admin/dashboard/settings",
+  };
+
+  return routes[role] || "/student/dashboard/settings";
 }
