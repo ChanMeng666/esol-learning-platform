@@ -32,6 +32,7 @@ import {
   Target,
   FileText,
   XCircle,
+  ClipboardList,
 } from "lucide-react";
 import { toast } from "sonner";
 import { type ColumnDef } from "@tanstack/react-table";
@@ -332,36 +333,20 @@ export default function ParentDashboardPage() {
         )}
       </div>
 
-      {/* Tabs for different views */}
+      {/* Simplified Tabs - Only Core Views */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 md:grid-cols-7">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview" className="gap-2">
             <BarChart3 className="h-4 w-4" />
-            <span className="hidden sm:inline">Overview</span>
-          </TabsTrigger>
-          <TabsTrigger value="children" className="gap-2">
-            <Users className="h-4 w-4" />
-            <span className="hidden sm:inline">Children</span>
+            <span>Overview</span>
           </TabsTrigger>
           <TabsTrigger value="progress" className="gap-2">
             <TrendingUp className="h-4 w-4" />
-            <span className="hidden sm:inline">Progress</span>
+            <span>Progress</span>
           </TabsTrigger>
           <TabsTrigger value="activity" className="gap-2">
             <Activity className="h-4 w-4" />
-            <span className="hidden sm:inline">Activity</span>
-          </TabsTrigger>
-          <TabsTrigger value="assignments" className="gap-2">
-            <BookOpen className="h-4 w-4" />
-            <span className="hidden sm:inline">Assignments</span>
-          </TabsTrigger>
-          <TabsTrigger value="messages" className="gap-2">
-            <MessageCircle className="h-4 w-4" />
-            <span className="hidden sm:inline">Messages</span>
-          </TabsTrigger>
-          <TabsTrigger value="schedule" className="gap-2">
-            <Calendar className="h-4 w-4" />
-            <span className="hidden sm:inline">Schedule</span>
+            <span>Recent Activity</span>
           </TabsTrigger>
         </TabsList>
 
@@ -535,58 +520,6 @@ export default function ParentDashboardPage() {
           </div>
         </TabsContent>
 
-        {/* Children Tab */}
-        <TabsContent value="children" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Children Details</CardTitle>
-              <CardDescription>Comprehensive view of your children's academic performance</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <DataTable
-                columns={childrenColumns}
-                data={children}
-                searchKey="name"
-                pageSize={10}
-              />
-            </CardContent>
-          </Card>
-
-          {/* Individual Child Cards */}
-          <div className="grid gap-6 md:grid-cols-2">
-            {children.map((child) => (
-              <Card key={child.id}>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>{child.name}</CardTitle>
-                    <Badge variant="outline">{child.className}</Badge>
-                  </div>
-                  <CardDescription>Grade {child.gradeLevel} Student</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Average Score</p>
-                      <p className="text-2xl font-bold">{child.averageScore}%</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Attendance</p>
-                      <p className="text-2xl font-bold">{child.attendance}</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button size="sm" onClick={() => router.push(`/parent/children/${child.id}`)}>
-                      View Details
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => router.push(`/parent/children/${child.id}/progress`)}>
-                      Progress Report
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
 
         {/* Progress Tab */}
         <TabsContent value="progress" className="space-y-6">
@@ -734,124 +667,6 @@ export default function ParentDashboardPage() {
           </div>
         </TabsContent>
 
-        {/* Assignments Tab */}
-        <TabsContent value="assignments" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>All Assignments</CardTitle>
-                  <CardDescription>Track assignment completion across all children</CardDescription>
-                </div>
-                <div className="flex gap-2">
-                  <Badge variant="outline">
-                    {completedAssignments} Completed
-                  </Badge>
-                  <Badge variant="outline">
-                    {pendingAssignments} Pending
-                  </Badge>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {assignments.map((assignment) => (
-                  <Card key={assignment.id}>
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <CardTitle className="text-base">{assignment.title}</CardTitle>
-                          <CardDescription>
-                            {assignment.childName} • {assignment.subject}
-                          </CardDescription>
-                        </div>
-                        <Badge
-                          variant={
-                            assignment.status === "completed"
-                              ? "default"
-                              : assignment.status === "in_progress"
-                              ? "secondary"
-                              : "outline"
-                          }
-                        >
-                          {assignment.status.replace("_", " ")}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">
-                          Due: {new Date(assignment.dueDate).toLocaleDateString()}
-                        </span>
-                        <Button size="sm" variant="outline" onClick={() => router.push(`/parent/assignments/${assignment.id}`)}>
-                          View Details
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Messages Tab */}
-        <TabsContent value="messages" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Teacher Messages</CardTitle>
-                  <CardDescription>Communication from your children's teachers</CardDescription>
-                </div>
-                <Button size="sm" onClick={() => router.push("/parent/messages/compose")}>
-                  Compose Message
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className="flex items-start gap-3 p-4 border border-border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                    onClick={() => router.push(`/parent/messages/${message.id}`)}
-                  >
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      <MessageCircle className="w-4 h-4 text-primary" />
-                    </div>
-                    <div className="flex-1 space-y-1">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-semibold leading-none">{message.subject}</h4>
-                        {!message.read && (
-                          <Badge variant="default" className="ml-2">
-                            New
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        From {message.teacherName} • {message.date}
-                      </p>
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {message.preview}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Schedule Tab */}
-        <TabsContent value="schedule" className="mt-6">
-          <ClassScheduleCalendar
-            organizationId={BigInt(1)}
-            userId="parent-user"
-            userRole="parent"
-            className="w-full"
-          />
-        </TabsContent>
       </Tabs>
 
       {/* Quick Actions */}
@@ -861,53 +676,41 @@ export default function ParentDashboardPage() {
           <CardDescription>Common tasks for parents</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
             <Button
-              onClick={() => router.push("/parent/progress")}
+              onClick={() => router.push("/parent/children")}
               variant="outline"
-              className="h-auto p-6 flex flex-col items-start gap-3 hover:bg-primary/5 hover:border-primary/50 transition-colors"
+              className="h-auto p-4 flex flex-col items-center gap-2"
             >
-              <div className="p-2 rounded-lg bg-primary/10">
-                <TrendingUp className="w-5 h-5 text-primary" />
-              </div>
-              <div className="text-left">
-                <div className="font-semibold">Progress Reports</div>
-                <div className="text-sm text-muted-foreground mt-1">
-                  View detailed progress
-                </div>
-              </div>
+              <Users className="h-5 w-5" />
+              <span className="text-xs">My Children</span>
             </Button>
 
             <Button
-              onClick={() => router.push("/parent/messages")}
+              onClick={() => router.push("/parent/activity")}
               variant="outline"
-              className="h-auto p-6 flex flex-col items-start gap-3 hover:bg-primary/5 hover:border-primary/50 transition-colors"
+              className="h-auto p-4 flex flex-col items-center gap-2"
             >
-              <div className="p-2 rounded-lg bg-primary/10">
-                <MessageCircle className="w-5 h-5 text-primary" />
-              </div>
-              <div className="text-left">
-                <div className="font-semibold">Messages</div>
-                <div className="text-sm text-muted-foreground mt-1">
-                  Contact teachers
-                </div>
-              </div>
+              <Activity className="h-5 w-5" />
+              <span className="text-xs">Activity</span>
             </Button>
 
             <Button
-              onClick={() => router.push("/parent/feedback")}
+              onClick={() => router.push("/parent/assignments")}
               variant="outline"
-              className="h-auto p-6 flex flex-col items-start gap-3 hover:bg-primary/5 hover:border-primary/50 transition-colors"
+              className="h-auto p-4 flex flex-col items-center gap-2"
             >
-              <div className="p-2 rounded-lg bg-primary/10">
-                <BookOpen className="w-5 h-5 text-primary" />
-              </div>
-              <div className="text-left">
-                <div className="font-semibold">Teacher Feedback</div>
-                <div className="text-sm text-muted-foreground mt-1">
-                  Read feedback
-                </div>
-              </div>
+              <ClipboardList className="h-5 w-5" />
+              <span className="text-xs">Assignments</span>
+            </Button>
+
+            <Button
+              onClick={() => router.push("/parent/communication")}
+              variant="outline"
+              className="h-auto p-4 flex flex-col items-center gap-2"
+            >
+              <MessageCircle className="h-5 w-5" />
+              <span className="text-xs">Messages</span>
             </Button>
           </div>
         </CardContent>

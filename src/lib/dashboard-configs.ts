@@ -243,35 +243,63 @@ export const parentDashboardConfig: DashboardConfig = {
           icon: LayoutDashboard,
         },
         {
-          title: "Children Progress",
+          title: "My Children",
           url: "/parent/children",
           icon: Users,
         },
       ],
     },
     {
-      id: "academic",
-      label: "Academic",
+      id: "monitoring",
+      label: "Monitoring",
       items: [
+        {
+          title: "Activity & Attendance",
+          url: "/parent/activity",
+          icon: Activity,
+        },
         {
           title: "Assignments",
           url: "/parent/assignments",
           icon: ClipboardList,
         },
         {
-          title: "Teacher Feedback",
-          url: "/parent/feedback",
-          icon: MessageSquare,
-        },
-        {
-          title: "Reports",
+          title: "Progress Reports",
           url: "/parent/reports",
           icon: FileText,
         },
       ],
     },
+    {
+      id: "communication",
+      label: "Communication",
+      items: [
+        {
+          title: "Messages",
+          url: "/parent/communication",
+          icon: MessageSquare,
+        },
+        {
+          title: "Teacher Feedback",
+          url: "/parent/feedback",
+          icon: Award,
+        },
+        {
+          title: "Schedule",
+          url: "/parent/schedule",
+          icon: Calendar,
+        },
+      ],
+    },
   ],
-  navSecondary: [],
+  navSecondary: [
+    {
+      title: "Help & Support",
+      url: "/parent/help",
+      icon: Bell,
+      comingSoon: true,
+    },
+  ],
 };
 
 // Department Head Dashboard Configuration
@@ -421,11 +449,6 @@ export const systemAdminDashboardConfig: DashboardConfig = {
           title: "Organizations",
           url: "/system-admin/organizations",
           icon: Building2,
-          subItems: [
-            { title: "All Organizations", url: "/system-admin/organizations/all" },
-            { title: "Create Organization", url: "/system-admin/organizations/create" },
-            { title: "Billing", url: "/system-admin/organizations/billing" },
-          ],
         },
         {
           title: "User Management",
