@@ -86,7 +86,7 @@ export function ChartVisitors({
                 {categories.map((key) => {
                   const configItem = config[key as keyof typeof config];
                   const color =
-                    "color" in configItem ? configItem.color : undefined;
+                    configItem && "color" in configItem ? configItem.color : undefined;
 
                   return (
                     <SelectItem key={key} value={key}>

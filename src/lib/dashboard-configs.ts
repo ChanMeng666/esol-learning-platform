@@ -23,6 +23,8 @@ import {
   Target,
   Languages,
   HeadphonesIcon,
+  Lightbulb,
+  FileSpreadsheet,
   type LucideIcon,
 } from "lucide-react";
 import { type UserRole, type DashboardConfig, type NavGroup, type NavMainItem } from "@/types/navigation";
@@ -46,59 +48,75 @@ export const studentDashboardConfig: DashboardConfig = {
           url: "/student/progress",
           icon: TrendingUp,
         },
+        {
+          title: "Analytics",
+          url: "/student/analytics",
+          icon: BarChart3,
+        },
       ],
     },
     {
       id: "learning",
-      label: "Learning",
+      label: "Learning Modules",
       items: [
         {
-          title: "General Practice",
-          url: "/student/dashboard/practice/general",
-          icon: Globe,
-        },
-        {
           title: "NZCEL Exam Prep",
-          url: "/student/dashboard/practice/nzcel",
+          url: "/practice/nzcel",
           icon: GraduationCap,
           subItems: [
-            { title: "Overview", url: "/student/dashboard/practice/nzcel" },
-            { title: "Skills Practice", url: "/student/dashboard/practice/nzcel/skills" },
-            { title: "Conversation", url: "/student/dashboard/practice/nzcel/conversation" },
-            { title: "Mock Exams", url: "/student/dashboard/practice/nzcel/exams", comingSoon: true },
+            { title: "Overview", url: "/practice/nzcel" },
+            { title: "Skills Practice", url: "/practice/nzcel/skills" },
+            { title: "Conversation", url: "/practice/nzcel/conversation" },
+            { title: "Mock Exams", url: "/practice/nzcel/exams", comingSoon: true },
           ],
         },
         {
+          title: "General English",
+          url: "/practice/general",
+          icon: Globe,
+        },
+        {
           title: "AI Speaking Coach",
-          url: "/student/dashboard/speaking",
+          url: "/speaking",
           icon: Mic,
         },
         {
           title: "Diagnostic Tests",
-          url: "/student/dashboard/diagnostic",
+          url: "/diagnostic",
           icon: FileText,
         },
         {
           title: "Scenario Practice",
-          url: "/student/dashboard/practice/scenarios",
+          url: "/practice/scenarios",
           icon: Languages,
           comingSoon: true,
         },
       ],
     },
     {
-      id: "engagement",
-      label: "Engagement",
+      id: "academic",
+      label: "Academic",
       items: [
         {
-          title: "Achievements",
-          url: "/student/dashboard/achievements",
-          icon: Award,
+          title: "Assignments",
+          url: "/student/assignments",
+          icon: ClipboardList,
         },
         {
-          title: "Assignments",
-          url: "/student/dashboard/assignments",
-          icon: ClipboardList,
+          title: "Schedule",
+          url: "/student/schedule",
+          icon: Calendar,
+        },
+      ],
+    },
+    {
+      id: "achievements",
+      label: "Achievements",
+      items: [
+        {
+          title: "Achievements & Badges",
+          url: "/student/achievements",
+          icon: Award,
         },
       ],
     },
@@ -106,7 +124,7 @@ export const studentDashboardConfig: DashboardConfig = {
   navSecondary: [
     {
       title: "Help & Support",
-      url: "/student/dashboard/help",
+      url: "/student/help",
       icon: Bell,
       comingSoon: true,
     },
@@ -132,6 +150,11 @@ export const teacherDashboardConfig: DashboardConfig = {
           url: "/teacher/analytics",
           icon: BarChart3,
         },
+        {
+          title: "Insights",
+          url: "/teacher/insights",
+          icon: Lightbulb,
+        },
       ],
     },
     {
@@ -143,19 +166,26 @@ export const teacherDashboardConfig: DashboardConfig = {
           url: "/teacher/classes",
           icon: Users,
           subItems: [
-            { title: "Class Schedule", url: "/teacher/classes/schedule" },
+            { title: "All Classes", url: "/teacher/classes" },
+            { title: "Schedule", url: "/teacher/classes/schedule" },
             { title: "Attendance", url: "/teacher/classes/attendance" },
-            { title: "Class Materials", url: "/teacher/classes/materials" },
+            { title: "Materials", url: "/teacher/classes/materials" },
           ],
+        },
+        {
+          title: "Gradebook",
+          url: "/teacher/gradebook",
+          icon: FileSpreadsheet,
         },
         {
           title: "Assignments",
           url: "/teacher/assignments",
           icon: ClipboardList,
           subItems: [
-            { title: "Create Assignment", url: "/teacher/assignments/create" },
+            { title: "All Assignments", url: "/teacher/assignments" },
+            { title: "Create New", url: "/teacher/assignments/create" },
             { title: "Grade Submissions", url: "/teacher/assignments/grade" },
-            { title: "Assignment History", url: "/teacher/assignments/history" },
+            { title: "History", url: "/teacher/assignments/history" },
           ],
         },
         {
@@ -175,6 +205,11 @@ export const teacherDashboardConfig: DashboardConfig = {
           icon: BookOpen,
         },
         {
+          title: "Calendar",
+          url: "/teacher/calendar",
+          icon: Calendar,
+        },
+        {
           title: "Curriculum",
           url: "/teacher/curriculum",
           icon: Target,
@@ -185,9 +220,10 @@ export const teacherDashboardConfig: DashboardConfig = {
   ],
   navSecondary: [
     {
-      title: "Calendar",
-      url: "/teacher/calendar",
-      icon: Calendar,
+      title: "Help & Support",
+      url: "/teacher/help",
+      icon: Bell,
+      comingSoon: true,
     },
   ],
 };
