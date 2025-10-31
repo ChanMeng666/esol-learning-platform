@@ -1,473 +1,210 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LoadingState } from "@/components/shared/loading-state";
-import { EmptyState } from "@/components/shared/empty-state";
-import { StatCard } from "@/components/dashboard/stat-card";
-import { ChartRevenue } from "@/components/charts/chart-revenue";
-import { ChartVisitors } from "@/components/charts/chart-visitors";
-import { ChartAreaInteractive } from "@/components/charts/chart-area-interactive";
+import { ProtectedRoute } from "@/components/auth/protected-route";
+import { Progress } from "@/components/ui/progress";
 import {
   Users,
   GraduationCap,
   Building2,
   ArrowRight,
-  UserCheck,
+  TrendingUp,
   Award,
-  AlertCircle,
-  CheckCircle2,
-  Settings,
   FileText,
+  BarChart3,
+  BookOpen,
+  Target,
+  Activity,
+  CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
-import { toast } from "sonner";
-
-// Mock data - replace with actual API calls
-interface Department {
-  id: string;
-  name: string;
-  headName: string;
-  teacherCount: number;
-  studentCount: number;
-  classCount: number;
-  averageScore: number;
-  status: "excellent" | "good" | "needs_attention";
-}
-
-interface SystemAlert {
-  id: string;
-  type: "info" | "warning" | "success";
-  title: string;
-  description: string;
-  timestamp: string;
-}
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 export default function SchoolAdminDashboardPage() {
+  return (
+    <ProtectedRoute>
+      <DashboardContent />
+    </ProtectedRoute>
+  );
+}
+
+function DashboardContent() {
   const router = useRouter();
-  const [departments, setDepartments] = useState<Department[]>([]);
-  const [alerts, setAlerts] = useState<SystemAlert[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Mock data for activity chart
+  const [activityData] = useState([
+    { month: "Jan", students: 420, teachers: 28 },
+    { month: "Feb", students: 445, teachers: 30 },
+    { month: "Mar", students: 478, teachers: 32 },
+    { month: "Apr", students: 502, teachers: 33 },
+    { month: "May", students: 539, teachers: 35 },
+    { month: "Jun", students: 539, teachers: 35 },
+  ]);
 
   useEffect(() => {
-    loadDashboardData();
+    const loadData = async () => {
+      setIsLoading(true);
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setIsLoading(false);
+    };
+    loadData();
   }, []);
 
-  async function loadDashboardData() {
-    try {
-      setLoading(true);
-      // TODO: Replace with actual API call
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      // Mock data
-      const mockDepartments: Department[] = [
-        {
-          id: "1",
-          name: "English Language Department",
-          headName: "Dr. Michael Anderson",
-          teacherCount: 12,
-          studentCount: 285,
-          classCount: 18,
-          averageScore: 86,
-          status: "excellent",
-        },
-        {
-          id: "2",
-          name: "ESOL Foundation",
-          headName: "Ms. Jennifer Lee",
-          teacherCount: 8,
-          studentCount: 156,
-          classCount: 12,
-          averageScore: 79,
-          status: "good",
-        },
-        {
-          id: "3",
-          name: "Advanced Studies",
-          headName: "Prof. Robert Taylor",
-          teacherCount: 6,
-          studentCount: 98,
-          classCount: 8,
-          averageScore: 91,
-          status: "excellent",
-        },
-      ];
-
-      const mockAlerts: SystemAlert[] = [
-        {
-          id: "1",
-          type: "success",
-          title: "System Backup Completed",
-          description: "Weekly automated backup completed successfully",
-          timestamp: "2 hours ago",
-        },
-        {
-          id: "2",
-          type: "warning",
-          title: "Teacher Absence Notification",
-          description: "3 teachers have reported absence for tomorrow",
-          timestamp: "5 hours ago",
-        },
-        {
-          id: "3",
-          type: "info",
-          title: "New Enrollment Period Starting",
-          description: "Spring semester enrollment opens in 5 days",
-          timestamp: "Yesterday",
-        },
-      ];
-
-      setDepartments(mockDepartments);
-      setAlerts(mockAlerts);
-    } catch (error) {
-      console.error("Error loading dashboard data:", error);
-      toast.error("Failed to load dashboard");
-    } finally {
-      setLoading(false);
-    }
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <p className="mt-4 text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    );
   }
-
-  if (loading) {
-    return <LoadingState message="Loading school dashboard..." fullScreen />;
-  }
-
-  // Calculate statistics
-  const totalDepartments = departments.length;
-  const totalTeachers = departments.reduce((sum, dept) => sum + dept.teacherCount, 0);
-  const totalStudents = departments.reduce((sum, dept) => sum + dept.studentCount, 0);
-  const overallScore = departments.length > 0
-    ? Math.round(departments.reduce((sum, dept) => sum + dept.averageScore, 0) / departments.length)
-    : 0;
-
-  // Mock trends (replace with real data from API)
-  const mockTrends = {
-    departments: { value: 0, label: "no change" },
-    teachers: { value: 6.2, label: "vs last year" },
-    students: { value: 12.5, label: "vs last semester" },
-    score: { value: 3.8, label: "vs last month" },
-  };
-
-  // Generate department performance data for bar chart
-  const departmentPerformanceData = departments.map((dept) => ({
-    label: dept.name.split(" ")[0], // First word of department name
-    students: dept.studentCount,
-    avgScore: dept.averageScore,
-  }));
-
-  const departmentPerformanceConfig = {
-    students: {
-      label: "Total Students",
-      color: "hsl(var(--chart-1))",
-    },
-    avgScore: {
-      label: "Avg Score",
-      color: "hsl(var(--chart-2))",
-    },
-  };
-
-  // Generate department status distribution for pie chart
-  const statusDistribution = departments.reduce((acc, dept) => {
-    const statusLabels = {
-      excellent: "Excellent",
-      good: "Good",
-      needs_attention: "Needs Attention",
-    };
-    const existing = acc.find((item) => item.category === statusLabels[dept.status]);
-    if (existing) {
-      existing.value += 1;
-    } else {
-      acc.push({
-        category: statusLabels[dept.status],
-        value: 1,
-        fill: `hsl(var(--chart-${acc.length + 1}))`,
-      });
-    }
-    return acc;
-  }, [] as Array<{ category: string; value: number; fill: string }>);
-
-  const statusDistributionConfig = {
-    Excellent: {
-      label: "Excellent",
-      color: "hsl(var(--chart-1))",
-    },
-    Good: {
-      label: "Good",
-      color: "hsl(var(--chart-2))",
-    },
-    "Needs Attention": {
-      label: "Needs Attention",
-      color: "hsl(var(--chart-3))",
-    },
-  };
-
-  // Generate school-wide enrollment trend data for area chart
-  const enrollmentData = [
-    { date: "2023-09-01", students: 480, teachers: 22 },
-    { date: "2023-10-01", students: 492, teachers: 23 },
-    { date: "2023-11-01", students: 505, teachers: 24 },
-    { date: "2023-12-01", students: 515, teachers: 25 },
-    { date: "2024-01-01", students: 539, teachers: 26 },
-  ];
-
-  const enrollmentConfig = {
-    students: {
-      label: "Total Students",
-      color: "hsl(var(--chart-1))",
-    },
-    teachers: {
-      label: "Total Teachers",
-      color: "hsl(var(--chart-2))",
-    },
-  };
-
-  const getStatusBadgeVariant = (status: Department["status"]) => {
-    switch (status) {
-      case "excellent":
-        return "default";
-      case "good":
-        return "secondary";
-      case "needs_attention":
-        return "destructive";
-      default:
-        return "secondary";
-    }
-  };
-
-  const getAlertIcon = (type: SystemAlert["type"]) => {
-    switch (type) {
-      case "success":
-        return <CheckCircle2 className="w-4 h-4 text-green-500" />;
-      case "warning":
-        return <AlertCircle className="w-4 h-4 text-orange-500" />;
-      case "info":
-        return <AlertCircle className="w-4 h-4 text-blue-500" />;
-      default:
-        return <AlertCircle className="w-4 h-4" />;
-    }
-  };
-
-  const getAlertBgColor = (type: SystemAlert["type"]) => {
-    switch (type) {
-      case "success":
-        return "bg-green-500/10";
-      case "warning":
-        return "bg-orange-500/10";
-      case "info":
-        return "bg-blue-500/10";
-      default:
-        return "bg-muted";
-    }
-  };
 
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">School Dashboard</h1>
+        <h1 className="text-3xl font-bold tracking-tight">School Administration</h1>
         <p className="text-muted-foreground">
-          Oversee school-wide operations, manage departments, and monitor overall performance
+          Manage your entire school, departments, and track overall performance
         </p>
       </div>
 
-      {/* Stats Grid */}
+      {/* Key Metrics */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Departments"
-          value={totalDepartments}
-          description="Active departments"
-          icon={Building2}
-          trend={mockTrends.departments}
-          variant="primary"
-        />
-        <StatCard
-          title="Total Teachers"
-          value={totalTeachers}
-          description="Across all departments"
-          icon={UserCheck}
-          trend={mockTrends.teachers}
-          variant="success"
-        />
-        <StatCard
-          title="Total Students"
-          value={totalStudents}
-          description="Currently enrolled"
-          icon={Users}
-          trend={mockTrends.students}
-          variant="warning"
-        />
-        <StatCard
-          title="Overall Score"
-          value={`${overallScore}%`}
-          description="School-wide average"
-          icon={Award}
-          trend={mockTrends.score}
-          variant="default"
-        />
-      </div>
-
-      {/* Charts Row */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <ChartAreaInteractive
-          title="School Growth Trend"
-          description="Track students and teachers over time"
-          data={enrollmentData}
-          config={enrollmentConfig}
-          defaultTimeRange="90d"
-          timeRanges={[
-            { value: "30d", label: "Last 30 days", days: 30 },
-            { value: "90d", label: "Last 90 days", days: 90 },
-          ]}
-        />
-        <ChartVisitors
-          title="Department Performance"
-          description="Status distribution"
-          data={statusDistribution}
-          config={statusDistributionConfig}
-          showSelector={false}
-          centerLabel="Departments"
-        />
-      </div>
-
-      {/* Department Performance Chart */}
-      {departments.length > 0 && (
-        <ChartRevenue
-          title="Department Comparison"
-          description="Compare department sizes and performance"
-          data={departmentPerformanceData}
-          config={departmentPerformanceConfig}
-          stacked={false}
-          footerDescription="Current academic year statistics"
-        />
-      )}
-
-      {/* Main Content Grid */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Departments */}
         <Card>
-          <CardHeader>
+          <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Departments</CardTitle>
-                <CardDescription>Overview of all departments</CardDescription>
+                <p className="text-sm font-medium text-muted-foreground">Total Students</p>
+                <p className="text-2xl font-bold">539</p>
+                <p className="text-xs text-green-500 mt-1">+28 this month</p>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => router.push("/school-admin/departments")}
-              >
-                View All
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+              <Users className="h-8 w-8 text-blue-500" />
             </div>
-          </CardHeader>
-          <CardContent>
-            {departments.length === 0 ? (
-              <EmptyState
-                title="No departments found"
-                description="Create your first department to get started"
-                action={{
-                  label: "Create Department",
-                  onClick: () => router.push("/school-admin/departments/new"),
-                }}
-              />
-            ) : (
-              <div className="space-y-3">
-                {departments.map((dept) => (
-                  <div
-                    key={dept.id}
-                    className="flex items-start justify-between p-4 border border-border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                    onClick={() => router.push(`/school-admin/departments/${dept.id}`)}
-                  >
-                    <div className="flex-1 space-y-2">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h4 className="font-semibold leading-none">{dept.name}</h4>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            Head: {dept.headName}
-                          </p>
-                        </div>
-                        <Badge variant={getStatusBadgeVariant(dept.status)}>
-                          {dept.status.replace("_", " ")}
-                        </Badge>
-                      </div>
-                      <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
-                        <div>
-                          <UserCheck className="w-3 h-3 inline mr-1" />
-                          {dept.teacherCount} teachers
-                        </div>
-                        <div>
-                          <Users className="w-3 h-3 inline mr-1" />
-                          {dept.studentCount} students
-                        </div>
-                        <div>
-                          <GraduationCap className="w-3 h-3 inline mr-1" />
-                          {dept.classCount} classes
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 bg-muted rounded-full h-2">
-                          <div
-                            className="bg-primary rounded-full h-2 transition-all"
-                            style={{ width: `${dept.averageScore}%` }}
-                          />
-                        </div>
-                        <span className="text-xs font-medium">{dept.averageScore}%</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </CardContent>
         </Card>
 
-        {/* System Alerts */}
         <Card>
-          <CardHeader>
+          <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>System Alerts</CardTitle>
-                <CardDescription>Recent notifications and updates</CardDescription>
+                <p className="text-sm font-medium text-muted-foreground">Total Teachers</p>
+                <p className="text-2xl font-bold">35</p>
+                <p className="text-xs text-green-500 mt-1">+2 this month</p>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => router.push("/school-admin/notifications")}
-              >
-                View All
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+              <GraduationCap className="h-8 w-8 text-green-500" />
             </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Departments</p>
+                <p className="text-2xl font-bold">4</p>
+                <p className="text-xs text-muted-foreground mt-1">All active</p>
+              </div>
+              <Building2 className="h-8 w-8 text-purple-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Avg Performance</p>
+                <p className="text-2xl font-bold">84.3%</p>
+                <p className="text-xs text-green-500 mt-1">+2.1% improvement</p>
+              </div>
+              <Target className="h-8 w-8 text-amber-500" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Enrollment Trend */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Enrollment Growth</CardTitle>
+            <CardDescription>Student and teacher enrollment trends</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {alerts.length === 0 ? (
-                <EmptyState
-                  title="No alerts"
-                  description="System alerts will appear here"
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart data={activityData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Line
+                  type="monotone"
+                  dataKey="students"
+                  stroke="#8884d8"
+                  strokeWidth={2}
+                  name="Students"
                 />
-              ) : (
-                alerts.map((alert) => (
-                  <div
-                    key={alert.id}
-                    className="flex items-start gap-3 p-3 border border-border rounded-lg"
-                  >
-                    <div className={`p-2 rounded-lg ${getAlertBgColor(alert.type)}`}>
-                      {getAlertIcon(alert.type)}
-                    </div>
-                    <div className="flex-1 space-y-1">
-                      <p className="text-sm font-medium">{alert.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {alert.description}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{alert.timestamp}</p>
-                    </div>
-                  </div>
-                ))
-              )}
+                <Line
+                  type="monotone"
+                  dataKey="teachers"
+                  stroke="#82ca9d"
+                  strokeWidth={2}
+                  name="Teachers"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Department Overview</CardTitle>
+            <CardDescription>Performance across all departments</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <div className="flex justify-between mb-2 text-sm">
+                <span className="font-medium">English Language</span>
+                <span className="text-muted-foreground">86%</span>
+              </div>
+              <Progress value={86} />
+            </div>
+            <div>
+              <div className="flex justify-between mb-2 text-sm">
+                <span className="font-medium">ESOL Foundation</span>
+                <span className="text-muted-foreground">79%</span>
+              </div>
+              <Progress value={79} />
+            </div>
+            <div>
+              <div className="flex justify-between mb-2 text-sm">
+                <span className="font-medium">Advanced Studies</span>
+                <span className="text-muted-foreground">91%</span>
+              </div>
+              <Progress value={91} />
+            </div>
+            <div>
+              <div className="flex justify-between mb-2 text-sm">
+                <span className="font-medium">Business English</span>
+                <span className="text-muted-foreground">82%</span>
+              </div>
+              <Progress value={82} />
             </div>
           </CardContent>
         </Card>
@@ -477,57 +214,106 @@ export default function SchoolAdminDashboardPage() {
       <Card>
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>Common administrative tasks</CardDescription>
+          <CardDescription>Access key management areas</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <Button
-              onClick={() => router.push("/school-admin/reports")}
               variant="outline"
-              className="h-auto p-6 flex flex-col items-start gap-3 hover:bg-primary/5 hover:border-primary/50 transition-colors"
-            >
-              <div className="p-2 rounded-lg bg-primary/10">
-                <FileText className="w-5 h-5 text-primary" />
-              </div>
-              <div className="text-left">
-                <div className="font-semibold">Generate Reports</div>
-                <div className="text-sm text-muted-foreground mt-1">
-                  Access comprehensive analytics
-                </div>
-              </div>
-            </Button>
-
-            <Button
+              className="justify-start"
               onClick={() => router.push("/school-admin/departments")}
-              variant="outline"
-              className="h-auto p-6 flex flex-col items-start gap-3 hover:bg-primary/5 hover:border-primary/50 transition-colors"
             >
-              <div className="p-2 rounded-lg bg-primary/10">
-                <Building2 className="w-5 h-5 text-primary" />
-              </div>
-              <div className="text-left">
-                <div className="font-semibold">Manage Departments</div>
-                <div className="text-sm text-muted-foreground mt-1">
-                  Oversee all departments
-                </div>
-              </div>
+              <Building2 className="mr-2 h-4 w-4" />
+              Manage Departments
+              <ArrowRight className="ml-auto h-4 w-4" />
             </Button>
 
             <Button
-              onClick={() => router.push("/school-admin/settings")}
               variant="outline"
-              className="h-auto p-6 flex flex-col items-start gap-3 hover:bg-primary/5 hover:border-primary/50 transition-colors"
+              className="justify-start"
+              onClick={() => router.push("/school-admin/users")}
             >
-              <div className="p-2 rounded-lg bg-primary/10">
-                <Settings className="w-5 h-5 text-primary" />
-              </div>
-              <div className="text-left">
-                <div className="font-semibold">School Settings</div>
-                <div className="text-sm text-muted-foreground mt-1">
-                  Configure school parameters
-                </div>
-              </div>
+              <Users className="mr-2 h-4 w-4" />
+              User Management
+              <ArrowRight className="ml-auto h-4 w-4" />
             </Button>
+
+            <Button
+              variant="outline"
+              className="justify-start"
+              onClick={() => router.push("/school-admin/classes")}
+            >
+              <GraduationCap className="mr-2 h-4 w-4" />
+              Class Management
+              <ArrowRight className="ml-auto h-4 w-4" />
+            </Button>
+
+            <Button
+              variant="outline"
+              className="justify-start"
+              onClick={() => router.push("/school-admin/analytics")}
+            >
+              <BarChart3 className="mr-2 h-4 w-4" />
+              View Analytics
+              <ArrowRight className="ml-auto h-4 w-4" />
+            </Button>
+
+            <Button
+              variant="outline"
+              className="justify-start"
+              onClick={() => router.push("/school-admin/reports")}
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              Generate Reports
+              <ArrowRight className="ml-auto h-4 w-4" />
+            </Button>
+
+            <Button
+              variant="outline"
+              className="justify-start"
+              onClick={() => router.push("/school-admin/dashboard/settings")}
+            >
+              <Activity className="mr-2 h-4 w-4" />
+              School Settings
+              <ArrowRight className="ml-auto h-4 w-4" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Recent Activity */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Recent Activity</CardTitle>
+            <Button variant="outline" size="sm">
+              View All
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <Badge variant="default">New</Badge>
+              <span className="text-sm">New teacher onboarded: Sarah Johnson</span>
+              <span className="text-xs text-muted-foreground ml-auto">2 hours ago</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Badge variant="default">Update</Badge>
+              <span className="text-sm">Department meeting scheduled for tomorrow</span>
+              <span className="text-xs text-muted-foreground ml-auto">5 hours ago</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Badge variant="secondary">Report</Badge>
+              <span className="text-sm">Monthly performance report generated</span>
+              <span className="text-xs text-muted-foreground ml-auto">1 day ago</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Badge variant="default">Achievement</Badge>
+              <span className="text-sm">Advanced Studies achieved 91% average score</span>
+              <span className="text-xs text-muted-foreground ml-auto">2 days ago</span>
+            </div>
           </div>
         </CardContent>
       </Card>
