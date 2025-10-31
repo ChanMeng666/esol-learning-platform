@@ -1,103 +1,307 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, BookOpen, TrendingUp, Award } from "lucide-react";
+"use client";
 
-/**
- * Department Head Dashboard
- */
-export default function DepartmentDashboard() {
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ProtectedRoute } from "@/components/auth/protected-route";
+import {
+  Users,
+  GraduationCap,
+  BookOpen,
+  ArrowRight,
+  TrendingUp,
+  Award,
+  FileText,
+  BarChart3,
+  Target,
+  Activity,
+  CheckCircle2,
+} from "lucide-react";
+
+export default function DepartmentDashboardPage() {
   return (
-    <div className="space-y-6">
-      <div>
+    <ProtectedRoute>
+      <DashboardContent />
+    </ProtectedRoute>
+  );
+}
+
+function DashboardContent() {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setIsLoading(false);
+    };
+    loadData();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <p className="mt-4 text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      {/* Header */}
+      <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold tracking-tight">Department Dashboard</h1>
         <p className="text-muted-foreground">
           Oversee your department's performance and manage resources
         </p>
       </div>
 
+      {/* Key Metrics */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Teachers</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">12</div>
-            <p className="text-xs text-muted-foreground">+2 from last month</p>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Total Teachers</p>
+                <p className="text-2xl font-bold">12</p>
+                <p className="text-xs text-green-500 mt-1">+2 from last month</p>
+              </div>
+              <GraduationCap className="h-8 w-8 text-blue-500" />
+            </div>
           </CardContent>
         </Card>
+
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Classes</CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">28</div>
-            <p className="text-xs text-muted-foreground">Across all levels</p>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Total Students</p>
+                <p className="text-2xl font-bold">285</p>
+                <p className="text-xs text-green-500 mt-1">+18 this semester</p>
+              </div>
+              <Users className="h-8 w-8 text-green-500" />
+            </div>
           </CardContent>
         </Card>
+
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Performance</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">82%</div>
-            <p className="text-xs text-muted-foreground">+5% from last semester</p>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Active Classes</p>
+                <p className="text-2xl font-bold">28</p>
+                <p className="text-xs text-muted-foreground mt-1">Across all levels</p>
+              </div>
+              <BookOpen className="h-8 w-8 text-purple-500" />
+            </div>
           </CardContent>
         </Card>
+
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Achievements</CardTitle>
-            <Award className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">156</div>
-            <p className="text-xs text-muted-foreground">This semester</p>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Avg Performance</p>
+                <p className="text-2xl font-bold">86%</p>
+                <p className="text-xs text-green-500 mt-1">+3% improvement</p>
+              </div>
+              <Target className="h-8 w-8 text-amber-500" />
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      {/* Quick Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Quick Actions</CardTitle>
+          <CardDescription>Access key department management areas</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <Button
+              variant="outline"
+              className="justify-start"
+              onClick={() => router.push("/department/analytics")}
+            >
+              <BarChart3 className="mr-2 h-4 w-4" />
+              View Analytics
+              <ArrowRight className="ml-auto h-4 w-4" />
+            </Button>
+
+            <Button
+              variant="outline"
+              className="justify-start"
+              onClick={() => router.push("/department/teachers")}
+            >
+              <GraduationCap className="mr-2 h-4 w-4" />
+              Manage Teachers
+              <ArrowRight className="ml-auto h-4 w-4" />
+            </Button>
+
+            <Button
+              variant="outline"
+              className="justify-start"
+              onClick={() => router.push("/department/students")}
+            >
+              <Users className="mr-2 h-4 w-4" />
+              View Students
+              <ArrowRight className="ml-auto h-4 w-4" />
+            </Button>
+
+            <Button
+              variant="outline"
+              className="justify-start"
+              onClick={() => router.push("/department/classes")}
+            >
+              <BookOpen className="mr-2 h-4 w-4" />
+              Manage Classes
+              <ArrowRight className="ml-auto h-4 w-4" />
+            </Button>
+
+            <Button
+              variant="outline"
+              className="justify-start"
+              onClick={() => router.push("/department/reports")}
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              Generate Reports
+              <ArrowRight className="ml-auto h-4 w-4" />
+            </Button>
+
+            <Button
+              variant="outline"
+              className="justify-start"
+              onClick={() => router.push("/department/resources")}
+            >
+              <BookOpen className="mr-2 h-4 w-4" />
+              Teaching Resources
+              <ArrowRight className="ml-auto h-4 w-4" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Department Overview */}
+      <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Recent Activities</CardTitle>
             <CardDescription>Latest updates from your department</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="text-sm">
-                <div className="font-medium">New teacher onboarded</div>
-                <div className="text-muted-foreground">Sarah Johnson joined the team</div>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <Badge variant="default">New</Badge>
+                <span className="text-sm">New teacher onboarded: Sarah Johnson</span>
+                <span className="text-xs text-muted-foreground ml-auto">2 hours ago</span>
               </div>
-              <div className="text-sm">
-                <div className="font-medium">Curriculum update</div>
-                <div className="text-muted-foreground">Level 3 materials revised</div>
+              <div className="flex items-center gap-3">
+                <Badge variant="default">Update</Badge>
+                <span className="text-sm">Curriculum update: Level 3 materials revised</span>
+                <span className="text-xs text-muted-foreground ml-auto">1 day ago</span>
               </div>
-              <div className="text-sm">
-                <div className="font-medium">Performance review completed</div>
-                <div className="text-muted-foreground">Q2 assessments finalized</div>
+              <div className="flex items-center gap-3">
+                <Badge variant="secondary">Completed</Badge>
+                <span className="text-sm">Performance review: Q2 assessments finalized</span>
+                <span className="text-xs text-muted-foreground ml-auto">2 days ago</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <Badge variant="default">Achievement</Badge>
+                <span className="text-sm">Department achieved 86% average performance</span>
+                <span className="text-xs text-muted-foreground ml-auto">3 days ago</span>
               </div>
             </div>
           </CardContent>
         </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>Upcoming Tasks</CardTitle>
             <CardDescription>Important deadlines and events</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="text-sm">
-                <div className="font-medium">Department meeting</div>
-                <div className="text-muted-foreground">Tomorrow at 2:00 PM</div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 rounded-lg border">
+                <div>
+                  <p className="font-medium text-sm">Department Meeting</p>
+                  <p className="text-xs text-muted-foreground">Tomorrow at 2:00 PM</p>
+                </div>
+                <Badge variant="destructive">Tomorrow</Badge>
               </div>
-              <div className="text-sm">
-                <div className="font-medium">Budget review</div>
-                <div className="text-muted-foreground">Friday, Dec 15</div>
+              <div className="flex items-center justify-between p-3 rounded-lg border">
+                <div>
+                  <p className="font-medium text-sm">Budget Review</p>
+                  <p className="text-xs text-muted-foreground">Friday, Dec 15</p>
+                </div>
+                <Badge variant="secondary">This Week</Badge>
               </div>
-              <div className="text-sm">
-                <div className="font-medium">Teacher evaluations due</div>
-                <div className="text-muted-foreground">Dec 20</div>
+              <div className="flex items-center justify-between p-3 rounded-lg border">
+                <div>
+                  <p className="font-medium text-sm">Teacher Evaluations Due</p>
+                  <p className="text-xs text-muted-foreground">Dec 20</p>
+                </div>
+                <Badge variant="outline">Next Week</Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Performance Highlights */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Top Performing Class</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-full bg-green-500/10">
+                <TrendingUp className="w-6 h-6 text-green-500" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">ENG-401</p>
+                <p className="text-sm text-muted-foreground">87% average score</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Best Attendance</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-full bg-blue-500/10">
+                <CheckCircle2 className="w-6 h-6 text-blue-500" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">READ-201</p>
+                <p className="text-sm text-muted-foreground">97% attendance rate</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Most Active Teacher</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-full bg-purple-500/10">
+                <Award className="w-6 h-6 text-purple-500" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">Dr. Anderson</p>
+                <p className="text-sm text-muted-foreground">4.8 satisfaction rating</p>
               </div>
             </div>
           </CardContent>
