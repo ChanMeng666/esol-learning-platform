@@ -9,6 +9,7 @@
 ├──────────────────────┼──────────────────────┼─────────────────┤
 │ System Admin         │ SYSADMIN-85KL9P-X    │ 5               │
 │ School Admin         │ ADMIN-8B4AQH-T       │ 10              │
+│ Department Head      │ DEPTHEAD-XRPTFM-A    │ 5               │
 │ Teacher              │ TEACHER-DC469Q-Z     │ 20              │
 │ Student              │ STUDENT-7YAZAL-9     │ Unlimited       │
 │ Parent               │ PARENT-BWCZT8-N      │ 50              │
@@ -27,11 +28,12 @@
 
 📧 RECOMMENDED TEST EMAILS:
 
-System Admin:  sysadmin@test.com
-School Admin:  admin@test.com
-Teacher:       teacher@test.com
-Student:       student@test.com
-Parent:        parent@test.com
+System Admin:    sysadmin@test.com
+School Admin:    admin@test.com
+Department Head: depthead@test.com
+Teacher:         teacher@test.com
+Student:         student@test.com
+Parent:          parent@test.com
 
 Password (all): Test1234!
 
@@ -39,12 +41,13 @@ Password (all): Test1234!
 
 🔗 USEFUL URLS:
 
-Homepage:             http://localhost:3000
-Registration:         http://localhost:3000/register
-Admin Invitations:    http://localhost:3000/admin/invitations
-Student Dashboard:    http://localhost:3000/dashboard
-Teacher Dashboard:    http://localhost:3000/teacher/dashboard
-AI Speaking Coach:    http://localhost:3000/speaking
+Homepage:               http://localhost:3000
+Registration:           http://localhost:3000/register
+Admin Invitations:      http://localhost:3000/admin/invitations
+Student Dashboard:      http://localhost:3000/dashboard
+Teacher Dashboard:      http://localhost:3000/teacher/dashboard
+Department Dashboard:   http://localhost:3000/department/dashboard
+AI Speaking Coach:      http://localhost:3000/speaking
 
 ═══════════════════════════════════════════════════════════════
 

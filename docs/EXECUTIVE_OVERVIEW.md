@@ -203,6 +203,7 @@ For the **Default System Organization**, the following invitation codes have bee
 |------|----------------|--------------|----------------|
 | System Admin | `SYSADMIN-85KL9P-X` | 5 | 4 |
 | School Admin | `ADMIN-8B4AQH-T` | 10 | 9 |
+| Department Head | `DEPTHEAD-XRPTFM-A` | 5 | 4 |
 | Teacher | `TEACHER-DC469Q-Z` | 20 | 19 |
 | Student | `STUDENT-7YAZAL-9` | Unlimited | ∞ |
 | Parent | `PARENT-BWCZT8-N` | 50 | 49 |
@@ -224,6 +225,12 @@ For demonstration and testing purposes, the following accounts have been created
 - **Password**: `Test1234!`
 - **Access**: School-level management for Default System Organization
 - **Use Case**: Managing teachers, students, creating classes, school analytics
+
+### Department Head
+- **Email**: `depthead@test.com`
+- **Password**: `Test1234!`
+- **Access**: Department-level oversight, teacher and student monitoring
+- **Use Case**: Managing department resources, reviewing teacher performance, monitoring student progress across department classes
 
 ### Teacher
 - **Email**: `teacher@test.com`

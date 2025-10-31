@@ -8,6 +8,7 @@
 |------|--------|--------------|
 | **System Admin** (系统管理员) | `SYSADMIN-85KL9P-X` | 5 |
 | **School Admin** (学校管理员) | `ADMIN-8B4AQH-T` | 10 |
+| **Department Head** (部门主管) | `DEPTHEAD-XRPTFM-A` | 5 |
 | **Teacher** (教师) | `TEACHER-DC469Q-Z` | 20 |
 | **Student** (学生) | `STUDENT-7YAZAL-9` | 无限制 |
 | **Parent** (家长) | `PARENT-BWCZT8-N` | 50 |
@@ -79,7 +80,52 @@
 
 ---
 
-### 3️⃣ 教师 (Teacher) - 班级管理权限
+### 3️⃣ 部门主管 (Department Head) - 部门级权限
+
+**邀请码**: `DEPTHEAD-XRPTFM-A`
+
+**权限范围**:
+- ✅ 查看部门内所有班级
+- ✅ 监控部门内所有学生
+- ✅ 查看部门教师情况（只读）
+- ✅ 生成部门级分析报告
+- ✅ 访问部门学生数据
+- ⚠️ 不能编辑教师作业
+- ⚠️ 不能管理其他部门
+
+**注册步骤**:
+
+1. 打开**新的无痕窗口**
+2. 访问: http://localhost:3000
+3. 点击 **"Get Started Free"**
+4. 输入邀请码: `DEPTHEAD-XRPTFM-A`
+5. 点击 **"Continue to Registration"**
+6. 填写注册信息:
+   - **Email**: `depthead@test.com`
+   - **Password**: `Test1234!`
+   - **Full Name**: `Department Head`
+7. 完成注册
+
+**验证成功**:
+- ✅ URL 自动跳转到 `/department/dashboard`
+- ✅ 可以访问 `/department/teachers`
+- ✅ 可以访问 `/department/classes`
+- ✅ 可以访问 `/department/students`
+- ✅ 可以访问 `/department/analytics`
+
+**部门主管功能页面**:
+- 📊 仪表盘总览: `/department/dashboard`
+- 👥 教师管理: `/department/teachers`
+- 🏫 班级查看: `/department/classes`
+- 👨‍🎓 学生监控: `/department/students`
+- 📈 数据分析: `/department/analytics`
+- 📋 报告生成: `/department/reports`
+- 📚 学习资源: `/department/resources`
+- ⚙️ 部门设置: `/department/dashboard/settings`
+
+---
+
+### 4️⃣ 教师 (Teacher) - 班级管理权限
 
 **邀请码**: `TEACHER-DC469Q-Z`
 
@@ -111,7 +157,7 @@
 
 ---
 
-### 4️⃣ 学生 (Student) - 学习功能
+### 5️⃣ 学生 (Student) - 学习功能
 
 **邀请码**: `STUDENT-7YAZAL-9`
 
@@ -145,7 +191,7 @@
 
 ---
 
-### 5️⃣ 家长 (Parent) - 监控权限
+### 6️⃣ 家长 (Parent) - 监控权限
 
 **邀请码**: `PARENT-BWCZT8-N`
 
@@ -283,6 +329,7 @@ JOIN users u ON iu.user_id = u.id;
 ```
 sysadmin@test.com     → 系统管理员
 admin@test.com        → 学校管理员
+depthead@test.com     → 部门主管
 teacher@test.com      → 教师
 teacher2@test.com     → 第二个教师（如需要）
 student@test.com      → 学生
