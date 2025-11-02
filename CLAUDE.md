@@ -609,6 +609,11 @@ COPILOT_CLOUD_API_KEY="..."  # Optional, for CopilotKit Cloud
 
 For comprehensive project documentation, see:
 
+### API Reference ✨
+- **[API_REFERENCE.md](docs/API_REFERENCE.md)** - Complete API reference for all 163+ APIs (REST routes + Server Actions) with request/response examples, optimized for AI assistants
+- **[api-schema.json](docs/api-schema.json)** - Structured API metadata in JSON format for quick parsing and validation
+- **[src/types/index.ts](src/types/index.ts)** - Enhanced TypeScript type definitions with detailed JSDoc comments
+
 ### Database & Architecture
 - **[DATABASE_ARCHITECTURE.md](docs/architecture/DATABASE_ARCHITECTURE.md)** - Complete schema, ERD diagrams, Server Actions catalog, data flow, integration examples
 - **[DATABASE_SCHEMA_IMPLEMENTATION.md](docs/architecture/DATABASE_SCHEMA_IMPLEMENTATION.md)** - Implementation guide with real-world integration examples

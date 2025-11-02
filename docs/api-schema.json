@@ -1,0 +1,866 @@
+{
+  "version": "1.0.0",
+  "generatedAt": "2025-11-03",
+  "project": "NZCEL Prep - AI-Powered ESOL Learning Platform",
+  "apiCount": 163,
+  "categories": {
+    "rest-api": {
+      "description": "OpenAI Integration REST API Routes",
+      "count": 6,
+      "apis": [
+        {
+          "name": "POST /api/openai/transcribe",
+          "file": "src/app/api/openai/transcribe/route.ts",
+          "type": "REST",
+          "method": "POST",
+          "description": "Speech-to-text transcription using OpenAI Whisper",
+          "requestBody": {
+            "type": "FormData",
+            "fields": {
+              "audio": {
+                "type": "File",
+                "required": true,
+                "description": "Audio file to transcribe (must be audio/* MIME type)"
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "type": "application/json",
+              "schema": {
+                "text": "string (transcribed text)",
+                "duration": "number | undefined (audio duration in seconds)"
+              }
+            },
+            "400": {
+              "type": "application/json",
+              "schema": {
+                "error": "string (validation error message)"
+              }
+            },
+            "500": {
+              "type": "application/json",
+              "schema": {
+                "error": "string (error message)",
+                "details": "string (detailed error info)"
+              }
+            }
+          },
+          "authentication": "None (public endpoint)",
+          "notes": "Uses Whisper-1 model with English language setting"
+        },
+        {
+          "name": "POST /api/openai/assess",
+          "file": "src/app/api/openai/assess/route.ts",
+          "type": "REST",
+          "method": "POST",
+          "description": "AI assessment of speaking/writing responses using GPT-4",
+          "requestBody": {
+            "type": "application/json",
+            "schema": {
+              "text": "string (student's response)",
+              "level": "NZCELLevel (NZCEL level: foundation, level-1, etc.)",
+              "skill": "'speaking' | 'writing'",
+              "questionText": "string (the question/prompt)",
+              "rubric": "string | undefined (optional custom rubric)"
+            }
+          },
+          "responses": {
+            "200": {
+              "type": "application/json",
+              "schema": {
+                "overallScore": "number (0-100)",
+                "overallFeedback": "string",
+                "criteria": {
+                  "taskAchievement": "{ score: number, comment: string }",
+                  "coherence": "{ score: number, comment: string }",
+                  "vocabulary": "{ score: number, comment: string }",
+                  "grammar": "{ score: number, comment: string }",
+                  "pronunciation": "{ score: number, comment: string } (speaking only)",
+                  "fluency": "{ score: number, comment: string } (speaking only)",
+                  "style": "{ score: number, comment: string } (writing only)"
+                },
+                "strengths": "string[] (list of strengths)",
+                "improvements": "string[] (list of areas for improvement)"
+              }
+            },
+            "400": "Validation error",
+            "500": "Server error"
+          },
+          "authentication": "None (public endpoint)",
+          "notes": "Uses GPT-4 Turbo with NZCEL-aligned rubrics"
+        },
+        {
+          "name": "POST /api/openai/tts",
+          "file": "src/app/api/openai/tts/route.ts",
+          "type": "REST",
+          "method": "POST",
+          "description": "Text-to-speech audio generation using OpenAI TTS",
+          "requestBody": {
+            "type": "application/json",
+            "schema": {
+              "text": "string (text to convert to speech)",
+              "voiceProfile": "VoiceProfile | undefined (academic, conversational, professional)"
+            }
+          },
+          "responses": {
+            "200": {
+              "type": "audio/mpeg",
+              "description": "MP3 audio file buffer"
+            },
+            "400": "Validation error",
+            "500": "Server error"
+          },
+          "authentication": "None (public endpoint)",
+          "notes": "Uses TTS-1 model with configurable voice profiles"
+        },
+        {
+          "name": "POST /api/openai/conversation",
+          "file": "src/app/api/openai/conversation/route.ts",
+          "type": "REST",
+          "method": "POST",
+          "description": "Generate AI conversational responses for role-play scenarios",
+          "requestBody": {
+            "type": "application/json",
+            "schema": {
+              "messages": "Array<{ role: 'system' | 'user' | 'assistant', content: string }>"
+            }
+          },
+          "responses": {
+            "200": {
+              "type": "application/json",
+              "schema": {
+                "response": "string (AI-generated reply)"
+              }
+            },
+            "400": "Validation error",
+            "500": "Server error"
+          },
+          "authentication": "None (public endpoint)",
+          "notes": "Uses GPT-4 Turbo with conversation-optimized parameters"
+        },
+        {
+          "name": "GET /api/openai/realtime",
+          "file": "src/app/api/openai/realtime/route.ts",
+          "type": "REST",
+          "method": "GET",
+          "description": "Information endpoint for OpenAI Realtime API",
+          "responses": {
+            "200": {
+              "type": "application/json",
+              "schema": {
+                "message": "string",
+                "note": "string",
+                "documentation": "string (URL)"
+              }
+            }
+          },
+          "authentication": "None (public endpoint)",
+          "notes": "Placeholder endpoint - actual WebSocket connection handled client-side"
+        },
+        {
+          "name": "POST /api/openai/realtime-client-secret",
+          "file": "src/app/api/openai/realtime-client-secret/route.ts",
+          "type": "REST",
+          "method": "POST",
+          "description": "Generate ephemeral client secrets for OpenAI Realtime API (GA)",
+          "requestBody": {
+            "type": "application/json",
+            "schema": {
+              "voice": "string | undefined (default: 'verse')",
+              "instructions": "string | undefined (custom AI coach instructions)"
+            }
+          },
+          "responses": {
+            "200": {
+              "type": "application/json",
+              "schema": {
+                "clientSecret": "string (ephemeral token)",
+                "expiresAt": "number (expiration timestamp)",
+                "model": "string ('gpt-realtime')",
+                "voice": "string"
+              }
+            },
+            "500": "Server error"
+          },
+          "authentication": "None (public endpoint)",
+          "notes": "Creates temporary tokens for client-side WebRTC connections"
+        }
+      ]
+    },
+    "audio-management": {
+      "description": "Audio file caching and TTS management",
+      "count": 7,
+      "file": "src/actions/audio.ts",
+      "multiTenant": true,
+      "apis": [
+        {
+          "name": "getQuestionAudio",
+          "parameters": [
+            "questionId: string",
+            "textContent: string",
+            "voiceName: string (default: 'alloy')",
+            "voiceModel: 'tts-1' | 'tts-1-hd' (default: 'tts-1')"
+          ],
+          "returns": "Promise<string> (Blob URL)",
+          "description": "Get or generate question audio with intelligent caching. First call generates audio (2-3s), subsequent calls return cached URL (0.1s). Saves 90%+ TTS API costs.",
+          "multiTenant": true,
+          "relatedApis": ["updateAudioAccessCount", "generateTTS"]
+        },
+        {
+          "name": "generateTTS",
+          "parameters": [
+            "text: string",
+            "voice: string (default: 'alloy')",
+            "model: 'tts-1' | 'tts-1-hd' (default: 'tts-1')"
+          ],
+          "returns": "Promise<Buffer> (audio data)",
+          "description": "Generate audio using OpenAI Text-to-Speech API (internal function)",
+          "multiTenant": false,
+          "notes": "Internal helper - use getQuestionAudio() instead for caching"
+        },
+        {
+          "name": "updateAudioAccessCount",
+          "parameters": ["cacheId: bigint"],
+          "returns": "Promise<void>",
+          "description": "Update audio access statistics when cached audio is accessed",
+          "multiTenant": true
+        },
+        {
+          "name": "deactivateQuestionAudioCache",
+          "parameters": ["questionId: string"],
+          "returns": "Promise<void>",
+          "description": "Deactivate old audio cache entry when question text or voice changes",
+          "multiTenant": true
+        },
+        {
+          "name": "getAudioCacheStats",
+          "parameters": [],
+          "returns": "Promise<{ totalCached: number, totalHits: number, totalSize: number, averageHitsPerAudio: number }>",
+          "description": "Get cache statistics for monitoring performance",
+          "multiTenant": true
+        },
+        {
+          "name": "getAllQuestionAudio",
+          "parameters": [
+            "filters: { dateRange?: '7d' | '30d' | 'all' } (default: {})",
+            "limit: number (default: 50)"
+          ],
+          "returns": "Promise<Array<QuestionAudioCache & { audioFile }>>",
+          "description": "Get all question audio from cache with filtering options",
+          "multiTenant": true
+        },
+        {
+          "name": "getUserQuestionAudioHistory",
+          "parameters": [
+            "filters: { skill?: string, dateRange?: '7d' | '30d' | 'all' } (default: {})",
+            "limit: number (default: 50)"
+          ],
+          "returns": "Promise<Array<QuestionAudioCache & { audioFile }>>",
+          "description": "Get question audio history for current user's practice sessions",
+          "multiTenant": true
+        }
+      ]
+    },
+    "user-recordings": {
+      "description": "User voice recording and transcription management",
+      "count": 11,
+      "file": "src/actions/recordings.ts",
+      "multiTenant": true,
+      "apis": [
+        {
+          "name": "saveUserRecording",
+          "parameters": [
+            "audioBlob: Blob",
+            "transcription: string",
+            "questionId: string",
+            "sessionId: string",
+            "recordingType: 'practice_answer' | 'conversation_turn' | 'pronunciation_test' (default: 'practice_answer')"
+          ],
+          "returns": "Promise<{ recordingId: bigint, audioUrl: string, transcription: string, transcriptionId: bigint }>",
+          "description": "Save user recording with transcription, uploads to Blob storage",
+          "multiTenant": true
+        },
+        {
+          "name": "getUserRecordings",
+          "parameters": ["limit: number (default: 50)"],
+          "returns": "Promise<Array<UserRecording & { audioFile, transcription }>>",
+          "description": "Get user's recording history",
+          "multiTenant": true
+        },
+        {
+          "name": "getRecordingById",
+          "parameters": ["recordingId: bigint"],
+          "returns": "Promise<UserRecording & { audioFile, transcription } | null>",
+          "description": "Get recording by ID with full details",
+          "multiTenant": true
+        },
+        {
+          "name": "getSessionRecordings",
+          "parameters": ["sessionId: string"],
+          "returns": "Promise<Array<UserRecording & { audioFile, transcription }>>",
+          "description": "Get all recordings for a specific practice session",
+          "multiTenant": true
+        },
+        {
+          "name": "saveTranscription",
+          "parameters": [
+            "audioFileId: bigint",
+            "transcribedText: string",
+            "model: string (default: 'whisper-1')",
+            "metadata?: Record<string, unknown>"
+          ],
+          "returns": "Promise<Transcription>",
+          "description": "Save transcription only when audio already saved",
+          "multiTenant": true
+        },
+        {
+          "name": "getUserRecordingsWithFilters",
+          "parameters": [
+            "filters: { recordingType?: string, questionId?: string, dateRange?: '7d' | '30d' | 'all' }",
+            "limit: number (default: 50)"
+          ],
+          "returns": "Promise<Array<UserRecording & { audioFile, transcription }>>",
+          "description": "Get filtered user recordings",
+          "multiTenant": true
+        },
+        {
+          "name": "getTeacherStudentRecordings",
+          "parameters": [
+            "filters?: { classId?: bigint, studentId?: bigint, assignmentId?: bigint, recordingType?: string, dateRange?: '7d' | '30d' | 'all' }",
+            "limit: number (default: 100)"
+          ],
+          "returns": "Promise<Array<UserRecording & { audioFile, transcription, student }>>",
+          "description": "Get recordings for students in teacher's classes",
+          "multiTenant": true,
+          "authorization": "Teacher role required"
+        },
+        {
+          "name": "getTeacherAccessRecording",
+          "parameters": ["recordingId: bigint"],
+          "returns": "Promise<UserRecording & { audioFile, transcription, student }>",
+          "description": "Get recording details with teacher access validation",
+          "multiTenant": true,
+          "authorization": "Teacher role required"
+        },
+        {
+          "name": "markRecordingReviewed",
+          "parameters": ["recordingId: bigint", "feedback?: string"],
+          "returns": "Promise<UserRecording>",
+          "description": "Mark recording as reviewed by teacher with optional feedback",
+          "multiTenant": true,
+          "authorization": "Teacher role required"
+        },
+        {
+          "name": "getClassRecordingStats",
+          "parameters": ["classId: bigint"],
+          "returns": "Promise<{ totalRecordings: number, totalStudents: number, avgRecordingsPerStudent: number, recentRecordings: number, recordingsByType: Record<string, number> }>",
+          "description": "Get recording statistics for a class",
+          "multiTenant": true,
+          "authorization": "Teacher role required"
+        },
+        {
+          "name": "deleteUserRecording",
+          "parameters": ["recordingId: bigint"],
+          "returns": "Promise<{ success: boolean }>",
+          "description": "Delete user recording from database and Blob storage",
+          "multiTenant": true
+        }
+      ]
+    },
+    "copilot-chat": {
+      "description": "CopilotKit chat history persistence",
+      "count": 8,
+      "file": "src/actions/copilot-chat.ts",
+      "multiTenant": true,
+      "apis": [
+        {
+          "name": "getOrCreateConversation",
+          "parameters": [
+            "contextType: 'practice' | 'conversation' | 'dashboard' | 'general'",
+            "contextId?: string",
+            "title?: string"
+          ],
+          "returns": "Promise<CopilotConversation>",
+          "description": "Get or create a CopilotKit conversation session",
+          "multiTenant": true
+        },
+        {
+          "name": "saveChatMessage",
+          "parameters": [
+            "conversationId: bigint",
+            "role: 'user' | 'assistant' | 'system'",
+            "content: string",
+            "contentType: 'text' | 'code' | 'audio_transcript' (default: 'text')",
+            "metadata?: Record<string, unknown>",
+            "audioUrl?: string"
+          ],
+          "returns": "Promise<CopilotMessage>",
+          "description": "Save a chat message to the conversation",
+          "multiTenant": true
+        },
+        {
+          "name": "getChatHistory",
+          "parameters": ["conversationId: bigint", "limit: number (default: 50)"],
+          "returns": "Promise<Array<CopilotMessage>>",
+          "description": "Get chat history for a conversation",
+          "multiTenant": true
+        },
+        {
+          "name": "getUserConversations",
+          "parameters": ["limit: number (default: 20)"],
+          "returns": "Promise<Array<CopilotConversation>>",
+          "description": "Get all conversations for current user",
+          "multiTenant": true
+        },
+        {
+          "name": "getConversationWithMessages",
+          "parameters": ["conversationId: bigint"],
+          "returns": "Promise<CopilotConversation & { messages: Array<CopilotMessage> } | null>",
+          "description": "Get conversation with all messages",
+          "multiTenant": true
+        },
+        {
+          "name": "getConversationsByContext",
+          "parameters": [
+            "contextType: 'practice' | 'conversation' | 'dashboard' | 'general'",
+            "contextId?: string"
+          ],
+          "returns": "Promise<Array<CopilotConversation>>",
+          "description": "Get conversations by context type",
+          "multiTenant": true
+        },
+        {
+          "name": "deleteConversation",
+          "parameters": ["conversationId: bigint"],
+          "returns": "Promise<boolean>",
+          "description": "Delete a conversation and all its messages",
+          "multiTenant": true
+        },
+        {
+          "name": "updateConversationTitle",
+          "parameters": ["conversationId: bigint", "newTitle: string"],
+          "returns": "Promise<CopilotConversation>",
+          "description": "Update conversation title",
+          "multiTenant": true
+        }
+      ]
+    },
+    "practice-sessions": {
+      "description": "Practice and conversation session tracking",
+      "count": 12,
+      "file": "src/actions/sessions.ts",
+      "multiTenant": true,
+      "apis": [
+        {
+          "name": "createPracticeSession",
+          "parameters": ["skill: string", "level: string"],
+          "returns": "Promise<PracticeSession>",
+          "description": "Create a new practice session",
+          "multiTenant": true
+        },
+        {
+          "name": "saveSessionAnswer",
+          "parameters": [
+            "sessionId: bigint",
+            "questionId: string",
+            "userAnswer: string",
+            "correctAnswer: string",
+            "isCorrect: boolean",
+            "pointsEarned: number",
+            "timeSpent?: number",
+            "audioRecordingId?: bigint",
+            "transcriptionId?: bigint",
+            "aiFeedback?: string"
+          ],
+          "returns": "Promise<SessionAnswer>",
+          "description": "Save answer to a practice session",
+          "multiTenant": true
+        },
+        {
+          "name": "completePracticeSession",
+          "parameters": ["sessionId: bigint"],
+          "returns": "Promise<PracticeSession>",
+          "description": "Complete a practice session",
+          "multiTenant": true
+        },
+        {
+          "name": "getPracticeSessionWithAnswers",
+          "parameters": ["sessionId: bigint"],
+          "returns": "Promise<PracticeSession & { answers: Array<SessionAnswer> } | null>",
+          "description": "Get practice session with all answers",
+          "multiTenant": true
+        },
+        {
+          "name": "getRecentPracticeSessions",
+          "parameters": ["limit: number (default: 20)"],
+          "returns": "Promise<Array<PracticeSession>>",
+          "description": "Get user's recent practice sessions",
+          "multiTenant": true
+        },
+        {
+          "name": "createConversationSession",
+          "parameters": [
+            "scenarioId: string",
+            "scenarioTitle: string",
+            "targetTurns: number"
+          ],
+          "returns": "Promise<ConversationSession>",
+          "description": "Create a new conversation session",
+          "multiTenant": true
+        },
+        {
+          "name": "saveConversationTurn",
+          "parameters": [
+            "sessionId: bigint",
+            "turnNumber: number",
+            "speaker: 'user' | 'assistant'",
+            "audioUrl?: string",
+            "audioFileId?: bigint",
+            "transcription?: string",
+            "transcriptionId?: bigint",
+            "aiFeedback?: string",
+            "scores?: { pronunciation?: number, fluency?: number, grammar?: number, vocabulary?: number }"
+          ],
+          "returns": "Promise<ConversationTurn>",
+          "description": "Save conversation turn",
+          "multiTenant": true
+        },
+        {
+          "name": "completeConversationSession",
+          "parameters": ["sessionId: bigint", "totalPoints: number"],
+          "returns": "Promise<ConversationSession>",
+          "description": "Complete a conversation session",
+          "multiTenant": true
+        },
+        {
+          "name": "getConversationSessionWithTurns",
+          "parameters": ["sessionId: bigint"],
+          "returns": "Promise<ConversationSession & { turns: Array<ConversationTurn> } | null>",
+          "description": "Get conversation session with all turns",
+          "multiTenant": true
+        },
+        {
+          "name": "getRecentConversationSessions",
+          "parameters": ["limit: number (default: 20)"],
+          "returns": "Promise<Array<ConversationSession>>",
+          "description": "Get user's recent conversation sessions",
+          "multiTenant": true
+        },
+        {
+          "name": "getPracticeSessionsWithFilters",
+          "parameters": [
+            "filters: { skill?: string, level?: string, dateRange?: '7d' | '30d' | 'all' }",
+            "limit: number (default: 20)"
+          ],
+          "returns": "Promise<Array<PracticeSession & { answers: Array<SessionAnswer> }>>",
+          "description": "Get practice sessions with filtering",
+          "multiTenant": true
+        },
+        {
+          "name": "getConversationSessionsWithFilters",
+          "parameters": [
+            "filters: { scenarioId?: string, dateRange?: '7d' | '30d' | 'all' }",
+            "limit: number (default: 20)"
+          ],
+          "returns": "Promise<Array<ConversationSession & { turns: Array<ConversationTurn> }>>",
+          "description": "Get conversation sessions with filtering",
+          "multiTenant": true
+        }
+      ]
+    },
+    "nzcel-progress": {
+      "description": "NZCEL progress and gamification tracking",
+      "count": 11,
+      "file": "src/actions/user-progress.ts",
+      "multiTenant": true,
+      "apis": [
+        {
+          "name": "getUserProgress",
+          "parameters": [],
+          "returns": "Promise<UserProgress | null>",
+          "description": "Get user progress data for NZCEL learning path",
+          "multiTenant": true
+        },
+        {
+          "name": "initializeUserProgress",
+          "parameters": [],
+          "returns": "Promise<UserProgress>",
+          "description": "Initialize user progress for first-time users",
+          "multiTenant": true
+        },
+        {
+          "name": "updateSkillProgress",
+          "parameters": [
+            "skill: 'listening' | 'speaking' | 'reading' | 'writing'",
+            "value: number (0-100)"
+          ],
+          "returns": "Promise<void>",
+          "description": "Update skill progress",
+          "multiTenant": true
+        },
+        {
+          "name": "updateCurrentLevel",
+          "parameters": ["level: string"],
+          "returns": "Promise<void>",
+          "description": "Update current NZCEL level",
+          "multiTenant": true
+        },
+        {
+          "name": "getCompletedQuestions",
+          "parameters": [],
+          "returns": "Promise<Array<CompletedQuestion>>",
+          "description": "Get all completed questions for the user",
+          "multiTenant": true
+        },
+        {
+          "name": "getAchievements",
+          "parameters": [],
+          "returns": "Promise<Array<Achievement>>",
+          "description": "Get all achievements for the user",
+          "multiTenant": true
+        },
+        {
+          "name": "getBadges",
+          "parameters": [],
+          "returns": "Promise<Array<Badge>>",
+          "description": "Get all badges for the user",
+          "multiTenant": true
+        },
+        {
+          "name": "submitAnswer",
+          "parameters": [
+            "questionId: string",
+            "isCorrect: boolean",
+            "points: number",
+            "skill: 'listening' | 'speaking' | 'reading' | 'writing' (default: 'reading')"
+          ],
+          "returns": "Promise<{ totalPoints: number, questionsCompleted: number, streak: number }>",
+          "description": "Submit an answer and update progress, achievements, streaks",
+          "multiTenant": true
+        },
+        {
+          "name": "awardBadge",
+          "parameters": [
+            "badgeId: string",
+            "name: string",
+            "description: string",
+            "icon: string",
+            "rarity: 'common' | 'rare' | 'epic' | 'legendary'"
+          ],
+          "returns": "Promise<Badge>",
+          "description": "Award a badge to the user",
+          "multiTenant": true
+        },
+        {
+          "name": "addPoints",
+          "parameters": ["points: number"],
+          "returns": "Promise<number | undefined> (new total)",
+          "description": "Add points to user progress",
+          "multiTenant": true
+        },
+        {
+          "name": "initializeAchievements",
+          "parameters": ["userId: string", "organizationId: bigint"],
+          "returns": "Promise<void>",
+          "description": "Initialize default achievements (internal function)",
+          "multiTenant": true
+        }
+      ]
+    },
+    "cefr-progress": {
+      "description": "CEFR progress tracking for general English practice",
+      "count": 6,
+      "file": "src/actions/cefr-progress.ts",
+      "multiTenant": true,
+      "apis": [
+        {
+          "name": "getCEFRProgress",
+          "parameters": [],
+          "returns": "Promise<{ currentLevel: CEFRLevel, targetLevel: CEFRLevel | null, skillProgress: { listening: number, speaking: number, reading: number, writing: number }, totalPoints: number, questionsCompleted: number }>",
+          "description": "Get user's CEFR progress, auto-creates if not exists",
+          "multiTenant": true
+        },
+        {
+          "name": "updateCEFRSkillProgress",
+          "parameters": [
+            "skill: SkillType",
+            "progress: number (0-100)"
+          ],
+          "returns": "Promise<{ success: boolean, skill: SkillType, progress: number }>",
+          "description": "Update CEFR skill progress",
+          "multiTenant": true
+        },
+        {
+          "name": "setCEFRLevel",
+          "parameters": ["level: CEFRLevel"],
+          "returns": "Promise<{ success: boolean, level: CEFRLevel }>",
+          "description": "Set user's current CEFR level (A1-C2)",
+          "multiTenant": true
+        },
+        {
+          "name": "setCEFRTargetLevel",
+          "parameters": ["level: CEFRLevel | null"],
+          "returns": "Promise<{ success: boolean, targetLevel: CEFRLevel | null }>",
+          "description": "Set user's target CEFR level",
+          "multiTenant": true
+        },
+        {
+          "name": "incrementCEFRStats",
+          "parameters": ["pointsEarned: number"],
+          "returns": "Promise<{ success: boolean, questionsCompleted: number, totalPoints: number }>",
+          "description": "Increment question count and add points",
+          "multiTenant": true
+        },
+        {
+          "name": "resetCEFRProgress",
+          "parameters": [],
+          "returns": "Promise<{ success: boolean }>",
+          "description": "Reset CEFR progress (for testing)",
+          "multiTenant": true
+        }
+      ]
+    },
+    "module-statistics": {
+      "description": "Module usage statistics and aggregated analytics",
+      "count": 5,
+      "file": "src/actions/module-stats.ts",
+      "multiTenant": true,
+      "apis": [
+        {
+          "name": "getModuleProgress",
+          "parameters": ["moduleType: LearningPath"],
+          "returns": "Promise<ModuleProgress>",
+          "description": "Get or create module progress for a specific module",
+          "multiTenant": true
+        },
+        {
+          "name": "getAllModuleProgress",
+          "parameters": [],
+          "returns": "Promise<Array<ModuleProgress>>",
+          "description": "Get all module progress for current user",
+          "multiTenant": true
+        },
+        {
+          "name": "updateModuleProgress",
+          "parameters": [
+            "moduleType: LearningPath",
+            "timeSpent: number (default: 0)",
+            "questionsCompleted: number (default: 0)",
+            "pointsEarned: number (default: 0)"
+          ],
+          "returns": "Promise<ModuleProgress>",
+          "description": "Update module progress",
+          "multiTenant": true
+        },
+        {
+          "name": "getSpeakingStats",
+          "parameters": [],
+          "returns": "Promise<{ totalSessions: number, completedSessions: number, totalTurns: number, averageDuration: number, recentSessions: Array<ConversationSession & { durationSeconds: number | null }> }>",
+          "description": "Get speaking practice statistics",
+          "multiTenant": true
+        },
+        {
+          "name": "getAggregatedStats",
+          "parameters": [],
+          "returns": "Promise<{ modules: Array<ModuleProgress>, totalPoints: number, totalTime: number, totalQuestions: number, nzcel: UserProgress | null, cefr: CEFRProgress | null, speaking: SpeakingStats, mostActiveModule: ModuleProgress | null }>",
+          "description": "Get aggregated statistics across all modules",
+          "multiTenant": true
+        }
+      ]
+    },
+    "diagnostics": {
+      "description": "Diagnostic tools for development and testing",
+      "count": 2,
+      "file": "src/actions/diagnostics.ts",
+      "multiTenant": true,
+      "apis": [
+        {
+          "name": "getUserDiagnostics",
+          "parameters": [],
+          "returns": "Promise<{ currentUserId: string, organizationId: string, practiceSessionsCount: number, recordingsCount: number, conversationSessionsCount: number }>",
+          "description": "Get current user ID and session counts for diagnostics",
+          "multiTenant": true
+        },
+        {
+          "name": "createSampleData",
+          "parameters": [],
+          "returns": "Promise<{ success: boolean, message: string, sessionId: bigint }>",
+          "description": "Create sample practice session data for testing",
+          "multiTenant": true
+        }
+      ]
+    },
+    "teacher-education": {
+      "description": "Teacher assignments, insights, diagnostic tests, and class management (60+ functions across multiple files)",
+      "count": 60,
+      "files": [
+        "src/actions/assignments.ts",
+        "src/actions/teacher-insights.ts",
+        "src/actions/diagnostic-tests.ts",
+        "src/actions/classes.ts"
+      ],
+      "multiTenant": true,
+      "notes": "Complex education management system with 60+ APIs. See detailed documentation in API_REFERENCE.md for full API list.",
+      "keyFeatures": [
+        "Assignment creation and grading",
+        "Class roster management",
+        "Student progress tracking",
+        "Diagnostic test administration",
+        "Analytics and insights",
+        "Submission management"
+      ]
+    },
+    "user-auth-management": {
+      "description": "User management, authentication, and organization administration (40+ functions across multiple files)",
+      "count": 40,
+      "files": [
+        "src/actions/users.ts",
+        "src/actions/auth.ts",
+        "src/actions/organizations.ts",
+        "src/actions/invitations.ts",
+        "src/actions/registration.ts",
+        "src/actions/fix-user-roles.ts",
+        "src/actions/cleanup-users.ts"
+      ],
+      "multiTenant": true,
+      "notes": "Complete user lifecycle management with RBAC and multi-tenant support. See detailed documentation in API_REFERENCE.md for full API list.",
+      "keyFeatures": [
+        "User registration and onboarding",
+        "Role-based access control (6 roles)",
+        "Organization management",
+        "Invitation system",
+        "Permission management",
+        "User cleanup and maintenance"
+      ]
+    }
+  },
+  "multiTenantArchitecture": {
+    "enabled": true,
+    "description": "All 163+ APIs enforce organization-level data isolation",
+    "implementation": "fetchWithDrizzle() helper automatically scopes queries to user's organizationId",
+    "requirements": [
+      "All Server Actions MUST validate organizationId exists",
+      "All INSERT operations MUST include organizationId field",
+      "All SELECT/UPDATE/DELETE operations MUST filter by organizationId using and()",
+      "All 44 database tables include organization_id column"
+    ]
+  },
+  "authentication": {
+    "provider": "Stack Auth",
+    "serverActions": "All Server Actions use fetchWithDrizzle() which validates Stack Auth session",
+    "restApis": "REST API routes are public endpoints (no authentication required)",
+    "authorization": "Role-based access control (RBAC) enforced at Server Action level"
+  },
+  "errorHandling": {
+    "pattern": "try-catch with descriptive error messages",
+    "organizationValidation": "if (!organizationId) throw new Error('Organization context required')",
+    "httpErrors": "REST APIs return appropriate HTTP status codes (400, 500)"
+  },
+  "relatedDocumentation": [
+    "docs/API_REFERENCE.md - Complete API reference with request/response examples",
+    "docs/architecture/DATABASE_ARCHITECTURE.md - Database schema and Server Actions catalog",
+    "CLAUDE.md - Project overview and development guidelines",
+    "src/types/index.ts - TypeScript type definitions"
+  ]
+}

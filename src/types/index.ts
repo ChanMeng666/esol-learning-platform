@@ -1,7 +1,36 @@
-// CEFR Level Types (Common European Framework of Reference for Languages)
+/**
+ * CEFR Level Types (Common European Framework of Reference for Languages)
+ *
+ * Six proficiency levels used internationally for language assessment:
+ * - A1 (Beginner/Elementary) - Basic phrases and simple interactions
+ * - A2 (Pre-intermediate) - Routine tasks and familiar situations
+ * - B1 (Intermediate) - Main points of clear standard input, travel situations
+ * - B2 (Upper-intermediate) - Complex text on concrete and abstract topics
+ * - C1 (Advanced) - Wide range of demanding texts, spontaneous expression
+ * - C2 (Proficiency) - Effortless understanding and expression
+ *
+ * @see getCEFRProgress() - Server Action to get user's CEFR progress
+ * @see updateCEFRSkillProgress() - Server Action to update skill progress
+ * @see docs/data/cefr-levels.ts - Complete CEFR level definitions
+ */
 export type CEFRLevel = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
 
-// NZCEL Level Types (New Zealand Certificates in English Language)
+/**
+ * NZCEL Level Types (New Zealand Certificates in English Language)
+ *
+ * 13 levels from foundation to advanced, used for NZCEL exam preparation:
+ * - foundation - Basic communication skills
+ * - level-1 - Elementary level
+ * - level-2 - Pre-intermediate level
+ * - level-3-* - Intermediate (general/applied/academic pathways)
+ * - level-4-* - Upper-intermediate (general/employment/academic pathways)
+ * - level-5-* - Advanced (general/employment/academic pathways)
+ * - level-6-advanced - Highest proficiency level
+ *
+ * @see getUserProgress() - Server Action to get user's NZCEL progress
+ * @see updateCurrentLevel() - Server Action to update current level
+ * @see docs/data/nzcel-levels.ts - Complete NZCEL level definitions
+ */
 export type NZCELLevel =
   | "foundation"
   | "level-1"
@@ -17,10 +46,33 @@ export type NZCELLevel =
   | "level-5-academic"
   | "level-6-advanced";
 
-// Learning Path Types
+/**
+ * Learning Path Types
+ *
+ * Different learning modules available in the platform:
+ * - general - CEFR-aligned general English practice (A1-C2)
+ * - nzcel - NZCEL exam preparation (13 levels)
+ * - ielts - IELTS exam prep (coming soon)
+ * - toefl - TOEFL exam prep (coming soon)
+ * - scenario - Real-world scenario practice (coming soon)
+ *
+ * @see getModuleProgress() - Server Action to get module-specific progress
+ * @see updateModuleProgress() - Server Action to update module stats
+ */
 export type LearningPath = "general" | "nzcel" | "ielts" | "toefl" | "scenario";
 
-// Skill Types
+/**
+ * Skill Types
+ *
+ * Four core language skills assessed across all learning paths:
+ * - listening - Audio comprehension
+ * - speaking - Voice production and conversation
+ * - reading - Text comprehension
+ * - writing - Text production
+ *
+ * @see updateSkillProgress() - Server Action to update skill progress (NZCEL)
+ * @see updateCEFRSkillProgress() - Server Action to update skill progress (CEFR)
+ */
 export type SkillType = "listening" | "speaking" | "reading" | "writing";
 
 // Question Types
@@ -84,7 +136,22 @@ export interface NZCELLevelInfo {
   };
 }
 
-// User Progress Types
+/**
+ * Skill Progress (0-100 scale)
+ *
+ * Tracks progress for each of the four language skills.
+ * Used in both NZCEL and CEFR progress tracking.
+ *
+ * @example
+ * ```typescript
+ * const skillProgress = {
+ *   listening: 75,  // 75% proficiency
+ *   speaking: 60,
+ *   reading: 80,
+ *   writing: 70
+ * };
+ * ```
+ */
 export interface SkillProgress {
   listening: number;
   speaking: number;
@@ -92,6 +159,26 @@ export interface SkillProgress {
   writing: number;
 }
 
+/**
+ * User Progress (NZCEL Learning Path)
+ *
+ * Complete progress tracking for NZCEL exam preparation.
+ * Includes skill progress, gamification, and study statistics.
+ *
+ * Multi-tenant: All queries automatically filter by organizationId
+ *
+ * @see getUserProgress() - Get current user's NZCEL progress
+ * @see submitAnswer() - Submit answer and update progress
+ * @see updateSkillProgress() - Update specific skill progress
+ *
+ * @example
+ * ```typescript
+ * const progress = await getUserProgress();
+ * console.log(`Level: ${progress.currentLevel}`);
+ * console.log(`Streak: ${progress.streak} days`);
+ * console.log(`Points: ${progress.totalPoints}`);
+ * ```
+ */
 export interface UserProgress {
   currentLevel: NZCELLevel;
   targetLevel: NZCELLevel | null;
@@ -162,7 +249,38 @@ export interface VoiceRecordingState {
   assessment: AssessmentResult | null;
 }
 
-// Conversation scenario for real-time practice
+/**
+ * Conversation Scenario for Real-time Speaking Practice
+ *
+ * Defines a structured conversation scenario for AI speaking coach.
+ * Used with OpenAI Realtime API for natural two-way dialogue.
+ *
+ * @see createConversationSession() - Start a conversation session
+ * @see saveConversationTurn() - Save individual conversation turns
+ * @see docs/data/conversation-scenarios.ts - Available scenarios
+ *
+ * @example
+ * ```typescript
+ * const scenario: ConversationScenario = {
+ *   id: 'restaurant-b2',
+ *   level: 'level-4-academic',
+ *   title: 'Ordering at a Restaurant',
+ *   context: 'You are at a formal restaurant...',
+ *   userRole: 'customer',
+ *   aiRole: 'server',
+ *   initialPrompt: 'Good evening! Welcome to our restaurant.',
+ *   targetTurns: 6,
+ *   difficulty: 'intermediate-advanced',
+ *   topics: ['ordering food', 'dietary restrictions', 'recommendations']
+ * };
+ *
+ * const session = await createConversationSession(
+ *   scenario.id,
+ *   scenario.title,
+ *   scenario.targetTurns
+ * );
+ * ```
+ */
 export interface ConversationScenario {
   id: string;
   level: NZCELLevel;
@@ -199,7 +317,32 @@ export interface RubricCriterion {
   };
 }
 
-// Assessment result from OpenAI
+/**
+ * Assessment Result from OpenAI GPT-4
+ *
+ * Detailed AI-generated assessment for speaking/writing responses.
+ * Uses NZCEL-aligned rubrics and criteria.
+ *
+ * @see POST /api/openai/assess - REST API endpoint to get assessment
+ *
+ * @example
+ * ```typescript
+ * const assessment = await fetch('/api/openai/assess', {
+ *   method: 'POST',
+ *   headers: { 'Content-Type': 'application/json' },
+ *   body: JSON.stringify({
+ *     text: userResponse,
+ *     level: 'level-3-general',
+ *     skill: 'speaking',
+ *     questionText: 'Describe your favorite place'
+ *   })
+ * }).then(r => r.json());
+ *
+ * console.log('Score:', assessment.overallScore);
+ * console.log('Feedback:', assessment.overallFeedback);
+ * console.log('Strengths:', assessment.strengths);
+ * ```
+ */
 export interface AssessmentResult {
   overallScore: number; // 0-100
   overallFeedback: string;
@@ -212,6 +355,12 @@ export interface AssessmentResult {
   estimatedLevel?: NZCELLevel; // AI's estimate of user's current level
 }
 
+/**
+ * Individual Criterion Score
+ *
+ * Score and feedback for a specific assessment criterion
+ * (e.g., pronunciation, fluency, grammar, vocabulary, etc.)
+ */
 export interface CriterionScore {
   score: number; // 0-100
   comment: string;
@@ -414,10 +563,50 @@ export interface ModuleProgress {
 // MULTI-TENANCY & ORGANIZATION MANAGEMENT TYPES
 // ============================================================================
 
-// User Role Types
+/**
+ * User Role Types (RBAC - Role-Based Access Control)
+ *
+ * Six roles with hierarchical permissions:
+ * - system_admin - Full platform access across all organizations
+ * - school_admin - Organization-wide admin (school/institution level)
+ * - department_head - Department management and teacher oversight
+ * - teacher - Class management, assignments, student insights
+ * - student - Learning activities, practice, assignments
+ * - parent - View child progress and performance
+ *
+ * @see hasPermission() - Check if user has specific permission
+ * @see requireRole() - Enforce role requirement in Server Actions
+ * @see docs/architecture/DATABASE_ARCHITECTURE.md - RBAC documentation
+ */
 export type UserRole = "system_admin" | "school_admin" | "department_head" | "teacher" | "student" | "parent";
 
-// Organization/School
+/**
+ * Organization/School
+ *
+ * Multi-tenant organization entity. All users belong to one organization.
+ * Data isolation enforced at database level (all 44 tables have organization_id).
+ *
+ * @multiTenant All queries automatically filter by organizationId
+ *
+ * @see getOrganizationDetails() - Get organization information
+ * @see updateOrganization() - Update organization settings
+ *
+ * @example
+ * ```typescript
+ * const org: Organization = {
+ *   id: 123n,
+ *   name: "Wellington High School",
+ *   slug: "wellington-hs",
+ *   settings: {
+ *     allowed_level_systems: ["nzcel", "cefr"],
+ *     use_shared_question_bank: true
+ *   },
+ *   subscriptionTier: "pro",
+ *   maxStudents: 500,
+ *   isActive: true
+ * };
+ * ```
+ */
 export interface Organization {
   id: bigint;
   name: string;
@@ -438,7 +627,34 @@ export interface Organization {
   updatedAt: Date;
 }
 
-// Enhanced User (extends Stack Auth with organization)
+/**
+ * Enhanced User (extends Stack Auth with organization context)
+ *
+ * Links Stack Auth user ID to organization and adds role information.
+ * All Server Actions receive EnhancedUser via fetchWithDrizzle() context.
+ *
+ * @multiTenant All user operations scoped to their organization
+ *
+ * @see getEnhancedUser() - Get enhanced user record
+ * @see updateUserProfile() - Update user information
+ *
+ * @example
+ * ```typescript
+ * export async function exampleAction() {
+ *   return fetchWithDrizzle(async (db, { userId, organizationId, enhancedUser }) => {
+ *     console.log('User role:', enhancedUser.role);
+ *     console.log('Organization:', enhancedUser.organizationId);
+ *
+ *     // Validate role
+ *     if (enhancedUser.role !== "teacher") {
+ *       throw new Error("Access denied: Teacher role required");
+ *     }
+ *
+ *     // Proceed with operation
+ *   });
+ * }
+ * ```
+ */
 export interface EnhancedUser {
   id: bigint;
   organizationId: bigint;
