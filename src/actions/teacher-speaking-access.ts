@@ -2,7 +2,7 @@
 
 import { and, desc, eq, inArray } from "drizzle-orm";
 import * as schema from "@/lib/db/schema";
-import { fetchWithDrizzle, type EnhancedUser } from "@/lib/db";
+import { fetchWithDrizzle } from "@/lib/db";
 
 /**
  * Get all students in teacher's classes with their speaking practice stats
@@ -24,7 +24,7 @@ export async function getClassStudentsSpeaking() {
         where: and(
           eq(schema.classes.teacherId, BigInt(userId)),
           eq(schema.classes.organizationId, organizationId),
-          eq(schema.classes.status, "active")
+          eq(schema.classes.isActive, true)
         ),
       });
 
@@ -40,9 +40,6 @@ export async function getClassStudentsSpeaking() {
           inArray(schema.classEnrollments.classId, classIds),
           eq(schema.classEnrollments.status, "active")
         ),
-        with: {
-          student: true,
-        },
       });
 
       // Get unique students with their speaking session counts
@@ -63,7 +60,7 @@ export async function getClassStudentsSpeaking() {
           // Get speaking session count for this student
           const sessions = await db.query.speakingSessions.findMany({
             where: and(
-              eq(schema.speakingSessions.userId, student.stackAuthId),
+              eq(schema.speakingSessions.userId, student.stackUserId),
               eq(schema.speakingSessions.organizationId, organizationId)
             ),
           });
@@ -74,8 +71,8 @@ export async function getClassStudentsSpeaking() {
 
           return {
             studentId: student.id.toString(),
-            stackAuthId: student.stackAuthId,
-            name: student.name,
+            stackAuthId: student.stackUserId,
+            name: student.fullName,
             email: student.email,
             totalSessions: sessions.length,
             completedSessions,
@@ -122,7 +119,7 @@ export async function getStudentSpeakingSessions(
       // Verify the student is in one of the teacher's classes
       const student = await db.query.users.findFirst({
         where: and(
-          eq(schema.users.stackAuthId, studentStackAuthId),
+          eq(schema.users.stackUserId, studentStackAuthId),
           eq(schema.users.organizationId, organizationId)
         ),
       });
@@ -136,7 +133,7 @@ export async function getStudentSpeakingSessions(
         where: and(
           eq(schema.classes.teacherId, BigInt(userId)),
           eq(schema.classes.organizationId, organizationId),
-          eq(schema.classes.status, "active")
+          eq(schema.classes.isActive, true)
         ),
       });
 
@@ -224,7 +221,7 @@ export async function getStudentSpeakingSession(sessionId: string) {
       // Verify the student is in one of the teacher's classes
       const student = await db.query.users.findFirst({
         where: and(
-          eq(schema.users.stackAuthId, session.userId),
+          eq(schema.users.stackUserId, session.userId),
           eq(schema.users.organizationId, organizationId)
         ),
       });
@@ -238,7 +235,7 @@ export async function getStudentSpeakingSession(sessionId: string) {
         where: and(
           eq(schema.classes.teacherId, BigInt(userId)),
           eq(schema.classes.organizationId, organizationId),
-          eq(schema.classes.status, "active")
+          eq(schema.classes.isActive, true)
         ),
       });
 
@@ -291,7 +288,7 @@ export async function getStudentSpeakingSession(sessionId: string) {
         messages: messagesWithAssessments,
         student: {
           id: student.id.toString(),
-          name: student.name,
+          name: student.fullName,
           email: student.email,
         },
       };
@@ -336,20 +333,25 @@ export async function getClassSpeakingStats(classId: bigint) {
           eq(schema.classEnrollments.classId, classId),
           eq(schema.classEnrollments.status, "active")
         ),
-        with: {
-          student: true,
-        },
       });
 
       // Calculate stats for each student
       const studentStats = await Promise.all(
         enrollments.map(async (enrollment) => {
-          const student = enrollment.student;
+          // Get student user record
+          const student = await db.query.users.findFirst({
+            where: and(
+              eq(schema.users.id, enrollment.studentId),
+              eq(schema.users.organizationId, organizationId)
+            ),
+          });
+
+          if (!student) return null;
 
           // Get all speaking sessions for this student
           const sessions = await db.query.speakingSessions.findMany({
             where: and(
-              eq(schema.speakingSessions.userId, student.stackAuthId),
+              eq(schema.speakingSessions.userId, student.stackUserId),
               eq(schema.speakingSessions.organizationId, organizationId)
             ),
           });
@@ -359,7 +361,7 @@ export async function getClassSpeakingStats(classId: bigint) {
 
           return {
             studentId: student.id.toString(),
-            name: student.name,
+            name: student.fullName,
             totalSessions: sessions.length,
             completedSessions,
             totalDuration,
@@ -383,7 +385,7 @@ export async function getClassSpeakingStats(classId: bigint) {
         activePracticers,
         avgSessionsPerStudent,
         totalClassDuration,
-        studentStats: studentStats.sort((a, b) => b.totalSessions - a.totalSessions),
+        studentStats: studentStats.filter(Boolean).sort((a, b) => b.totalSessions - a.totalSessions),
       };
     } catch (error) {
       console.error("Failed to get class speaking stats:", error);

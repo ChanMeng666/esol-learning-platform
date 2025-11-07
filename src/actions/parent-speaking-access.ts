@@ -2,7 +2,7 @@
 
 import { and, desc, eq, inArray } from "drizzle-orm";
 import * as schema from "@/lib/db/schema";
-import { fetchWithDrizzle, type EnhancedUser } from "@/lib/db";
+import { fetchWithDrizzle } from "@/lib/db";
 
 /**
  * Get all children linked to parent with their speaking practice stats
@@ -22,9 +22,6 @@ export async function getChildrenSpeakingStats() {
       // Get all children linked to this parent
       const relationships = await db.query.parentStudentRelationships.findMany({
         where: eq(schema.parentStudentRelationships.parentId, BigInt(userId)),
-        with: {
-          student: true,
-        },
       });
 
       if (relationships.length === 0) {
@@ -34,12 +31,20 @@ export async function getChildrenSpeakingStats() {
       // Get speaking stats for each child
       const childrenWithStats = await Promise.all(
         relationships.map(async (rel) => {
-          const child = rel.student;
+          // Get child user record
+          const child = await db.query.users.findFirst({
+            where: and(
+              eq(schema.users.id, rel.studentId),
+              eq(schema.users.organizationId, organizationId)
+            ),
+          });
+
+          if (!child) return null;
 
           // Get speaking session count for this child
           const sessions = await db.query.speakingSessions.findMany({
             where: and(
-              eq(schema.speakingSessions.userId, child.stackAuthId),
+              eq(schema.speakingSessions.userId, child.stackUserId),
               eq(schema.speakingSessions.organizationId, organizationId)
             ),
             orderBy: [desc(schema.speakingSessions.startedAt)],
@@ -63,15 +68,21 @@ export async function getChildrenSpeakingStats() {
               eq(schema.classEnrollments.studentId, child.id),
               eq(schema.classEnrollments.status, "active")
             ),
-            with: {
-              class: true,
-            },
           });
+
+          // Get class name if enrolled
+          let className = null;
+          if (enrollment) {
+            const classRecord = await db.query.classes.findFirst({
+              where: eq(schema.classes.id, enrollment.classId),
+            });
+            className = classRecord?.name || null;
+          }
 
           return {
             childId: child.id.toString(),
-            stackAuthId: child.stackAuthId,
-            name: child.name,
+            stackAuthId: child.stackUserId,
+            name: child.fullName,
             email: child.email,
             relationshipType: rel.relationshipType,
             isPrimary: rel.isPrimary,
@@ -83,13 +94,13 @@ export async function getChildrenSpeakingStats() {
             averageSessionDuration: sessions.length > 0
               ? Math.round(totalDuration / sessions.length)
               : 0,
-            className: enrollment?.class?.name || null,
+            className,
           };
         })
       );
 
       return {
-        children: childrenWithStats,
+        children: childrenWithStats.filter(Boolean),
       };
     } catch (error) {
       console.error("Failed to get children speaking stats:", error);
@@ -120,7 +131,7 @@ export async function getChildSpeakingSessions(
       // Verify the child is linked to this parent
       const child = await db.query.users.findFirst({
         where: and(
-          eq(schema.users.stackAuthId, childStackAuthId),
+          eq(schema.users.stackUserId, childStackAuthId),
           eq(schema.users.organizationId, organizationId)
         ),
       });
@@ -210,7 +221,7 @@ export async function getChildSpeakingSession(sessionId: string) {
       // Verify the child is linked to this parent
       const child = await db.query.users.findFirst({
         where: and(
-          eq(schema.users.stackAuthId, session.userId),
+          eq(schema.users.stackUserId, session.userId),
           eq(schema.users.organizationId, organizationId)
         ),
       });
@@ -265,7 +276,7 @@ export async function getChildSpeakingSession(sessionId: string) {
         messages: messagesWithAssessments,
         child: {
           id: child.id.toString(),
-          name: child.name,
+          name: child.fullName,
           email: child.email,
         },
       };
@@ -297,7 +308,7 @@ export async function getChildSpeakingProgress(
       // Verify the child is linked to this parent
       const child = await db.query.users.findFirst({
         where: and(
-          eq(schema.users.stackAuthId, childStackAuthId),
+          eq(schema.users.stackUserId, childStackAuthId),
           eq(schema.users.organizationId, organizationId)
         ),
       });
@@ -367,7 +378,7 @@ export async function getChildSpeakingProgress(
       return {
         child: {
           id: child.id.toString(),
-          name: child.name,
+          name: child.fullName,
           email: child.email,
         },
         progressData: Object.values(sessionsByDate),
