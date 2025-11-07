@@ -130,6 +130,7 @@ export function AISpeakingCoach() {
   const aiAudioBuffersRef = useRef<{ [messageIndex: number]: ArrayBuffer[] }>({});
   const isRecordingRef = useRef(false);
   const currentMessageIndexRef = useRef(0);
+  const userRecordingCounterRef = useRef(0); // Tracks number of user recordings
 
   // Auto-scroll to bottom
   const scrollToBottom = useCallback(() => {
@@ -178,6 +179,9 @@ export function AISpeakingCoach() {
       messageTimestampsRef.current.clear();
       savedMessagesRef.current.clear();
       currentMessageIndexRef.current = 0;
+      userRecordingCounterRef.current = 0;
+      userAudioChunksRef.current = {};
+      aiAudioBuffersRef.current = {};
 
       // Create a new speaking session in database
       const dbSession = await createSpeakingSession("B2", "AI Speaking Practice");
@@ -300,20 +304,21 @@ export function AISpeakingCoach() {
 
               // Upload user audio if available
               if (role === "user") {
-                // Count the number of user messages up to this point
-                const userMessageCount = history.slice(0, index + 1).filter(h => h.type === "message" && h.role === "user").length;
-                const audioIndex = userMessageCount - 1; // 0-based index
+                // Count how many user messages we've processed so far (0-based)
+                const processedUserMessages = history.slice(0, index).filter(h => h.type === "message" && h.role === "user").length;
+                const audioIndex = processedUserMessages; // This matches the recording counter
 
-                console.log(`[AISpeakingCoach] Checking for user audio at index ${audioIndex} for history index ${index}`);
+                console.log(`[AISpeakingCoach] Processing user message at history index ${index}`);
+                console.log(`[AISpeakingCoach] This is user message #${audioIndex} (0-based)`);
                 console.log(`[AISpeakingCoach] Available audio indices:`, Object.keys(userAudioChunksRef.current));
 
                 if (userAudioChunksRef.current[audioIndex]) {
                   try {
                     const audioBlob = new Blob(userAudioChunksRef.current[audioIndex], { type: 'audio/webm' });
-                    const fileName = `user_${Date.now()}.webm`;
+                    const fileName = `user_${currentSessionId}_${audioIndex}_${Date.now()}.webm`;
                     const userId = user?.id || "anonymous";
 
-                    console.log(`[AISpeakingCoach] Uploading user audio blob: ${audioBlob.size} bytes`);
+                    console.log(`[AISpeakingCoach] Uploading user audio #${audioIndex}: ${audioBlob.size} bytes`);
 
                     const audioFileInfo = await uploadAudioFile(audioBlob, fileName, {
                       fileType: 'speaking_user',
@@ -321,15 +326,15 @@ export function AISpeakingCoach() {
                       sessionId: currentSessionId,
                     });
                     audioUrl = audioFileInfo.blobUrl;
-                    console.log(`[AISpeakingCoach] User audio uploaded successfully: ${audioUrl}`);
+                    console.log(`[AISpeakingCoach] ✓ User audio #${audioIndex} uploaded: ${audioUrl}`);
 
                     // Clear the chunks after upload
                     delete userAudioChunksRef.current[audioIndex];
                   } catch (uploadError) {
-                    console.error("[AISpeakingCoach] Failed to upload user audio:", uploadError);
+                    console.error(`[AISpeakingCoach] ✗ Failed to upload user audio #${audioIndex}:`, uploadError);
                   }
                 } else {
-                  console.log(`[AISpeakingCoach] No audio chunks found for user message at index ${audioIndex}`);
+                  console.warn(`[AISpeakingCoach] ⚠ No audio chunks found for user message #${audioIndex}`);
                 }
               }
 
@@ -391,33 +396,28 @@ export function AISpeakingCoach() {
           // Start recording user audio
           if (mediaRecorderRef.current && mediaRecorderRef.current.state === "inactive") {
             const chunks: Blob[] = [];
+            const recordingIndex = userRecordingCounterRef.current;
+
+            console.log(`[AISpeakingCoach] Starting recording ${recordingIndex}`);
 
             mediaRecorderRef.current.ondataavailable = (e) => {
               if (e.data.size > 0) {
                 chunks.push(e.data);
-                console.log(`[AISpeakingCoach] Audio chunk received: ${e.data.size} bytes`);
+                console.log(`[AISpeakingCoach] Audio chunk received for recording ${recordingIndex}: ${e.data.size} bytes`);
               }
             };
 
             mediaRecorderRef.current.onstop = () => {
-              // Get the current number of user messages to determine the index
-              const session = sessionRef.current;
-              if (session) {
-                const history = session.history;
-                const userMessages = history.filter(item => item.type === "message" && item.role === "user");
-                const messageIndex = userMessages.length; // This will be the index for the new message
-
-                // Store the audio chunks for this message
-                userAudioChunksRef.current[messageIndex] = chunks;
-                console.log(`[AISpeakingCoach] Stored ${chunks.length} audio chunks for message index ${messageIndex}, total size: ${chunks.reduce((sum, chunk) => sum + chunk.size, 0)} bytes`);
-
-                // Update the current index
-                currentMessageIndexRef.current = messageIndex;
-              }
+              // Store the audio chunks using the recording counter as index
+              userAudioChunksRef.current[recordingIndex] = chunks;
+              const totalSize = chunks.reduce((sum, chunk) => sum + chunk.size, 0);
+              console.log(`[AISpeakingCoach] Stopped recording ${recordingIndex}: ${chunks.length} chunks, total ${totalSize} bytes`);
+              console.log(`[AISpeakingCoach] Available recordings:`, Object.keys(userAudioChunksRef.current));
             };
 
             mediaRecorderRef.current.start();
             isRecordingRef.current = true;
+            userRecordingCounterRef.current++; // Increment for next recording
             console.log("[AISpeakingCoach] Started recording user audio");
           }
         } else if (event.type === "input_audio_buffer.speech_stopped") {
@@ -507,6 +507,7 @@ export function AISpeakingCoach() {
       aiAudioBuffersRef.current = {};
       isRecordingRef.current = false;
       currentMessageIndexRef.current = 0;
+      userRecordingCounterRef.current = 0;
 
       // Clear timestamp map
       messageTimestampsRef.current.clear();
