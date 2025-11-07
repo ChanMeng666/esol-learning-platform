@@ -23,6 +23,9 @@ import {
   Download,
   Trash2,
   ArrowLeft,
+  Play,
+  Pause,
+  Volume2,
 } from "lucide-react";
 import { getUserSpeakingSessions, getSpeakingSession, deleteSpeakingSession } from "@/actions/speaking-sessions";
 import { format } from "date-fns";
@@ -199,7 +202,7 @@ Total Turns: ${session.totalTurns}
                 {sessions.length === 0 ? (
                   <div className="flex flex-col items-center justify-center p-8 text-center">
                     <DotLottieReact
-                      src="/animations/empty-state.lottie"
+                      src="/animations/speaking.lottie"
                       loop
                       autoplay
                       style={{ width: 150, height: 150 }}
@@ -211,15 +214,18 @@ Total Turns: ${session.totalTurns}
                 ) : (
                   <div className="p-4 space-y-3">
                     {sessions.map((session) => (
-                      <button
+                      <div
                         key={session.sessionId}
-                        onClick={() => loadSessionDetails(session.sessionId)}
-                        className={`w-full text-left p-4 rounded-lg border transition-all hover:bg-muted/50 ${
+                        onClick={() => {
+                          if (isDeletingSession !== session.sessionId) {
+                            loadSessionDetails(session.sessionId);
+                          }
+                        }}
+                        className={`w-full text-left p-4 rounded-lg border transition-all cursor-pointer hover:bg-muted/50 ${
                           selectedSession?.session.sessionId === session.sessionId
                             ? "bg-muted border-primary"
                             : ""
-                        }`}
-                        disabled={isDeletingSession === session.sessionId}
+                        } ${isDeletingSession === session.sessionId ? "opacity-50 cursor-not-allowed" : ""}`}
                       >
                         <div className="space-y-2">
                           <div className="flex items-start justify-between">
@@ -278,7 +284,7 @@ Total Turns: ${session.totalTurns}
                             </div>
                           )}
                         </div>
-                      </button>
+                      </div>
                     ))}
                   </div>
                 )}
@@ -366,6 +372,24 @@ Total Turns: ${session.totalTurns}
                           </div>
                           <p className="text-sm leading-relaxed">{message.content}</p>
 
+                          {/* Audio player if available */}
+                          {message.audioUrl && (
+                            <div className="mt-3 pt-3 border-t">
+                              <div className="flex items-center gap-3">
+                                <Volume2 className="h-4 w-4 text-muted-foreground" />
+                                <audio
+                                  controls
+                                  className="max-w-full h-8"
+                                  preload="metadata"
+                                >
+                                  <source src={message.audioUrl} type="audio/webm" />
+                                  <source src={message.audioUrl} type="audio/mp3" />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </div>
+                            </div>
+                          )}
+
                           {/* Show assessment if available */}
                           {message.assessment && (
                             <div className="mt-3 pt-3 border-t space-y-2">
@@ -418,7 +442,7 @@ Total Turns: ${session.totalTurns}
               ) : (
                 <div className="flex flex-col items-center justify-center h-[500px] text-center">
                   <DotLottieReact
-                    src="/animations/select-item.lottie"
+                    src="/animations/dashboard.lottie"
                     loop
                     autoplay
                     style={{ width: 200, height: 200 }}

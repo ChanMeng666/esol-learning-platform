@@ -29,6 +29,7 @@ import {
   completeSpeakingSession,
 } from "@/actions/speaking-sessions";
 import { uploadAudioFile } from "@/lib/blob/audio-storage";
+import { useUser } from "@stackframe/stack";
 
 interface Message {
   role: "user" | "assistant";
@@ -104,6 +105,9 @@ This prompt is for dynamic, adaptive, expert ESOL speaking practice using CEFR s
  * Uses OpenAI Realtime API for natural, interactive speaking practice
  */
 export function AISpeakingCoach() {
+  // User context
+  const user = useUser();
+
   // Session state
   const [isSessionActive, setIsSessionActive] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
@@ -118,6 +122,13 @@ export function AISpeakingCoach() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageTimestampsRef = useRef<Map<number, Date>>(new Map());
   const savedMessagesRef = useRef<Set<string>>(new Set());
+  const speakingSessionIdRef = useRef<string | null>(null);
+
+  // Audio recording refs
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const userAudioChunksRef = useRef<{ [messageIndex: number]: Blob[] }>({});
+  const aiAudioBuffersRef = useRef<{ [messageIndex: number]: ArrayBuffer[] }>({});
+  const isRecordingRef = useRef(false);
 
   // Auto-scroll to bottom
   const scrollToBottom = useCallback(() => {
@@ -169,6 +180,7 @@ export function AISpeakingCoach() {
       // Create a new speaking session in database
       const dbSession = await createSpeakingSession("B2", "AI Speaking Practice");
       setSpeakingSessionId(dbSession.sessionId);
+      speakingSessionIdRef.current = dbSession.sessionId;
 
       // Get client secret
       const secret = await fetchClientSecret();
@@ -230,6 +242,19 @@ export function AISpeakingCoach() {
         return "[Audio]";
       };
 
+      // Listen for AI audio output events
+      session.on("response.audio_buffer.delta", (event: any) => {
+        // Capture AI audio chunks
+        if (event.data) {
+          const messageIndex = messages.length - 1; // AI response is the latest message
+          if (!aiAudioBuffersRef.current[messageIndex]) {
+            aiAudioBuffersRef.current[messageIndex] = [];
+          }
+          aiAudioBuffersRef.current[messageIndex].push(event.data);
+          console.log(`[AISpeakingCoach] AI audio chunk captured for message ${messageIndex}`);
+        }
+      });
+
       // Update messages when history changes (handles both new messages and transcription updates)
       session.on("history_updated", async (history) => {
         const updatedMessages: Message[] = [];
@@ -259,23 +284,66 @@ export function AISpeakingCoach() {
 
           // Save message to database if not already saved
           const messageKey = `${index}-${role}-${content}`;
-          if (speakingSessionId && !savedMessagesRef.current.has(messageKey) && content !== "[Audio]") {
+          const currentSessionId = speakingSessionIdRef.current;
+
+          if (currentSessionId && !savedMessagesRef.current.has(messageKey) && content !== "[Audio]") {
             savedMessagesRef.current.add(messageKey);
 
             try {
+              let audioUrl: string | undefined = undefined;
+
+              // Upload user audio if available
+              if (role === "user" && userAudioChunksRef.current[index]) {
+                try {
+                  const audioBlob = new Blob(userAudioChunksRef.current[index], { type: 'audio/webm' });
+                  const fileName = `user_${Date.now()}.webm`;
+                  const userId = user?.id || "anonymous";
+                  const filePath = `audio/speaking/${userId}/${currentSessionId}/${fileName}`;
+
+                  const uploadedUrl = await uploadAudioFile(audioBlob, filePath, 90);
+                  audioUrl = uploadedUrl;
+                  console.log(`[AISpeakingCoach] User audio uploaded: ${audioUrl}`);
+
+                  // Clear the chunks after upload
+                  delete userAudioChunksRef.current[index];
+                } catch (uploadError) {
+                  console.error("[AISpeakingCoach] Failed to upload user audio:", uploadError);
+                }
+              }
+
+              // Upload AI audio if available
+              if (role === "assistant" && aiAudioBuffersRef.current[index]) {
+                try {
+                  // Convert ArrayBuffers to Blob
+                  const audioBlob = new Blob(aiAudioBuffersRef.current[index], { type: 'audio/mp3' });
+                  const fileName = `ai_${Date.now()}.mp3`;
+                  const filePath = `audio/speaking-ai/${currentSessionId}/${fileName}`;
+
+                  const uploadedUrl = await uploadAudioFile(audioBlob, filePath, 30);
+                  audioUrl = uploadedUrl;
+                  console.log(`[AISpeakingCoach] AI audio uploaded: ${audioUrl}`);
+
+                  // Clear the buffers after upload
+                  delete aiAudioBuffersRef.current[index];
+                } catch (uploadError) {
+                  console.error("[AISpeakingCoach] Failed to upload AI audio:", uploadError);
+                }
+              }
+
               // Save message to database
               await saveSpeakingMessage(
-                speakingSessionId,
+                currentSessionId,
                 role === "user" ? "user" : "ai",
                 content,
-                undefined, // audioUrl - will be implemented in next phase
+                audioUrl,
                 undefined, // audioFileId
                 undefined, // transcriptionId
                 undefined, // audioDuration
                 { index, timestamp: timestamps.get(index) }
               );
+              console.log(`[AISpeakingCoach] Message saved: ${role} - ${content.substring(0, 50)}...`);
             } catch (error) {
-              console.error("Failed to save message to database:", error);
+              console.error("[AISpeakingCoach] Failed to save message to database:", error);
             }
           }
         }
@@ -284,11 +352,40 @@ export function AISpeakingCoach() {
       });
 
       session.on("transport_event", (event) => {
-        // Detect user speech
+        // Detect user speech and start/stop recording
         if (event.type === "input_audio_buffer.speech_started") {
           setIsSpeaking(true);
+
+          // Start recording user audio
+          if (mediaRecorderRef.current && mediaRecorderRef.current.state === "inactive") {
+            const chunks: Blob[] = [];
+            const messageIndex = messages.length; // Current message index
+
+            mediaRecorderRef.current.ondataavailable = (e) => {
+              if (e.data.size > 0) {
+                chunks.push(e.data);
+              }
+            };
+
+            mediaRecorderRef.current.onstop = () => {
+              // Store the audio chunks for this message
+              userAudioChunksRef.current[messageIndex] = chunks;
+              console.log(`[AISpeakingCoach] User audio recorded for message ${messageIndex}`);
+            };
+
+            mediaRecorderRef.current.start();
+            isRecordingRef.current = true;
+            console.log("[AISpeakingCoach] Started recording user audio");
+          }
         } else if (event.type === "input_audio_buffer.speech_stopped") {
           setIsSpeaking(false);
+
+          // Stop recording user audio
+          if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+            mediaRecorderRef.current.stop();
+            isRecordingRef.current = false;
+            console.log("[AISpeakingCoach] Stopped recording user audio");
+          }
         }
       });
 
@@ -297,10 +394,20 @@ export function AISpeakingCoach() {
         toast.error("An error occurred during the conversation");
       });
 
-      // Check microphone permissions
+      // Check microphone permissions and set up MediaRecorder
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        stream.getTracks().forEach(track => track.stop());
+
+        // Set up MediaRecorder for capturing user audio
+        const mediaRecorder = new MediaRecorder(stream, {
+          mimeType: 'audio/webm',
+          audioBitsPerSecond: 128000
+        });
+
+        mediaRecorderRef.current = mediaRecorder;
+
+        // Don't stop the stream - we need it for recording
+        // stream.getTracks().forEach(track => track.stop());
       } catch (micError) {
         throw new Error("Microphone permission denied. Please allow microphone access to use the AI coach.");
       }
@@ -320,6 +427,7 @@ export function AISpeakingCoach() {
 
       setIsSessionActive(true);
       setIsConnecting(false);
+      console.log(`[AISpeakingCoach] Session started successfully. Session ID: ${dbSession.sessionId}`);
       toast.success("Connected! Your AI coach will greet you, then you can start speaking.");
     } catch (error) {
       setIsConnecting(false);
@@ -330,6 +438,16 @@ export function AISpeakingCoach() {
   // Stop session
   const stopSession = async () => {
     try {
+      // Stop any ongoing recording
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+        mediaRecorderRef.current.stop();
+      }
+
+      // Stop media stream tracks
+      if (mediaRecorderRef.current && mediaRecorderRef.current.stream) {
+        mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+      }
+
       // Complete the speaking session in database
       if (speakingSessionId) {
         await completeSpeakingSession(speakingSessionId);
@@ -340,12 +458,19 @@ export function AISpeakingCoach() {
         sessionRef.current = null;
       }
 
+      // Clear audio recording refs
+      mediaRecorderRef.current = null;
+      userAudioChunksRef.current = {};
+      aiAudioBuffersRef.current = {};
+      isRecordingRef.current = false;
+
       // Clear timestamp map
       messageTimestampsRef.current.clear();
       savedMessagesRef.current.clear();
 
       setIsSessionActive(false);
       setSpeakingSessionId(null);
+      speakingSessionIdRef.current = null;
       toast.info("Practice session ended and saved");
     } catch (error) {
       toast.error("Failed to stop session");
