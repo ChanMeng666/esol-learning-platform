@@ -342,7 +342,7 @@ export function AISpeakingCoach() {
               }
 
               // Save message to database
-              await saveSpeakingMessage(
+              const savedMessage = await saveSpeakingMessage(
                 currentSessionId,
                 role === "user" ? "user" : "ai",
                 content,
@@ -353,6 +353,14 @@ export function AISpeakingCoach() {
                 { index, timestamp: timestamps.get(index) }
               );
               console.log(`[AISpeakingCoach] Message saved: ${role} - ${content.substring(0, 50)}...`);
+
+              // Debug logging for audio URL
+              console.log('[AISpeakingCoach DEBUG] Message saved with audio:', {
+                role,
+                hasAudio: !!audioUrl,
+                audioUrl: audioUrl ? audioUrl.substring(0, 80) + '...' : 'none',
+                messageId: savedMessage.messageId
+              });
             } catch (error) {
               console.error("[AISpeakingCoach] Failed to save message to database:", error);
             }

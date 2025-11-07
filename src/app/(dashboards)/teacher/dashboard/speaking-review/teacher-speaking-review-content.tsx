@@ -5,32 +5,50 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Calendar,
   Clock,
   MessageSquare,
-  ChevronRight,
-  Download,
-  Trash2,
-  ArrowLeft,
+  Users,
+  Activity,
   Play,
-  Pause,
   Volume2,
+  User,
+  ArrowLeft,
 } from "lucide-react";
-import { getUserSpeakingSessions, getSpeakingSession, deleteSpeakingSession } from "@/actions/speaking-sessions";
+import {
+  getClassStudentsSpeaking,
+  getStudentSpeakingSessions,
+  getStudentSpeakingSession,
+} from "@/actions/teacher-speaking-access";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import Link from "next/link";
+
+interface ClassData {
+  id: bigint;
+  name: string;
+}
+
+interface StudentData {
+  studentId: string;
+  stackAuthId: string;
+  name: string | null;
+  email: string;
+  totalSessions: number;
+  completedSessions: number;
+  totalDuration: number;
+  lastPractice: Date | null;
+  classes: string[];
+}
 
 interface SpeakingSession {
   id: bigint;
@@ -57,120 +75,88 @@ interface SessionMessage {
   assessment: any | null;
 }
 
-export function SpeakingHistoryContent() {
-  const [sessions, setSessions] = useState<SpeakingSession[]>([]);
+export function TeacherSpeakingReviewContent() {
+  // State
+  const [classes, setClasses] = useState<ClassData[]>([]);
+  const [students, setStudents] = useState<StudentData[]>([]);
+  const [selectedStudent, setSelectedStudent] = useState<StudentData | null>(null);
+  const [studentSessions, setStudentSessions] = useState<SpeakingSession[]>([]);
   const [selectedSession, setSelectedSession] = useState<{
     session: SpeakingSession;
     messages: SessionMessage[];
+    student: { id: string; name: string | null; email: string };
   } | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
-  const [isDeletingSession, setIsDeletingSession] = useState<string | null>(null);
 
-  // Load sessions on mount
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingSessions, setIsLoadingSessions] = useState(false);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+
+  // Load initial data on mount
   useEffect(() => {
-    loadSessions();
+    loadClassStudents();
   }, []);
 
-  const loadSessions = async () => {
+  const loadClassStudents = async () => {
     try {
       setIsLoading(true);
-      const data = await getUserSpeakingSessions(20, 0);
-      setSessions(data as any);
+      const data = await getClassStudentsSpeaking();
+      setClasses(data.classes as any);
+      setStudents(data.students as any);
     } catch (error) {
-      console.error("Failed to load sessions:", error);
-      toast.error("Failed to load speaking history");
+      console.error("Failed to load class students:", error);
+      toast.error("Failed to load student data");
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleStudentSelect = async (student: StudentData) => {
+    try {
+      setSelectedStudent(student);
+      setIsLoadingSessions(true);
+      setSelectedSession(null);
+
+      const sessions = await getStudentSpeakingSessions(student.stackAuthId);
+      setStudentSessions(sessions as any);
+    } catch (error) {
+      console.error("Failed to load student sessions:", error);
+      toast.error("Failed to load student speaking sessions");
+    } finally {
+      setIsLoadingSessions(false);
+    }
+  };
+
   const loadSessionDetails = async (sessionId: string) => {
     try {
-      setIsLoadingMessages(true);
-      const data = await getSpeakingSession(sessionId);
+      setIsLoadingDetails(true);
+      const data = await getStudentSpeakingSession(sessionId);
       setSelectedSession(data as any);
 
-      // Debug logging for audio URLs
-      console.log('[SpeakingHistory DEBUG] Session loaded:', {
+      // Debug log for teacher view
+      console.log('[Teacher Review DEBUG] Session loaded:', {
         sessionId,
+        studentName: data.student.name,
         messageCount: data.messages.length,
         messagesWithAudio: data.messages.filter((m: any) => m.audioUrl).length,
-        audioUrls: data.messages.map((m: any) => ({
-          speaker: m.speaker,
-          hasAudio: !!m.audioUrl,
-          url: m.audioUrl ? m.audioUrl.substring(0, 50) + '...' : 'none'
-        }))
       });
     } catch (error) {
       console.error("Failed to load session details:", error);
       toast.error("Failed to load session details");
     } finally {
-      setIsLoadingMessages(false);
+      setIsLoadingDetails(false);
     }
   };
 
-  const handleDeleteSession = async (sessionId: string) => {
-    if (!confirm("Are you sure you want to delete this session? This action cannot be undone.")) {
-      return;
-    }
-
-    try {
-      setIsDeletingSession(sessionId);
-      await deleteSpeakingSession(sessionId);
-
-      // Remove from local state
-      setSessions(prev => prev.filter(s => s.sessionId !== sessionId));
-
-      // Clear selected session if it was deleted
-      if (selectedSession?.session.sessionId === sessionId) {
-        setSelectedSession(null);
-      }
-
-      toast.success("Session deleted successfully");
-    } catch (error) {
-      console.error("Failed to delete session:", error);
-      toast.error("Failed to delete session");
-    } finally {
-      setIsDeletingSession(null);
-    }
-  };
-
-  const exportTranscript = (session: SpeakingSession, messages: SessionMessage[]) => {
-    const transcript = messages
-      .map(msg => `${msg.speaker === "user" ? "You" : "AI Coach"}: ${msg.content}`)
-      .join("\n\n");
-
-    const metadata = `Speaking Practice Session
-Date: ${format(new Date(session.startedAt), "PPP")}
-Duration: ${session.duration ? `${Math.floor(session.duration / 60)}m ${session.duration % 60}s` : "N/A"}
-CEFR Level: ${session.cefrLevel}
-Topic: ${session.topic || "General Conversation"}
-Total Turns: ${session.totalTurns}
-
----
-
-`;
-
-    const fullContent = metadata + transcript;
-    const blob = new Blob([fullContent], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `speaking-session-${format(new Date(session.startedAt), "yyyy-MM-dd-HHmm")}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}m ${secs}s`;
   };
 
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-10 w-32" />
-        </div>
+        <Skeleton className="h-8 w-64" />
         <div className="grid gap-4">
           {[...Array(3)].map((_, i) => (
             <Skeleton key={i} className="h-32 w-full" />
@@ -185,59 +171,112 @@ Total Turns: ${session.totalTurns}
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Speaking History</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Student Speaking Review</h1>
           <p className="text-muted-foreground">
-            Review your past AI Speaking Coach conversations
+            Monitor and review student AI speaking practice sessions
           </p>
         </div>
-        <Link href="/student/dashboard/speaking">
-          <Button variant="outline" className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Practice
-          </Button>
-        </Link>
+        <Badge variant="outline" className="gap-2">
+          <Users className="h-4 w-4" />
+          {students.length} Students
+        </Badge>
       </div>
 
-      {/* Sessions List */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Session List Column */}
+      {/* Main Content Grid */}
+      <div className="grid gap-6 lg:grid-cols-4">
+        {/* Student List */}
         <div className="lg:col-span-1">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Past Sessions</CardTitle>
+              <CardTitle className="text-lg">Students</CardTitle>
               <CardDescription>
-                Select a session to view the conversation
+                Select a student to view their speaking sessions
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
               <ScrollArea className="h-[600px]">
-                {sessions.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center p-8 text-center">
-                    <DotLottieReact
-                      src="/animations/speaking.lottie"
-                      loop
-                      autoplay
-                      style={{ width: 150, height: 150 }}
-                    />
-                    <p className="text-sm text-muted-foreground mt-4">
-                      No speaking sessions yet. Start practicing to see your history here!
-                    </p>
+                {students.length === 0 ? (
+                  <div className="p-8 text-center text-sm text-muted-foreground">
+                    No students found in your classes
+                  </div>
+                ) : (
+                  <div className="p-4 space-y-2">
+                    {students.map((student) => (
+                      <button
+                        key={student.studentId}
+                        onClick={() => handleStudentSelect(student)}
+                        className={`w-full text-left p-3 rounded-lg border transition-all hover:bg-muted/50 ${
+                          selectedStudent?.studentId === student.studentId
+                            ? "bg-muted border-primary"
+                            : ""
+                        }`}
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <User className="h-4 w-4" />
+                            <span className="font-medium text-sm">
+                              {student.name || "Unnamed Student"}
+                            </span>
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {student.totalSessions} sessions
+                            {student.totalDuration > 0 && (
+                              <span> • {formatDuration(student.totalDuration)}</span>
+                            )}
+                          </div>
+                          {student.lastPractice && (
+                            <div className="text-xs text-muted-foreground">
+                              Last: {format(new Date(student.lastPractice), "MMM d")}
+                            </div>
+                          )}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Session List */}
+        <div className="lg:col-span-1">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Sessions</CardTitle>
+              <CardDescription>
+                {selectedStudent
+                  ? `${selectedStudent.name}'s practice sessions`
+                  : "Select a student to view sessions"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              <ScrollArea className="h-[600px]">
+                {!selectedStudent ? (
+                  <div className="p-8 text-center text-sm text-muted-foreground">
+                    Select a student to view their sessions
+                  </div>
+                ) : isLoadingSessions ? (
+                  <div className="p-4 space-y-3">
+                    {[...Array(3)].map((_, i) => (
+                      <Skeleton key={i} className="h-20 w-full" />
+                    ))}
+                  </div>
+                ) : studentSessions.length === 0 ? (
+                  <div className="p-8 text-center text-sm text-muted-foreground">
+                    No speaking sessions found for this student
                   </div>
                 ) : (
                   <div className="p-4 space-y-3">
-                    {sessions.map((session) => (
+                    {studentSessions.map((session) => (
                       <div
                         key={session.sessionId}
-                        onClick={() => {
-                          if (isDeletingSession !== session.sessionId) {
-                            loadSessionDetails(session.sessionId);
-                          }
-                        }}
-                        className={`w-full text-left p-4 rounded-lg border transition-all cursor-pointer hover:bg-muted/50 ${
+                        onClick={() => loadSessionDetails(session.sessionId)}
+                        className={`w-full text-left p-3 rounded-lg border transition-all cursor-pointer hover:bg-muted/50 ${
                           selectedSession?.session.sessionId === session.sessionId
                             ? "bg-muted border-primary"
                             : ""
-                        } ${isDeletingSession === session.sessionId ? "opacity-50 cursor-not-allowed" : ""}`}
+                        }`}
                       >
                         <div className="space-y-2">
                           <div className="flex items-start justify-between">
@@ -269,32 +308,10 @@ Total Turns: ${session.totalTurns}
                             {session.duration && (
                               <span className="flex items-center gap-1">
                                 <Clock className="h-3 w-3" />
-                                {Math.floor(session.duration / 60)}m
+                                {formatDuration(session.duration)}
                               </span>
                             )}
                           </div>
-
-                          {/* Delete button */}
-                          {isDeletingSession === session.sessionId ? (
-                            <div className="flex justify-end">
-                              <span className="text-xs text-muted-foreground">Deleting...</span>
-                            </div>
-                          ) : (
-                            <div className="flex justify-end gap-2 mt-2">
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-7 text-xs"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteSession(session.sessionId);
-                                }}
-                              >
-                                <Trash2 className="h-3 w-3 mr-1" />
-                                Delete
-                              </Button>
-                            </div>
-                          )}
                         </div>
                       </div>
                     ))}
@@ -305,53 +322,22 @@ Total Turns: ${session.totalTurns}
           </Card>
         </div>
 
-        {/* Conversation Detail Column */}
+        {/* Conversation Detail */}
         <div className="lg:col-span-2">
           <Card className="h-full">
             <CardHeader>
-              {selectedSession ? (
-                <div className="space-y-2">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-lg">
-                        {selectedSession.session.topic || "General Conversation"}
-                      </CardTitle>
-                      <CardDescription className="flex items-center gap-4 mt-2">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          {format(new Date(selectedSession.session.startedAt), "PPP")}
-                        </span>
-                        {selectedSession.session.duration && (
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-4 w-4" />
-                            {Math.floor(selectedSession.session.duration / 60)}m {selectedSession.session.duration % 60}s
-                          </span>
-                        )}
-                      </CardDescription>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() =>
-                        exportTranscript(selectedSession.session, selectedSession.messages)
-                      }
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Export
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <CardTitle className="text-lg">Select a Session</CardTitle>
-                  <CardDescription>
-                    Choose a session from the list to view the conversation
-                  </CardDescription>
-                </>
-              )}
+              <CardTitle className="text-lg">Conversation Detail</CardTitle>
+              <CardDescription>
+                {selectedSession
+                  ? `${selectedSession.session.topic || "General Conversation"} - ${format(
+                      new Date(selectedSession.session.startedAt),
+                      "PPP"
+                    )}`
+                  : "Select a session to view the conversation"}
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              {isLoadingMessages ? (
+              {isLoadingDetails ? (
                 <div className="space-y-4">
                   {[...Array(5)].map((_, i) => (
                     <Skeleton key={i} className="h-20 w-full" />
@@ -376,7 +362,7 @@ Total Turns: ${session.totalTurns}
                         >
                           <div className="flex items-center gap-2 mb-2">
                             <span className="text-xs font-medium">
-                              {message.speaker === "user" ? "You" : "AI Coach"}
+                              {message.speaker === "user" ? selectedStudent?.name || "Student" : "AI Coach"}
                             </span>
                             <span className="text-xs opacity-70">
                               {format(new Date(message.timestamp), "h:mm a")}
@@ -384,11 +370,11 @@ Total Turns: ${session.totalTurns}
                           </div>
                           <p className="text-sm leading-relaxed">{message.content}</p>
 
-                          {/* Audio player if available */}
+                          {/* Audio player if available - CRITICAL FOR STUDENT AUDIO */}
                           {message.audioUrl && (
                             <div className="mt-3 pt-3 border-t">
                               <div className="flex items-center gap-3">
-                                <Volume2 className="h-4 w-4 text-muted-foreground" />
+                                <Volume2 className="h-4 w-4" />
                                 <audio
                                   controls
                                   className="max-w-full h-8"
@@ -422,22 +408,6 @@ Total Turns: ${session.totalTurns}
                                     </Badge>
                                   </div>
                                 )}
-                                {message.assessment.grammarScore !== null && (
-                                  <div>
-                                    <span className="text-muted-foreground">Grammar:</span>{" "}
-                                    <Badge variant="outline" className="ml-1">
-                                      {message.assessment.grammarScore}/100
-                                    </Badge>
-                                  </div>
-                                )}
-                                {message.assessment.vocabularyScore !== null && (
-                                  <div>
-                                    <span className="text-muted-foreground">Vocabulary:</span>{" "}
-                                    <Badge variant="outline" className="ml-1">
-                                      {message.assessment.vocabularyScore}/100
-                                    </Badge>
-                                  </div>
-                                )}
                               </div>
                               {message.assessment.feedback && (
                                 <p className="text-xs text-muted-foreground mt-2">
@@ -460,7 +430,7 @@ Total Turns: ${session.totalTurns}
                     style={{ width: 200, height: 200 }}
                   />
                   <p className="text-muted-foreground mt-4">
-                    Select a session to view the conversation details
+                    Select a session to review the conversation and listen to student recordings
                   </p>
                 </div>
               )}
