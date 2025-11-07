@@ -129,6 +129,7 @@ export function AISpeakingCoach() {
   const userAudioChunksRef = useRef<{ [messageIndex: number]: Blob[] }>({});
   const aiAudioBuffersRef = useRef<{ [messageIndex: number]: ArrayBuffer[] }>({});
   const isRecordingRef = useRef(false);
+  const currentMessageIndexRef = useRef(0);
 
   // Auto-scroll to bottom
   const scrollToBottom = useCallback(() => {
@@ -176,6 +177,7 @@ export function AISpeakingCoach() {
       setMessages([]);
       messageTimestampsRef.current.clear();
       savedMessagesRef.current.clear();
+      currentMessageIndexRef.current = 0;
 
       // Create a new speaking session in database
       const dbSession = await createSpeakingSession("B2", "AI Speaking Practice");
@@ -243,14 +245,18 @@ export function AISpeakingCoach() {
       };
 
       // Listen for AI audio output events
-      session.on("response.audio_buffer.delta", (event: any) => {
-        // Capture AI audio chunks
-        if (event.data) {
-          const messageIndex = messages.length - 1; // AI response is the latest message
+      // Note: The OpenAI Realtime API doesn't directly expose audio buffers in the current SDK version
+      // AI audio recording will be implemented in a future update when the SDK supports it
+
+      // Alternative: Try to capture audio through the transport_event
+      session.on("transport_event", (event) => {
+        // Check if this is an audio-related event for AI responses
+        if (event.type === "response.audio.delta" && (event as any).data) {
+          const messageIndex = currentMessageIndexRef.current;
           if (!aiAudioBuffersRef.current[messageIndex]) {
             aiAudioBuffersRef.current[messageIndex] = [];
           }
-          aiAudioBuffersRef.current[messageIndex].push(event.data);
+          aiAudioBuffersRef.current[messageIndex].push((event as any).data);
           console.log(`[AISpeakingCoach] AI audio chunk captured for message ${messageIndex}`);
         }
       });
@@ -298,10 +304,13 @@ export function AISpeakingCoach() {
                   const audioBlob = new Blob(userAudioChunksRef.current[index], { type: 'audio/webm' });
                   const fileName = `user_${Date.now()}.webm`;
                   const userId = user?.id || "anonymous";
-                  const filePath = `audio/speaking/${userId}/${currentSessionId}/${fileName}`;
 
-                  const uploadedUrl = await uploadAudioFile(audioBlob, filePath, 90);
-                  audioUrl = uploadedUrl;
+                  const audioFileInfo = await uploadAudioFile(audioBlob, fileName, {
+                    fileType: 'speaking_user',
+                    userId,
+                    sessionId: currentSessionId,
+                  });
+                  audioUrl = audioFileInfo.blobUrl;
                   console.log(`[AISpeakingCoach] User audio uploaded: ${audioUrl}`);
 
                   // Clear the chunks after upload
@@ -317,10 +326,12 @@ export function AISpeakingCoach() {
                   // Convert ArrayBuffers to Blob
                   const audioBlob = new Blob(aiAudioBuffersRef.current[index], { type: 'audio/mp3' });
                   const fileName = `ai_${Date.now()}.mp3`;
-                  const filePath = `audio/speaking-ai/${currentSessionId}/${fileName}`;
 
-                  const uploadedUrl = await uploadAudioFile(audioBlob, filePath, 30);
-                  audioUrl = uploadedUrl;
+                  const audioFileInfo = await uploadAudioFile(audioBlob, fileName, {
+                    fileType: 'speaking_ai',
+                    sessionId: currentSessionId,
+                  });
+                  audioUrl = audioFileInfo.blobUrl;
                   console.log(`[AISpeakingCoach] AI audio uploaded: ${audioUrl}`);
 
                   // Clear the buffers after upload
@@ -359,7 +370,9 @@ export function AISpeakingCoach() {
           // Start recording user audio
           if (mediaRecorderRef.current && mediaRecorderRef.current.state === "inactive") {
             const chunks: Blob[] = [];
-            const messageIndex = messages.length; // Current message index
+            // Increment message index for the new user message
+            currentMessageIndexRef.current += 1;
+            const messageIndex = currentMessageIndexRef.current;
 
             mediaRecorderRef.current.ondataavailable = (e) => {
               if (e.data.size > 0) {
@@ -463,6 +476,7 @@ export function AISpeakingCoach() {
       userAudioChunksRef.current = {};
       aiAudioBuffersRef.current = {};
       isRecordingRef.current = false;
+      currentMessageIndexRef.current = 0;
 
       // Clear timestamp map
       messageTimestampsRef.current.clear();
