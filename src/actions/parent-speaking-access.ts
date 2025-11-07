@@ -19,9 +19,15 @@ export async function getChildrenSpeakingStats() {
     }
 
     try {
-      // Get all children linked to this parent
+      // userId is Stack Auth ID, we need the database ID
+      // enhancedUser already contains the database user record
+      if (!enhancedUser) {
+        throw new Error("User record not found");
+      }
+
+      // Get all children linked to this parent (use enhancedUser.id which is the database ID)
       const relationships = await db.query.parentStudentRelationships.findMany({
-        where: eq(schema.parentStudentRelationships.parentId, BigInt(userId)),
+        where: eq(schema.parentStudentRelationships.parentId, enhancedUser.id),
       });
 
       if (relationships.length === 0) {
@@ -143,7 +149,7 @@ export async function getChildSpeakingSessions(
       // Check parent-child relationship
       const relationship = await db.query.parentStudentRelationships.findFirst({
         where: and(
-          eq(schema.parentStudentRelationships.parentId, BigInt(userId)),
+          eq(schema.parentStudentRelationships.parentId, enhancedUser.id),
           eq(schema.parentStudentRelationships.studentId, child.id)
         ),
       });
@@ -233,7 +239,7 @@ export async function getChildSpeakingSession(sessionId: string) {
       // Check parent-child relationship
       const relationship = await db.query.parentStudentRelationships.findFirst({
         where: and(
-          eq(schema.parentStudentRelationships.parentId, BigInt(userId)),
+          eq(schema.parentStudentRelationships.parentId, enhancedUser.id),
           eq(schema.parentStudentRelationships.studentId, child.id)
         ),
       });
@@ -320,7 +326,7 @@ export async function getChildSpeakingProgress(
       // Check parent-child relationship
       const relationship = await db.query.parentStudentRelationships.findFirst({
         where: and(
-          eq(schema.parentStudentRelationships.parentId, BigInt(userId)),
+          eq(schema.parentStudentRelationships.parentId, enhancedUser.id),
           eq(schema.parentStudentRelationships.studentId, child.id)
         ),
       });

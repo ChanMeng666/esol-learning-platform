@@ -19,10 +19,15 @@ export async function getClassStudentsSpeaking() {
     }
 
     try {
+      // Ensure enhancedUser exists
+      if (!enhancedUser) {
+        throw new Error("User record not found");
+      }
+
       // Get all classes taught by this teacher
       const teacherClasses = await db.query.classes.findMany({
         where: and(
-          eq(schema.classes.teacherId, BigInt(userId)),
+          eq(schema.classes.teacherId, enhancedUser.id),
           eq(schema.classes.organizationId, organizationId),
           eq(schema.classes.isActive, true)
         ),
@@ -131,7 +136,7 @@ export async function getStudentSpeakingSessions(
       // Get teacher's classes
       const teacherClasses = await db.query.classes.findMany({
         where: and(
-          eq(schema.classes.teacherId, BigInt(userId)),
+          eq(schema.classes.teacherId, enhancedUser.id),
           eq(schema.classes.organizationId, organizationId),
           eq(schema.classes.isActive, true)
         ),
@@ -233,7 +238,7 @@ export async function getStudentSpeakingSession(sessionId: string) {
       // Get teacher's classes
       const teacherClasses = await db.query.classes.findMany({
         where: and(
-          eq(schema.classes.teacherId, BigInt(userId)),
+          eq(schema.classes.teacherId, enhancedUser.id),
           eq(schema.classes.organizationId, organizationId),
           eq(schema.classes.isActive, true)
         ),
@@ -318,7 +323,7 @@ export async function getClassSpeakingStats(classId: bigint) {
       const classRecord = await db.query.classes.findFirst({
         where: and(
           eq(schema.classes.id, classId),
-          eq(schema.classes.teacherId, BigInt(userId)),
+          eq(schema.classes.teacherId, enhancedUser.id),
           eq(schema.classes.organizationId, organizationId)
         ),
       });
