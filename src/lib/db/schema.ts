@@ -1368,6 +1368,113 @@ export const invitationUsages = pgTable("invitation_usages", {
 }));
 
 // ============================================================================
+// AI SPEAKING COACH SESSIONS
+// ============================================================================
+
+/**
+ * Speaking Sessions Table
+ * Stores AI Speaking Coach conversation sessions
+ */
+export const speakingSessions = pgTable("speaking_sessions", {
+  id: bigint("id", { mode: "bigint" }).primaryKey().generatedByDefaultAsIdentity(),
+  sessionId: text("session_id").notNull().unique(), // Unique session identifier
+  organizationId: bigint("organization_id", { mode: "bigint" }).notNull(), // FK to organizations
+  userId: text("user_id").notNull(), // Stack Auth user ID
+
+  // Session configuration
+  cefrLevel: text("cefr_level").notNull(), // A1, A2, B1, B2, C1, C2
+  topic: text("topic"), // Conversation topic/theme
+
+  // Session timing
+  startedAt: timestamp("started_at", { withTimezone: true }).defaultNow().notNull(),
+  endedAt: timestamp("ended_at", { withTimezone: true }),
+  duration: integer("duration"), // Total duration in seconds
+
+  // Session statistics
+  totalTurns: integer("total_turns").notNull().default(0),
+  totalUserWords: integer("total_user_words").notNull().default(0),
+  totalAiWords: integer("total_ai_words").notNull().default(0),
+
+  // Session status
+  isCompleted: boolean("is_completed").notNull().default(false),
+
+  // Metadata
+  metadata: jsonb("metadata"), // Additional session context
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+}, (table) => ({
+  sessionIdIdx: index("speaking_sessions_session_id_idx").on(table.sessionId),
+  userIdIdx: index("speaking_sessions_user_id_idx").on(table.userId),
+  organizationIdIdx: index("speaking_sessions_organization_id_idx").on(table.organizationId),
+  startedAtIdx: index("speaking_sessions_started_at_idx").on(table.startedAt),
+}));
+
+/**
+ * Speaking Messages Table
+ * Stores individual messages within speaking sessions
+ */
+export const speakingMessages = pgTable("speaking_messages", {
+  id: bigint("id", { mode: "bigint" }).primaryKey().generatedByDefaultAsIdentity(),
+  messageId: text("message_id").notNull().unique(), // Unique message identifier
+  sessionId: text("session_id").notNull(), // FK to speaking_sessions.sessionId
+  organizationId: bigint("organization_id", { mode: "bigint" }).notNull(), // FK to organizations
+
+  // Message content
+  speaker: text("speaker").notNull(), // 'user' or 'ai'
+  content: text("content").notNull(), // Text content of the message
+
+  // Audio data
+  audioUrl: text("audio_url"), // URL to audio file in Vercel Blob
+  audioFileId: bigint("audio_file_id", { mode: "bigint" }), // FK to audio_files.id
+  transcriptionId: bigint("transcription_id", { mode: "bigint" }), // FK to transcriptions.id
+
+  // Timing
+  timestamp: timestamp("timestamp", { withTimezone: true }).defaultNow().notNull(),
+  audioDuration: integer("audio_duration"), // Audio duration in seconds
+
+  // Metadata
+  metadata: jsonb("metadata"), // Additional message context
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+}, (table) => ({
+  sessionIdIdx: index("speaking_messages_session_id_idx").on(table.sessionId),
+  messageIdIdx: index("speaking_messages_message_id_idx").on(table.messageId),
+  organizationIdIdx: index("speaking_messages_organization_id_idx").on(table.organizationId),
+  timestampIdx: index("speaking_messages_timestamp_idx").on(table.timestamp),
+  speakerIdx: index("speaking_messages_speaker_idx").on(table.speaker),
+}));
+
+/**
+ * Speaking Assessments Table
+ * Stores AI assessments for user messages
+ */
+export const speakingAssessments = pgTable("speaking_assessments", {
+  id: bigint("id", { mode: "bigint" }).primaryKey().generatedByDefaultAsIdentity(),
+  assessmentId: text("assessment_id").notNull().unique(), // Unique assessment identifier
+  messageId: text("message_id").notNull(), // FK to speaking_messages.messageId
+  organizationId: bigint("organization_id", { mode: "bigint" }).notNull(), // FK to organizations
+
+  // Assessment scores (0-100)
+  pronunciationScore: integer("pronunciation_score"),
+  fluencyScore: integer("fluency_score"),
+  grammarScore: integer("grammar_score"),
+  vocabularyScore: integer("vocabulary_score"),
+  overallScore: integer("overall_score"),
+
+  // Detailed feedback
+  feedback: text("feedback"), // Overall feedback text
+  suggestions: jsonb("suggestions"), // Array of improvement suggestions
+  errors: jsonb("errors"), // Detected errors with corrections
+
+  // Metadata
+  assessmentModel: text("assessment_model"), // AI model used for assessment
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+}, (table) => ({
+  messageIdIdx: index("speaking_assessments_message_id_idx").on(table.messageId),
+  assessmentIdIdx: index("speaking_assessments_assessment_id_idx").on(table.assessmentId),
+  organizationIdIdx: index("speaking_assessments_organization_id_idx").on(table.organizationId),
+}));
+
+// ============================================================================
 // SCHEMA EXPORT
 // ============================================================================
 
@@ -1441,4 +1548,9 @@ export const schema = {
   // Invitation & Registration System
   invitationCodes,
   invitationUsages,
+
+  // AI Speaking Coach Sessions
+  speakingSessions,
+  speakingMessages,
+  speakingAssessments,
 };

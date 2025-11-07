@@ -10,7 +10,7 @@ This document provides a comprehensive overview of the NZCEL Prep Platform's dat
 - **ORM**: Drizzle ORM v0.44.6
 - **Authentication**: Stack Auth v2.8.43
 - **File Storage**: Vercel Blob v2.0.0
-- **Total Tables**: **44 tables** across 13 categories
+- **Total Tables**: **47 tables** across 14 categories
 - **Architecture**: Multi-tenant with organization-based data isolation
 - **Data Isolation**: All tables include `organization_id` column for tenant separation
 - **Server Actions**: 60+ functions with complete multi-tenant support
@@ -42,7 +42,7 @@ This document provides a comprehensive overview of the NZCEL Prep Platform's dat
 ```mermaid
 mindmap
   root((ESOL Platform Database
-44 Tables - Multi-Tenant))
+47 Tables - Multi-Tenant))
     Organizations & User Management
       organizations
       users
@@ -71,6 +71,10 @@ mindmap
     Conversation Practice
       conversation_sessions
       conversation_turns
+    AI Speaking Coach
+      speaking_sessions
+      speaking_messages
+      speaking_assessments
     Education & Class Management
       assignments
       assignment_submissions
@@ -336,6 +340,56 @@ erDiagram
         timestamp created_at
     }
 
+    %% AI Speaking Coach
+    speaking_sessions {
+        bigint id PK
+        text session_id UK
+        bigint organization_id FK
+        text user_id FK
+        text cefr_level
+        text topic
+        timestamp started_at
+        timestamp ended_at
+        int duration
+        int total_turns
+        int total_user_words
+        int total_ai_words
+        bool is_completed
+        jsonb metadata
+    }
+
+    speaking_messages {
+        bigint id PK
+        text message_id UK
+        text session_id FK
+        bigint organization_id FK
+        text speaker
+        text content
+        text audio_url
+        bigint audio_file_id FK
+        bigint transcription_id FK
+        timestamp timestamp
+        int audio_duration
+        jsonb metadata
+    }
+
+    speaking_assessments {
+        bigint id PK
+        text assessment_id UK
+        text message_id FK
+        bigint organization_id FK
+        int pronunciation_score
+        int fluency_score
+        int grammar_score
+        int vocabulary_score
+        int overall_score
+        text feedback
+        jsonb suggestions
+        jsonb errors
+        text assessment_model
+        timestamp created_at
+    }
+
     %% Relationships
     copilot_conversations ||--o{ copilot_messages : "has many"
     question_audio_cache ||--o| audio_files : "references"
@@ -348,6 +402,10 @@ erDiagram
     conversation_sessions ||--o{ conversation_turns : "has many"
     conversation_turns ||--o| audio_files : "references"
     conversation_turns ||--o| transcriptions : "references"
+    speaking_sessions ||--o{ speaking_messages : "has many"
+    speaking_messages ||--o| speaking_assessments : "may have"
+    speaking_messages ||--o| audio_files : "references"
+    speaking_messages ||--o| transcriptions : "references"
 
     %% CEFR & Multi-Module Support
     cefr_progress {
@@ -622,7 +680,86 @@ Individual turns in a conversation session.
 
 ---
 
-### 6. CEFR Progress & Multi-Module Support
+### 6. AI Speaking Coach Sessions (NEW)
+
+#### `speaking_sessions`
+Stores AI Speaking Coach conversation sessions using OpenAI Realtime API.
+
+**Key Fields:**
+- `id` (bigint, PK): Auto-generated primary key
+- `session_id` (text, unique): Unique session identifier (sp_xxx format)
+- `organization_id` (bigint, FK): Multi-tenant organization reference
+- `user_id` (text): Stack Auth user identifier
+- `cefr_level`: Target CEFR level (A1-C2)
+- `topic`: Conversation topic/theme
+- Session timing:
+  - `started_at`, `ended_at`: Session timestamps
+  - `duration`: Total session duration in seconds
+- Statistics:
+  - `total_turns`: Number of conversation turns
+  - `total_user_words`: Word count from user
+  - `total_ai_words`: Word count from AI
+- `is_completed`: Session completion status
+- `metadata` (jsonb): Additional session context
+
+**Purpose:** Tracks AI Speaking Coach sessions with full conversation analytics.
+
+**Indexes:** `session_id`, `user_id`, `organization_id`, `started_at`
+
+---
+
+#### `speaking_messages`
+Stores individual messages within speaking sessions.
+
+**Key Fields:**
+- `id` (bigint, PK): Auto-generated primary key
+- `message_id` (text, unique): Unique message identifier (msg_xxx format)
+- `session_id` (text, FK): Parent speaking session
+- `organization_id` (bigint, FK): Multi-tenant organization reference
+- `speaker`: 'user' | 'ai'
+- `content`: Text content of the message
+- Audio data:
+  - `audio_url`: URL to audio file in Vercel Blob
+  - `audio_file_id` (FK): Reference to audio_files table
+  - `transcription_id` (FK): Reference to transcriptions table
+  - `audio_duration`: Duration in seconds
+- `timestamp`: Message timestamp
+- `metadata` (jsonb): Additional message context
+
+**Purpose:** Provides complete conversation history with audio references.
+
+**Indexes:** `session_id`, `message_id`, `organization_id`, `timestamp`, `speaker`
+
+---
+
+#### `speaking_assessments`
+Stores AI assessments for user messages.
+
+**Key Fields:**
+- `id` (bigint, PK): Auto-generated primary key
+- `assessment_id` (text, unique): Unique assessment identifier (asmt_xxx format)
+- `message_id` (text, FK): Reference to speaking_messages
+- `organization_id` (bigint, FK): Multi-tenant organization reference
+- Assessment scores (0-100):
+  - `pronunciation_score`
+  - `fluency_score`
+  - `grammar_score`
+  - `vocabulary_score`
+  - `overall_score`
+- Feedback data:
+  - `feedback`: Overall feedback text
+  - `suggestions` (jsonb): Array of improvement suggestions
+  - `errors` (jsonb): Detected errors with corrections
+- `assessment_model`: AI model used (e.g., 'gpt-4')
+- `created_at`: Assessment timestamp
+
+**Purpose:** Provides detailed AI-powered feedback on speaking performance.
+
+**Indexes:** `message_id`, `assessment_id`, `organization_id`
+
+---
+
+### 7. CEFR Progress & Multi-Module Support
 
 #### `cefr_progress`
 Tracks user progress for CEFR-based general English practice (parallel to NZCEL progress).
@@ -666,7 +803,7 @@ Tracks overall usage statistics for each learning module/path.
 All database operations are performed through Next.js Server Actions with **multi-tenant support**, ensuring security, type safety, and complete data isolation.
 
 **Key Features**:
-- 60+ Server Actions across 19 files
+- 67+ Server Actions across 20 files
 - All actions enforce organization-level data isolation
 - Automatic `organizationId` injection via `fetchWithDrizzle()`
 - Type-safe database operations with Drizzle ORM
@@ -677,11 +814,12 @@ graph TB
         A[React Component]
     end
 
-    subgraph "Server Actions (58+ Functions)"
+    subgraph "Server Actions (67+ Functions)"
         B[audio.ts]
         C[recordings.ts]
         D[copilot-chat.ts]
         E[sessions.ts]
+        SS[speaking-sessions.ts]
         F[user-progress.ts]
         G[cefr-progress.ts]
         H[module-stats.ts]
@@ -696,7 +834,7 @@ graph TB
     end
 
     subgraph "External Services"
-        N[Neon PostgreSQL<br/>43 Tables]
+        N[Neon PostgreSQL<br/>47 Tables]
         O[Vercel Blob]
         P[OpenAI APIs]
     end
@@ -705,6 +843,7 @@ graph TB
     A -->|calls| C
     A -->|calls| D
     A -->|calls| E
+    A -->|calls| SS
     A -->|calls| F
     A -->|calls| G
     A -->|calls| H
@@ -714,6 +853,7 @@ graph TB
     C --> J
     D --> J
     E --> J
+    SS --> J
     F --> J
     G --> J
     H --> J
@@ -734,6 +874,7 @@ graph TB
     style C fill:#a855f7,stroke:#7c3aed,color:#fff
     style D fill:#a855f7,stroke:#7c3aed,color:#fff
     style E fill:#a855f7,stroke:#7c3aed,color:#fff
+    style SS fill:#a855f7,stroke:#7c3aed,color:#fff
     style F fill:#a855f7,stroke:#7c3aed,color:#fff
     style G fill:#a855f7,stroke:#7c3aed,color:#fff
     style H fill:#a855f7,stroke:#7c3aed,color:#fff
@@ -749,12 +890,13 @@ graph TB
 | **`actions/recordings.ts`** (7 functions) | `saveUserRecording()`, `getUserRecordings()`, `getRecordingById()`, `getSessionRecordings()`, `saveTranscription()`, `getUserRecordingsWithFilters()`, `deleteUserRecording()` | User voice recording management and retrieval | ✅ All scoped |
 | **`actions/copilot-chat.ts`** (8 functions) | `getOrCreateConversation()`, `saveChatMessage()`, `getChatHistory()`, `getUserConversations()`, `getConversationWithMessages()`, `getConversationsByContext()`, `deleteConversation()`, `updateConversationTitle()` | CopilotKit chat history persistence | ✅ All scoped |
 | **`actions/sessions.ts`** (12 functions) | `createPracticeSession()`, `saveSessionAnswer()`, `completePracticeSession()`, `getPracticeSessionWithAnswers()`, `getRecentPracticeSessions()`, `createConversationSession()`, `saveConversationTurn()`, `completeConversationSession()`, `getConversationSessionWithTurns()`, `getRecentConversationSessions()`, `getPracticeSessionsWithFilters()`, `getConversationSessionsWithFilters()` | Practice and conversation session tracking | ✅ All scoped |
+| **`actions/speaking-sessions.ts`** (7 functions) | `createSpeakingSession()`, `saveSpeakingMessage()`, `saveSpeakingAssessment()`, `getSpeakingSession()`, `getUserSpeakingSessions()`, `completeSpeakingSession()`, `deleteSpeakingSession()` | AI Speaking Coach session management | ✅ All scoped |
 | **`actions/user-progress.ts`** (11 functions) | `getUserProgress()`, `updateSkillProgress()`, `submitAnswer()`, `awardBadge()`, `getAchievements()`, `markAchievementComplete()`, `addBadge()`, `getGamificationStats()`, `resetProgress()`, `getUserBadges()`, `updateUserPreferences()` | NZCEL user progress, gamification, achievements | ✅ All scoped |
 | **`actions/cefr-progress.ts`** (6 functions) | `getCEFRProgress()`, `updateCEFRSkillProgress()`, `setCEFRLevel()`, `setCEFRTargetLevel()`, `incrementCEFRStats()`, `resetCEFRProgress()` | CEFR progress tracking and management | ✅ All scoped |
 | **`actions/module-stats.ts`** (5 functions) | `getModuleStats()`, `updateModuleStats()`, `getAllModuleStats()`, `getSpeakingStats()`, `getGeneralPracticeStats()` | Multi-module statistics and dashboard data | ✅ All scoped |
 | **`actions/diagnostics.ts`** (2 functions) | `getUserDiagnostics()`, `createSampleData()` | System diagnostic and debugging utilities | ✅ All scoped |
 
-**Total**: 60+ functions across 19 files, all with complete multi-tenant support
+**Total**: 67+ functions across 20 files, all with complete multi-tenant support
 
 ### Multi-Tenant Authentication Flow
 

@@ -1,8 +1,8 @@
 # API Reference
 
-**Version:** 1.0.0
-**Last Updated:** 2025-11-03
-**Total APIs:** 163+
+**Version:** 1.1.0
+**Last Updated:** 2025-11-07
+**Total APIs:** 170+
 
 Complete API reference for the NZCEL Prep AI-Powered ESOL Learning Platform. This document is optimized for AI assistants (like Claude Code) to quickly understand and use the project's APIs.
 
@@ -11,11 +11,12 @@ Complete API reference for the NZCEL Prep AI-Powered ESOL Learning Platform. Thi
 - [Quick Start](#quick-start)
 - [REST API Routes (6)](#rest-api-routes)
   - [OpenAI Integration](#openai-integration)
-- [Server Actions (157)](#server-actions)
+- [Server Actions (164)](#server-actions)
   - [Audio Management](#audio-management)
   - [User Recordings](#user-recordings)
   - [CopilotKit Chat](#copilotkit-chat)
   - [Practice Sessions](#practice-sessions)
+  - [AI Speaking Coach Sessions](#ai-speaking-coach-sessions)
   - [NZCEL Progress](#nzcel-progress)
   - [CEFR Progress](#cefr-progress)
   - [Module Statistics](#module-statistics)
@@ -39,7 +40,7 @@ Complete API reference for the NZCEL Prep AI-Powered ESOL Learning Platform. Thi
 4. **`src/types/index.ts`** - TypeScript type definitions
 
 **Key concepts:**
-- **Multi-tenant**: All 163 APIs enforce organization-level data isolation
+- **Multi-tenant**: All 170 APIs enforce organization-level data isolation
 - **Authentication**: Server Actions use Stack Auth via `fetchWithDrizzle()`
 - **REST APIs**: Public endpoints (no auth required)
 - **Data flow**: REST API → Server Actions → Database (Neon PostgreSQL)
@@ -1279,6 +1280,190 @@ async function getConversationSessionsWithFilters(
   },
   limit: number = 20
 ): Promise<Array<ConversationSession & { turns: Array<ConversationTurn> }>>
+```
+
+**Multi-Tenant:** ✅ Scoped to user's organization
+
+---
+
+### AI Speaking Coach Sessions
+
+**File:** `src/actions/speaking-sessions.ts` (350+ lines, 7 functions)
+
+#### createSpeakingSession()
+
+**Description:** Create a new AI Speaking Coach session
+
+```typescript
+async function createSpeakingSession(
+  cefrLevel: string,
+  topic?: string
+): Promise<SpeakingSession>
+```
+
+**Example Usage:**
+```typescript
+const session = await createSpeakingSession("B2", "AI Speaking Practice");
+```
+
+**Multi-Tenant:** ✅ Scoped to user's organization
+
+---
+
+#### saveSpeakingMessage()
+
+**Description:** Save a message in a speaking session
+
+```typescript
+async function saveSpeakingMessage(
+  sessionId: string,
+  speaker: "user" | "ai",
+  content: string,
+  audioUrl?: string,
+  audioFileId?: bigint,
+  transcriptionId?: bigint,
+  audioDuration?: number,
+  metadata?: any
+): Promise<SpeakingMessage>
+```
+
+**Example Usage:**
+```typescript
+const message = await saveSpeakingMessage(
+  "sp_abc123",
+  "user",
+  "Hello, I'd like to practice my English",
+  "https://example.com/audio.webm",
+  undefined,
+  undefined,
+  5.2
+);
+```
+
+**Multi-Tenant:** ✅ Scoped to user's organization
+
+---
+
+#### saveSpeakingAssessment()
+
+**Description:** Save AI assessment for a user message
+
+```typescript
+async function saveSpeakingAssessment(
+  messageId: string,
+  scores: {
+    pronunciationScore?: number;
+    fluencyScore?: number;
+    grammarScore?: number;
+    vocabularyScore?: number;
+    overallScore?: number;
+  },
+  feedback?: string,
+  suggestions?: string[],
+  errors?: any[]
+): Promise<SpeakingAssessment>
+```
+
+**Example Usage:**
+```typescript
+const assessment = await saveSpeakingAssessment(
+  "msg_xyz789",
+  {
+    pronunciationScore: 85,
+    fluencyScore: 78,
+    grammarScore: 90,
+    vocabularyScore: 82,
+    overallScore: 84
+  },
+  "Good pronunciation with clear articulation",
+  ["Try to speak more fluently without pauses"],
+  []
+);
+```
+
+**Multi-Tenant:** ✅ Scoped to user's organization
+
+---
+
+#### getSpeakingSession()
+
+**Description:** Get a speaking session with all messages and assessments
+
+```typescript
+async function getSpeakingSession(
+  sessionId: string
+): Promise<{
+  session: SpeakingSession;
+  messages: Array<SpeakingMessage & { assessment: SpeakingAssessment | null }>;
+}>
+```
+
+**Example Usage:**
+```typescript
+const data = await getSpeakingSession("sp_abc123");
+console.log(`Session has ${data.messages.length} messages`);
+```
+
+**Multi-Tenant:** ✅ Scoped to user's organization
+
+---
+
+#### getUserSpeakingSessions()
+
+**Description:** Get all speaking sessions for a user
+
+```typescript
+async function getUserSpeakingSessions(
+  limit: number = 10,
+  offset: number = 0
+): Promise<Array<SpeakingSession & { messageCount: number }>>
+```
+
+**Example Usage:**
+```typescript
+const sessions = await getUserSpeakingSessions(20, 0);
+```
+
+**Multi-Tenant:** ✅ Scoped to user's organization
+
+---
+
+#### completeSpeakingSession()
+
+**Description:** Complete a speaking session and update statistics
+
+```typescript
+async function completeSpeakingSession(
+  sessionId: string
+): Promise<SpeakingSession>
+```
+
+**Example Usage:**
+```typescript
+const completed = await completeSpeakingSession("sp_abc123");
+console.log(`Session duration: ${completed.duration} seconds`);
+```
+
+**Multi-Tenant:** ✅ Scoped to user's organization
+
+---
+
+#### deleteSpeakingSession()
+
+**Description:** Delete a speaking session and all related data
+
+```typescript
+async function deleteSpeakingSession(
+  sessionId: string
+): Promise<{ success: boolean }>
+```
+
+**Example Usage:**
+```typescript
+const result = await deleteSpeakingSession("sp_abc123");
+if (result.success) {
+  console.log("Session deleted successfully");
+}
 ```
 
 **Multi-Tenant:** ✅ Scoped to user's organization

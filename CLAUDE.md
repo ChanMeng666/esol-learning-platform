@@ -14,7 +14,7 @@ A comprehensive **AI-Powered ESOL Learning Platform** built with Next.js 15, Rea
 
 The platform features a complete backend with database persistence, intelligent audio caching, user authentication, cloud storage, and **parallel progress tracking** for multiple learning systems (NZCEL and CEFR).
 
-**Architecture**: Full-stack with Next.js Server Actions, Neon PostgreSQL (43 tables), Stack Auth authentication, Vercel Blob storage, and OpenAI integrations (TTS, Whisper, GPT-4, Realtime API). **Multi-tenant architecture** with organization-based data isolation.
+**Architecture**: Full-stack with Next.js Server Actions, Neon PostgreSQL (47 tables), Stack Auth authentication, Vercel Blob storage, and OpenAI integrations (TTS, Whisper, GPT-4, Realtime API). **Multi-tenant architecture** with organization-based data isolation.
 
 ## Development Commands
 
@@ -50,7 +50,7 @@ The application uses a **Neon PostgreSQL** serverless database with **Drizzle OR
 - **Production Migrations**: Always use `drizzle:generate` + `drizzle:migrate` workflow
 - **No Automated Schema Push**: `npx drizzle-kit push` cannot be automated via Server Actions or API routes
 
-**Schema Location**: `src/lib/db/schema.ts` (1,445 lines, **44 tables**)
+**Schema Location**: `src/lib/db/schema.ts` (1,475+ lines, **47 tables**)
 
 **Key Tables** (Organized by Category):
 1. **Organizations & User Management** (9 tables): `organizations`, `users`, `departments`, `grade_levels`, `classes`, `class_teachers`, `class_enrollments`, `student_groups`, `parent_student_relationships`
@@ -60,12 +60,13 @@ The application uses a **Neon PostgreSQL** serverless database with **Drizzle OR
 5. **Audio Management** (4 tables): `audio_files`, `question_audio_cache`, `user_recordings`, `transcriptions`
 6. **Practice Sessions** (2 tables): `practice_sessions`, `session_answers`
 7. **Conversation Practice** (2 tables): `conversation_sessions`, `conversation_turns`
-8. **Diagnostic Testing** (6 tables): `diagnostic_tests`, `diagnostic_test_sections`, `diagnostic_test_questions`, `student_diagnostic_attempts`, `diagnostic_question_responses`, `student_diagnostic_results`
-9. **Teacher Assignments** (4 tables): `assignments`, `assignment_targets`, `assignment_student_status`, `assignment_submissions`
-10. **Teacher Insights & Analytics** (2 tables): `teacher_insights`, `class_analytics`
-11. **RBAC & Permissions** (2 tables): `role_permissions`, `user_permissions`
-12. **Question Banks** (3 tables): `question_banks`, `question_bank_questions`, `organization_question_access`
-13. **Invitations & Registration** (2 tables): `invitation_codes`, `invitation_usages`
+8. **AI Speaking Coach** (3 tables): `speaking_sessions`, `speaking_messages`, `speaking_assessments` ✨ **NEW**
+9. **Diagnostic Testing** (6 tables): `diagnostic_tests`, `diagnostic_test_sections`, `diagnostic_test_questions`, `student_diagnostic_attempts`, `diagnostic_question_responses`, `student_diagnostic_results`
+10. **Teacher Assignments** (4 tables): `assignments`, `assignment_targets`, `assignment_student_status`, `assignment_submissions`
+11. **Teacher Insights & Analytics** (2 tables): `teacher_insights`, `class_analytics`
+12. **RBAC & Permissions** (2 tables): `role_permissions`, `user_permissions`
+13. **Question Banks** (3 tables): `question_banks`, `question_bank_questions`, `organization_question_access`
+14. **Invitations & Registration** (2 tables): `invitation_codes`, `invitation_usages`
 
 **Multi-Tenant Authentication & Data Isolation**: All Server Actions use `fetchWithDrizzle()` helper from `src/lib/db/index.ts` which:
 - Authenticates user via Stack Auth (`stackServerApp.getUser()`)
@@ -161,6 +162,15 @@ All database operations are performed through Next.js Server Actions located in 
 - `createConversationSession()` - Creates conversation practice session
 - `saveConversationTurn()` - Records individual conversation turns
 
+**`src/actions/speaking-sessions.ts`** (350+ lines) - AI Speaking Coach session management ✨
+- `createSpeakingSession()` - Creates new AI coaching session
+- `saveSpeakingMessage()` - Saves conversation messages with audio metadata
+- `saveSpeakingAssessment()` - Stores AI assessment scores and feedback
+- `getSpeakingSession()` - Retrieves session with messages and assessments
+- `getUserSpeakingSessions()` - Gets all sessions for a user
+- `completeSpeakingSession()` - Finalizes session with duration and stats
+- `deleteSpeakingSession()` - Removes session and all related data
+
 **`src/actions/user-progress.ts`** (407 lines) - NZCEL progress and gamification
 - `getUserProgress()` - Fetches current user's NZCEL progress data
 - `updateSkillProgress()` - Updates skill progress (0-100)
@@ -219,7 +229,7 @@ export async function exampleServerAction() {
 3. Actions return organization-scoped data only (isolated by `organizationId`)
 4. Error handling with try/catch and descriptive error messages
 5. TypeScript types for all parameters and return values
-6. **All 43 tables include `organization_id` column** for multi-tenant data isolation
+6. **All 47 tables include `organization_id` column** for multi-tenant data isolation
 
 ### Vercel Blob Storage: Audio File Management
 
@@ -229,6 +239,8 @@ Audio files are stored in Vercel Blob with organized directory structure:
 - `audio/questions/{questionId}_*.mp3` - Question audio (permanent)
 - `audio/user-recordings/{userId}/{sessionId}/*.webm` - User recordings (90-day expiry)
 - `audio/ai-responses/{sessionId}/*.mp3` - AI response audio (30-day expiry)
+- `audio/speaking/{userId}/{sessionId}/user_*.webm` - AI Coach user recordings (90-day expiry) ✨
+- `audio/speaking-ai/{sessionId}/ai_*.mp3` - AI Coach responses (30-day expiry) ✨
 
 **Key Functions**:
 - `uploadAudioFile()` - Uploads audio to Vercel Blob with organized directory structure
@@ -345,11 +357,12 @@ src/
 │   │   ├── conversation/           # Chat completions
 │   │   └── realtime/               # Realtime API integration
 │   └── layout.tsx                  # Root layout (Stack Auth + CopilotKit)
-├── actions/                        # Server Actions (60+ functions, 19 files)
+├── actions/                        # Server Actions (67+ functions, 20 files)
 │   ├── audio.ts                    # Audio caching & TTS (7 functions)
 │   ├── recordings.ts               # User recordings (7 functions)
 │   ├── copilot-chat.ts             # Chat history (8 functions)
 │   ├── sessions.ts                 # Session tracking (12 functions)
+│   ├── speaking-sessions.ts        # AI Speaking Coach sessions (7 functions) ✨ **NEW**
 │   ├── user-progress.ts            # NZCEL progress & gamification (11 functions)
 │   ├── cefr-progress.ts            # CEFR progress tracking (6 functions) ✨
 │   ├── module-stats.ts             # Module statistics (5 functions) ✨
@@ -402,7 +415,7 @@ src/
 │   └── providers.tsx               # App-level providers (with ThemeProvider)
 ├── lib/
 │   ├── db/
-│   │   ├── schema.ts               # Drizzle schema (44 tables, 1445 lines) ✨
+│   │   ├── schema.ts               # Drizzle schema (47 tables, 1475+ lines) ✨
 │   │   └── index.ts                # fetchWithDrizzle helper (multi-tenant)
 │   ├── blob/
 │   │   └── audio-storage.ts        # Vercel Blob utilities
@@ -588,7 +601,7 @@ COPILOT_CLOUD_API_KEY="..."  # Optional, for CopilotKit Cloud
 ## Additional Notes
 
 - The platform is **full-stack** with complete backend (database, authentication, file storage)
-- **Multi-tenant architecture** with organization-based data isolation (44 tables, all scoped by `organization_id`)
+- **Multi-tenant architecture** with organization-based data isolation (47 tables, all scoped by `organization_id`)
 - **Multi-module architecture** supports parallel learning paths (NZCEL, CEFR, Speaking, Scenarios)
 - **Dual progress tracking**: NZCEL and CEFR systems operate independently but share gamification
 - **Enhanced user system**: Links Stack Auth IDs to organizations via `users` table for multi-tenant support
@@ -597,7 +610,7 @@ COPILOT_CLOUD_API_KEY="..."  # Optional, for CopilotKit Cloud
 - Audio caching reduces API costs by 90%+ for repeated questions
 - All user recordings and transcriptions are permanently stored (organization-scoped)
 - Complete session tracking enables learning analytics across all modules
-- **AI Speaking Coach** uses OpenAI Realtime API (GA) for natural two-way conversations
+- **AI Speaking Coach** uses OpenAI Realtime API (GA) for natural two-way conversations with full data persistence
 - Dashboard provides unified view of progress across all learning paths
 - NZCEL framework is complete and should not be modified without research
 - Voice features require HTTPS in production (browser security)
@@ -741,12 +754,13 @@ Examples:
 
 ---
 
-**Last Updated**: 2025-10-27
-**Version**: 2.2
+**Last Updated**: 2025-11-07
+**Version**: 2.3
 
 **Recent Changes**:
-- Added Component Placement Guidelines documentation
-- Cleaned up duplicate components (removed 7 files)
-- Consolidated dashboard-configs (merged v1 and v2)
-- Updated component organization structure
-- Added ThemeProvider to root providers
+- Added AI Speaking Coach data persistence (3 new tables: speaking_sessions, speaking_messages, speaking_assessments)
+- Implemented speaking history page with conversation replay
+- Added 7 new Server Actions for speaking session management
+- Extended audio storage for AI Coach recordings (2 new paths)
+- Updated database schema from 44 to 47 tables
+- Previous: Component Placement Guidelines, dashboard consolidation

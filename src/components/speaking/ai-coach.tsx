@@ -23,6 +23,12 @@ import {
   HelpCircle,
 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  createSpeakingSession,
+  saveSpeakingMessage,
+  completeSpeakingSession,
+} from "@/actions/speaking-sessions";
+import { uploadAudioFile } from "@/lib/blob/audio-storage";
 
 interface Message {
   role: "user" | "assistant";
@@ -102,6 +108,7 @@ export function AISpeakingCoach() {
   const [isSessionActive, setIsSessionActive] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [speakingSessionId, setSpeakingSessionId] = useState<string | null>(null);
 
   // Conversation state
   const [messages, setMessages] = useState<Message[]>([]);
@@ -110,6 +117,7 @@ export function AISpeakingCoach() {
   const sessionRef = useRef<RealtimeSession | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageTimestampsRef = useRef<Map<number, Date>>(new Map());
+  const savedMessagesRef = useRef<Set<string>>(new Set());
 
   // Auto-scroll to bottom
   const scrollToBottom = useCallback(() => {
@@ -156,6 +164,11 @@ export function AISpeakingCoach() {
       // Clear previous session data
       setMessages([]);
       messageTimestampsRef.current.clear();
+      savedMessagesRef.current.clear();
+
+      // Create a new speaking session in database
+      const dbSession = await createSpeakingSession("B2", "AI Speaking Practice");
+      setSpeakingSessionId(dbSession.sessionId);
 
       // Get client secret
       const secret = await fetchClientSecret();
@@ -218,12 +231,13 @@ export function AISpeakingCoach() {
       };
 
       // Update messages when history changes (handles both new messages and transcription updates)
-      session.on("history_updated", (history) => {
+      session.on("history_updated", async (history) => {
         const updatedMessages: Message[] = [];
         const timestamps = messageTimestampsRef.current;
 
-        history.forEach((item, index) => {
-          if (item.type !== "message") return;
+        for (let index = 0; index < history.length; index++) {
+          const item = history[index];
+          if (item.type !== "message") continue;
 
           const role = item.role === "user" ? "user" : "assistant";
           let content = "[Audio]";
@@ -242,7 +256,29 @@ export function AISpeakingCoach() {
             content,
             timestamp: timestamps.get(index)!,
           });
-        });
+
+          // Save message to database if not already saved
+          const messageKey = `${index}-${role}-${content}`;
+          if (speakingSessionId && !savedMessagesRef.current.has(messageKey) && content !== "[Audio]") {
+            savedMessagesRef.current.add(messageKey);
+
+            try {
+              // Save message to database
+              await saveSpeakingMessage(
+                speakingSessionId,
+                role === "user" ? "user" : "ai",
+                content,
+                undefined, // audioUrl - will be implemented in next phase
+                undefined, // audioFileId
+                undefined, // transcriptionId
+                undefined, // audioDuration
+                { index, timestamp: timestamps.get(index) }
+              );
+            } catch (error) {
+              console.error("Failed to save message to database:", error);
+            }
+          }
+        }
 
         setMessages(updatedMessages);
       });
@@ -294,6 +330,11 @@ export function AISpeakingCoach() {
   // Stop session
   const stopSession = async () => {
     try {
+      // Complete the speaking session in database
+      if (speakingSessionId) {
+        await completeSpeakingSession(speakingSessionId);
+      }
+
       if (sessionRef.current) {
         sessionRef.current.close();
         sessionRef.current = null;
@@ -301,9 +342,11 @@ export function AISpeakingCoach() {
 
       // Clear timestamp map
       messageTimestampsRef.current.clear();
+      savedMessagesRef.current.clear();
 
       setIsSessionActive(false);
-      toast.info("Practice session ended");
+      setSpeakingSessionId(null);
+      toast.info("Practice session ended and saved");
     } catch (error) {
       toast.error("Failed to stop session");
     }
@@ -331,7 +374,7 @@ export function AISpeakingCoach() {
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div className="flex-1">
           <p className="text-muted-foreground text-base leading-relaxed">
-            Practice real-time voice conversation with an AI ESOL Coach that adapts to your CEFR level (A1-C2) and provides instant feedback on fluency, vocabulary, grammar, and pronunciation. Sessions are used only for real-time practice and are not stored.
+            Practice real-time voice conversation with an AI ESOL Coach that adapts to your CEFR level (A1-C2) and provides instant feedback on fluency, vocabulary, grammar, and pronunciation. Your conversations are automatically saved for later review and progress tracking.
           </p>
         </div>
 

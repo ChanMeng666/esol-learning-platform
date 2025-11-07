@@ -7,7 +7,7 @@ import { createHash } from 'crypto';
  */
 
 export interface UploadAudioOptions {
-  fileType: 'question_audio' | 'user_recording' | 'ai_response' | 'tts_cache';
+  fileType: 'question_audio' | 'user_recording' | 'ai_response' | 'tts_cache' | 'speaking_user' | 'speaking_ai';
   questionId?: string;
   userId?: string;
   sessionId?: string;
@@ -47,6 +47,12 @@ function generateBlobPath(options: UploadAudioOptions, filename: string): string
 
     case 'tts_cache':
       return `audio/tts-cache/${filename}`;
+
+    case 'speaking_user':
+      return `audio/speaking/${userId}/${sessionId}/user_${filename}`;
+
+    case 'speaking_ai':
+      return `audio/speaking-ai/${sessionId}/ai_${filename}`;
 
     default:
       return `audio/misc/${filename}`;
@@ -180,6 +186,16 @@ export function calculateExpiryDate(fileType: string): Date | null {
     case 'tts_cache':
       // 180 days retention if not accessed
       now.setDate(now.getDate() + 180);
+      return now;
+
+    case 'speaking_user':
+      // 90 days retention for student speaking recordings
+      now.setDate(now.getDate() + 90);
+      return now;
+
+    case 'speaking_ai':
+      // 30 days retention for AI responses
+      now.setDate(now.getDate() + 30);
       return now;
 
     case 'question_audio':
