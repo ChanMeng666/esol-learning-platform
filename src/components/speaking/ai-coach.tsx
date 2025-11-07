@@ -28,7 +28,32 @@ import {
   saveSpeakingMessage,
   completeSpeakingSession,
 } from "@/actions/speaking-sessions";
-import { uploadAudioFile } from "@/lib/blob/audio-storage";
+// Audio upload helper function (calls API route)
+async function uploadAudioViaAPI(
+  audioBlob: Blob,
+  fileName: string,
+  metadata: { fileType: string; userId: string; sessionId: string }
+): Promise<{ blobUrl: string; fileSize: number }> {
+  const formData = new FormData();
+  formData.append("audio", audioBlob);
+  formData.append("fileName", fileName);
+  formData.append("fileType", metadata.fileType);
+  formData.append("userId", metadata.userId);
+  formData.append("sessionId", metadata.sessionId);
+
+  const response = await fetch("/api/speaking/upload-audio", {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.details || "Audio upload failed");
+  }
+
+  const result = await response.json();
+  return { blobUrl: result.blobUrl, fileSize: result.fileSize };
+}
 import { useUser } from "@stackframe/stack";
 
 interface Message {
@@ -330,7 +355,7 @@ export function AISpeakingCoach() {
 
                     console.log(`[AISpeakingCoach] Uploading user audio: recording #${recordingIndex} → user message #${userMessageIndex}, size: ${audioBlob.size} bytes`);
 
-                    const audioFileInfo = await uploadAudioFile(audioBlob, fileName, {
+                    const audioFileInfo = await uploadAudioViaAPI(audioBlob, fileName, {
                       fileType: 'speaking_user',
                       userId,
                       sessionId: currentSessionId,
@@ -355,9 +380,11 @@ export function AISpeakingCoach() {
                   // Convert ArrayBuffers to Blob
                   const audioBlob = new Blob(aiAudioBuffersRef.current[index], { type: 'audio/mp3' });
                   const fileName = `ai_${Date.now()}.mp3`;
+                  const userId = user?.id || "anonymous";
 
-                  const audioFileInfo = await uploadAudioFile(audioBlob, fileName, {
+                  const audioFileInfo = await uploadAudioViaAPI(audioBlob, fileName, {
                     fileType: 'speaking_ai',
+                    userId,
                     sessionId: currentSessionId,
                   });
                   audioUrl = audioFileInfo.blobUrl;
