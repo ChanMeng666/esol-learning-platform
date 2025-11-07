@@ -189,6 +189,11 @@ export const teacherDashboardConfig: DashboardConfig = {
           ],
         },
         {
+          title: "Speaking Review",
+          url: "/teacher/dashboard/speaking-review",
+          icon: HeadphonesIcon,
+        },
+        {
           title: "Student Progress",
           url: "/teacher/students",
           icon: TrendingUp,
@@ -262,6 +267,11 @@ export const parentDashboardConfig: DashboardConfig = {
           title: "Assignments",
           url: "/parent/assignments",
           icon: ClipboardList,
+        },
+        {
+          title: "Speaking Progress",
+          url: "/parent/dashboard/speaking-progress",
+          icon: HeadphonesIcon,
         },
         {
           title: "Progress Reports",
