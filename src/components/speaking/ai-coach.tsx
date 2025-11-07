@@ -299,24 +299,37 @@ export function AISpeakingCoach() {
               let audioUrl: string | undefined = undefined;
 
               // Upload user audio if available
-              if (role === "user" && userAudioChunksRef.current[index]) {
-                try {
-                  const audioBlob = new Blob(userAudioChunksRef.current[index], { type: 'audio/webm' });
-                  const fileName = `user_${Date.now()}.webm`;
-                  const userId = user?.id || "anonymous";
+              if (role === "user") {
+                // Count the number of user messages up to this point
+                const userMessageCount = history.slice(0, index + 1).filter(h => h.type === "message" && h.role === "user").length;
+                const audioIndex = userMessageCount - 1; // 0-based index
 
-                  const audioFileInfo = await uploadAudioFile(audioBlob, fileName, {
-                    fileType: 'speaking_user',
-                    userId,
-                    sessionId: currentSessionId,
-                  });
-                  audioUrl = audioFileInfo.blobUrl;
-                  console.log(`[AISpeakingCoach] User audio uploaded: ${audioUrl}`);
+                console.log(`[AISpeakingCoach] Checking for user audio at index ${audioIndex} for history index ${index}`);
+                console.log(`[AISpeakingCoach] Available audio indices:`, Object.keys(userAudioChunksRef.current));
 
-                  // Clear the chunks after upload
-                  delete userAudioChunksRef.current[index];
-                } catch (uploadError) {
-                  console.error("[AISpeakingCoach] Failed to upload user audio:", uploadError);
+                if (userAudioChunksRef.current[audioIndex]) {
+                  try {
+                    const audioBlob = new Blob(userAudioChunksRef.current[audioIndex], { type: 'audio/webm' });
+                    const fileName = `user_${Date.now()}.webm`;
+                    const userId = user?.id || "anonymous";
+
+                    console.log(`[AISpeakingCoach] Uploading user audio blob: ${audioBlob.size} bytes`);
+
+                    const audioFileInfo = await uploadAudioFile(audioBlob, fileName, {
+                      fileType: 'speaking_user',
+                      userId,
+                      sessionId: currentSessionId,
+                    });
+                    audioUrl = audioFileInfo.blobUrl;
+                    console.log(`[AISpeakingCoach] User audio uploaded successfully: ${audioUrl}`);
+
+                    // Clear the chunks after upload
+                    delete userAudioChunksRef.current[audioIndex];
+                  } catch (uploadError) {
+                    console.error("[AISpeakingCoach] Failed to upload user audio:", uploadError);
+                  }
+                } else {
+                  console.log(`[AISpeakingCoach] No audio chunks found for user message at index ${audioIndex}`);
                 }
               }
 
@@ -378,20 +391,29 @@ export function AISpeakingCoach() {
           // Start recording user audio
           if (mediaRecorderRef.current && mediaRecorderRef.current.state === "inactive") {
             const chunks: Blob[] = [];
-            // Increment message index for the new user message
-            currentMessageIndexRef.current += 1;
-            const messageIndex = currentMessageIndexRef.current;
 
             mediaRecorderRef.current.ondataavailable = (e) => {
               if (e.data.size > 0) {
                 chunks.push(e.data);
+                console.log(`[AISpeakingCoach] Audio chunk received: ${e.data.size} bytes`);
               }
             };
 
             mediaRecorderRef.current.onstop = () => {
-              // Store the audio chunks for this message
-              userAudioChunksRef.current[messageIndex] = chunks;
-              console.log(`[AISpeakingCoach] User audio recorded for message ${messageIndex}`);
+              // Get the current number of user messages to determine the index
+              const session = sessionRef.current;
+              if (session) {
+                const history = session.getHistory();
+                const userMessages = history.filter(item => item.type === "message" && item.role === "user");
+                const messageIndex = userMessages.length; // This will be the index for the new message
+
+                // Store the audio chunks for this message
+                userAudioChunksRef.current[messageIndex] = chunks;
+                console.log(`[AISpeakingCoach] Stored ${chunks.length} audio chunks for message index ${messageIndex}, total size: ${chunks.reduce((sum, chunk) => sum + chunk.size, 0)} bytes`);
+
+                // Update the current index
+                currentMessageIndexRef.current = messageIndex;
+              }
             };
 
             mediaRecorderRef.current.start();
