@@ -403,7 +403,7 @@ export function AISpeakingCoach() {
               // Get the current number of user messages to determine the index
               const session = sessionRef.current;
               if (session) {
-                const history = session.getHistory();
+                const history = session.history;
                 const userMessages = history.filter(item => item.type === "message" && item.role === "user");
                 const messageIndex = userMessages.length; // This will be the index for the new message
 
