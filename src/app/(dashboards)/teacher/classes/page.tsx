@@ -5,18 +5,14 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DataTable } from "@/components/data-table/data-table";
 import { Progress } from "@/components/ui/progress";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { LoadingState } from "@/components/shared/loading-state";
 import { EmptyState } from "@/components/shared/empty-state";
-import { ClassScheduleCalendar } from "@/components/calendar/fullcalendar-schedule";
 import { getTeacherClasses } from "@/actions/classes";
 import {
   Users,
   GraduationCap,
-  Clock,
   Calendar,
   MapPin,
   BookOpen,
@@ -27,8 +23,8 @@ import {
   UserPlus,
   FileText,
   CheckCircle,
-  XCircle,
-  AlertCircle
+  Plus,
+  TrendingUp,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -38,53 +34,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
-
-// Define columns for students in class
-const studentColumns = [
-  {
-    accessorKey: "name",
-    header: "Student Name",
-  },
-  {
-    accessorKey: "email",
-    header: "Email",
-  },
-  {
-    accessorKey: "attendance",
-    header: "Attendance",
-    cell: ({ row }: any) => {
-      const attendance = row.original.attendance || 0;
-      return (
-        <div className="flex items-center gap-2">
-          <Progress value={attendance} className="w-20 h-2" />
-          <span className="text-xs text-muted-foreground">{attendance}%</span>
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "progress",
-    header: "Progress",
-    cell: ({ row }: any) => {
-      const progress = row.original.progress || 0;
-      return (
-        <div className="flex items-center gap-2">
-          <Progress value={progress} className="w-20 h-2" />
-          <span className="text-xs font-medium">{progress}%</span>
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "grade",
-    header: "Current Grade",
-    cell: ({ row }: any) => {
-      const grade = row.original.grade;
-      const gradeColor = grade >= 90 ? "success" : grade >= 80 ? "info" : grade >= 70 ? "warning" : "destructive";
-      return <Badge variant={gradeColor as any}>{grade}%</Badge>;
-    },
-  },
-];
 
 export default function TeacherClassesPage() {
   return (
@@ -98,16 +47,12 @@ function ClassesPageContent() {
   const router = useRouter();
   const [classes, setClasses] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedClass, setSelectedClass] = useState<any>(null);
 
   useEffect(() => {
     const loadClasses = async () => {
       try {
         const data = await getTeacherClasses();
         setClasses(data || []);
-        if (data && data.length > 0) {
-          setSelectedClass(data[0]);
-        }
       } catch (error) {
         console.error("Failed to load classes:", error);
         toast.error("Failed to load your classes");
@@ -118,15 +63,6 @@ function ClassesPageContent() {
 
     loadClasses();
   }, []);
-
-  // Mock student data for selected class
-  const mockStudents = selectedClass ? [
-    { id: "1", name: "Alex Chen", email: "alex@example.com", attendance: 95, progress: 87, grade: 92 },
-    { id: "2", name: "Sarah Kim", email: "sarah@example.com", attendance: 88, progress: 92, grade: 88 },
-    { id: "3", name: "Mike Johnson", email: "mike@example.com", attendance: 75, progress: 68, grade: 72 },
-    { id: "4", name: "Emma Wilson", email: "emma@example.com", attendance: 92, progress: 85, grade: 86 },
-    { id: "5", name: "James Lee", email: "james@example.com", attendance: 100, progress: 95, grade: 94 },
-  ] : [];
 
   if (isLoading) {
     return <LoadingState />;
@@ -143,6 +79,12 @@ function ClassesPageContent() {
           title="No classes yet"
           description="You haven't been assigned to any classes"
           icon={<GraduationCap className="w-16 h-16" />}
+          action={
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Create Class
+            </Button>
+          }
         />
       </div>
     );
@@ -151,26 +93,77 @@ function ClassesPageContent() {
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">My Classes</h1>
-        <p className="text-muted-foreground">
-          Manage your {classes.length} {classes.length === 1 ? "class" : "classes"} and track student progress
-        </p>
+      <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-3xl font-bold tracking-tight">My Classes</h1>
+          <p className="text-muted-foreground">
+            Manage your {classes.length} {classes.length === 1 ? "class" : "classes"} and track student progress
+          </p>
+        </div>
+        <Button>
+          <Plus className="h-4 w-4 mr-2" />
+          Create Class
+        </Button>
+      </div>
+
+      {/* Overview Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Total Classes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{classes.length}</div>
+            <p className="text-xs text-muted-foreground">Active classes</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Total Students</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {classes.reduce((sum, c) => sum + (c.enrollmentCount || 0), 0)}
+            </div>
+            <p className="text-xs text-muted-foreground">Across all classes</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Avg. Attendance</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2">
+              <span className="text-2xl font-bold">88%</span>
+              <TrendingUp className="h-4 w-4 text-green-600" />
+            </div>
+            <p className="text-xs text-muted-foreground">This month</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Next Class</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-sm font-medium">ENG-301</div>
+            <p className="text-xs text-muted-foreground">In 2 hours</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Class Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {classes.map((classItem) => {
-          const studentCount = classItem.enrollmentCount || classItem.enrollmentCount || 0;
-          const isSelected = selectedClass?.id === classItem.id;
+          const studentCount = classItem.enrollmentCount || 0;
 
           return (
             <Card
               key={classItem.id.toString()}
-              className={`cursor-pointer transition-all hover:shadow-lg ${
-                isSelected ? "ring-2 ring-primary" : ""
-              }`}
-              onClick={() => setSelectedClass(classItem)}
+              className="cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02]"
+              onClick={() => router.push(`/teacher/classes/${classItem.id}`)}
             >
               <CardHeader className="pb-4">
                 <div className="flex items-start justify-between">
@@ -179,26 +172,34 @@ function ClassesPageContent() {
                     <CardDescription>{classItem.code}</CardDescription>
                   </div>
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
+                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                       <Button variant="ghost" size="icon" className="h-8 w-8">
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => router.push(`/teacher/classes/${classItem.id}`)}>
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/teacher/classes/${classItem.id}`);
+                        }}
+                      >
                         <Eye className="mr-2 h-4 w-4" />
                         View Details
                       </DropdownMenuItem>
-                      <DropdownMenuItem>
+                      <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
                         <Edit className="mr-2 h-4 w-4" />
                         Edit Class
                       </DropdownMenuItem>
-                      <DropdownMenuItem>
+                      <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
                         <UserPlus className="mr-2 h-4 w-4" />
                         Add Students
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-destructive">
+                      <DropdownMenuItem
+                        className="text-destructive"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <Trash2 className="mr-2 h-4 w-4" />
                         Archive Class
                       </DropdownMenuItem>
@@ -228,21 +229,24 @@ function ClassesPageContent() {
 
                 {/* Class Stats */}
                 <div className="space-y-2 pt-2 border-t">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Avg. Attendance</span>
-                    <span className="font-medium">88%</span>
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Avg. Attendance</span>
+                      <span className="font-medium">88%</span>
+                    </div>
+                    <Progress value={88} className="h-2" />
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Avg. Progress</span>
-                    <span className="font-medium">75%</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Completion Rate</span>
-                    <span className="font-medium">92%</span>
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Avg. Progress</span>
+                      <span className="font-medium">75%</span>
+                    </div>
+                    <Progress value={75} className="h-2" />
                   </div>
                 </div>
 
-                <div className="flex gap-2">
+                {/* Quick Actions */}
+                <div className="flex gap-2 pt-2">
                   <Button
                     variant="outline"
                     size="sm"
@@ -274,110 +278,41 @@ function ClassesPageContent() {
         })}
       </div>
 
-      {/* Selected Class Details */}
-      {selectedClass && (
-        <Tabs defaultValue="students" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="students">Students</TabsTrigger>
-            <TabsTrigger value="schedule">Schedule</TabsTrigger>
-            <TabsTrigger value="materials">Materials</TabsTrigger>
-          </TabsList>
-
-          {/* Students Tab */}
-          <TabsContent value="students" className="mt-6">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>{selectedClass.name} - Students</CardTitle>
-                    <CardDescription>
-                      Manage and track student progress
-                    </CardDescription>
-                  </div>
-                  <Button>
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    Add Student
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <DataTable
-                  columns={studentColumns}
-                  data={mockStudents}
-                  searchKey="name"
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Schedule Tab */}
-          <TabsContent value="schedule" className="mt-6">
-            <Card className="p-0">
-              <CardContent className="p-0">
-                <ClassScheduleCalendar
-                  organizationId={BigInt(1)}
-                  userId="teacher-user"
-                  userRole="teacher"
-                  className="w-full"
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Materials Tab */}
-          <TabsContent value="materials" className="mt-6">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Class Materials</CardTitle>
-                    <CardDescription>
-                      Resources and materials for {selectedClass.name}
-                    </CardDescription>
-                  </div>
-                  <Button>
-                    <FileText className="h-4 w-4 mr-2" />
-                    Upload Material
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {[
-                    { name: "Unit 1 - Introduction.pdf", size: "2.4 MB", uploaded: "2 days ago" },
-                    { name: "Grammar Exercises.docx", size: "1.1 MB", uploaded: "1 week ago" },
-                    { name: "Speaking Practice Audio.mp3", size: "5.2 MB", uploaded: "2 weeks ago" },
-                    { name: "Assignment Guidelines.pdf", size: "0.8 MB", uploaded: "3 weeks ago" },
-                  ].map((material, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50"
-                    >
-                      <div className="flex items-center gap-3">
-                        <FileText className="h-8 w-8 text-muted-foreground" />
-                        <div>
-                          <p className="font-medium">{material.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {material.size} • Uploaded {material.uploaded}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button variant="ghost" size="icon">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      )}
+      {/* Recent Activity */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Activity</CardTitle>
+          <CardDescription>Latest updates across all your classes</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 p-3 border rounded-lg">
+              <div className="h-2 w-2 bg-green-500 rounded-full" />
+              <div className="flex-1">
+                <p className="text-sm font-medium">Assignment submitted</p>
+                <p className="text-xs text-muted-foreground">5 students from ENG-301 submitted their essays</p>
+              </div>
+              <span className="text-xs text-muted-foreground">2 hours ago</span>
+            </div>
+            <div className="flex items-center gap-3 p-3 border rounded-lg">
+              <div className="h-2 w-2 bg-blue-500 rounded-full" />
+              <div className="flex-1">
+                <p className="text-sm font-medium">New material uploaded</p>
+                <p className="text-xs text-muted-foreground">Grammar workbook added to ENG-201</p>
+              </div>
+              <span className="text-xs text-muted-foreground">5 hours ago</span>
+            </div>
+            <div className="flex items-center gap-3 p-3 border rounded-lg">
+              <div className="h-2 w-2 bg-amber-500 rounded-full" />
+              <div className="flex-1">
+                <p className="text-sm font-medium">Low attendance alert</p>
+                <p className="text-xs text-muted-foreground">ENG-101 had only 75% attendance yesterday</p>
+              </div>
+              <span className="text-xs text-muted-foreground">1 day ago</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

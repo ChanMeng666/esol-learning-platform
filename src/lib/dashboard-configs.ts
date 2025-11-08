@@ -153,11 +153,23 @@ export const teacherDashboardConfig: DashboardConfig = {
           title: "Analytics",
           url: "/teacher/analytics",
           icon: BarChart3,
+          subItems: [
+            { title: "Performance", url: "/teacher/analytics" },
+            { title: "Engagement", url: "/teacher/analytics/engagement" },
+            { title: "Progress", url: "/teacher/analytics/progress" },
+            { title: "Insights", url: "/teacher/analytics/insights" },
+          ],
         },
         {
           title: "Insights",
           url: "/teacher/insights",
           icon: Lightbulb,
+          subItems: [
+            { title: "Overview", url: "/teacher/insights" },
+            { title: "Student Insights", url: "/teacher/insights/students" },
+            { title: "Learning Patterns", url: "/teacher/insights/patterns" },
+            { title: "Recommendations", url: "/teacher/insights/recommendations" },
+          ],
         },
       ],
     },
@@ -169,12 +181,6 @@ export const teacherDashboardConfig: DashboardConfig = {
           title: "My Classes",
           url: "/teacher/classes",
           icon: Users,
-          subItems: [
-            { title: "All Classes", url: "/teacher/classes" },
-            { title: "Schedule", url: "/teacher/classes/schedule" },
-            { title: "Attendance", url: "/teacher/classes/attendance" },
-            { title: "Materials", url: "/teacher/classes/materials" },
-          ],
         },
         {
           title: "Gradebook",
