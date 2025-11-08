@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { ProtectedRoute } from "@/components/auth/protected-route";
-import { useInsightsContext } from "../layout";
+import { useInsightsContext } from "../context";
 import { Users, TrendingUp, TrendingDown, AlertTriangle, Target, Award } from "lucide-react";
 
 export default function TeacherInsightsStudentsPage() {

@@ -442,6 +442,146 @@ function CommunicationPageContent() {
           </div>
         </TabsContent>
 
+        {/* Sent Tab */}
+        <TabsContent value="sent" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Sent Messages List */}
+            <Card className="lg:col-span-1">
+              <CardHeader>
+                <CardTitle>Sent Messages</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <EmptyState
+                  title="No sent messages"
+                  description="Messages you send will appear here"
+                  icon={<Send className="w-16 h-16" />}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Message Detail */}
+            <Card className="lg:col-span-2">
+              <EmptyState
+                title="No message selected"
+                description="Select a message from the list to view details"
+                icon={<MessageCircle className="w-16 h-16" />}
+              />
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Starred Tab */}
+        <TabsContent value="starred" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Starred Messages List */}
+            <Card className="lg:col-span-1">
+              <CardHeader>
+                <CardTitle>Starred Messages</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="divide-y">
+                  {messages.filter(m => m.starred).map(message => (
+                    <div
+                      key={message.id}
+                      className={`p-4 hover:bg-muted/50 cursor-pointer transition-colors ${
+                        selectedMessage?.id === message.id ? "bg-muted" : ""
+                      }`}
+                      onClick={() => setSelectedMessage(message)}
+                    >
+                      <div className="flex items-start justify-between mb-1">
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={message.fromAvatar} />
+                            <AvatarFallback>
+                              {message.from.split(' ').map((n: string) => n[0]).join('')}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium text-sm">{message.from}</p>
+                            {message.childName && (
+                              <p className="text-xs text-muted-foreground">{message.childName}</p>
+                            )}
+                          </div>
+                        </div>
+                        <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                      </div>
+                      <p className="text-sm font-medium">
+                        {message.subject}
+                      </p>
+                      <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
+                        {message.content}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        {message.date.toLocaleDateString()}
+                      </p>
+                    </div>
+                  ))}
+                  {messages.filter(m => m.starred).length === 0 && (
+                    <div className="p-8">
+                      <EmptyState
+                        title="No starred messages"
+                        description="Star important messages to find them easily"
+                        icon={<Star className="w-16 h-16" />}
+                      />
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Message Detail */}
+            <Card className="lg:col-span-2">
+              {selectedMessage && messages.filter(m => m.starred).some(m => m.id === selectedMessage.id) ? (
+                <>
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <CardTitle>{selectedMessage.subject}</CardTitle>
+                        <CardDescription>
+                          From: {selectedMessage.from} • {selectedMessage.date.toLocaleDateString()}
+                        </CardDescription>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleReply(selectedMessage)}
+                        >
+                          <Reply className="w-4 h-4" />
+                        </Button>
+                        <Button size="sm" variant="outline">
+                          <Forward className="w-4 h-4" />
+                        </Button>
+                        <Button size="sm" variant="outline">
+                          <Archive className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="prose dark:prose-invert max-w-none">
+                      <p className="whitespace-pre-wrap">{selectedMessage.content}</p>
+                    </div>
+                    {selectedMessage.childName && (
+                      <div className="mt-4 p-3 rounded-lg bg-muted">
+                        <p className="text-sm">
+                          <span className="font-medium">Regarding:</span> {selectedMessage.childName}
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                </>
+              ) : (
+                <EmptyState
+                  title="No message selected"
+                  description="Select a starred message from the list to view details"
+                  icon={<MessageCircle className="w-16 h-16" />}
+                />
+              )}
+            </Card>
+          </div>
+        </TabsContent>
+
         {/* Announcements Tab */}
         <TabsContent value="announcements" className="space-y-4">
           {announcements.map(announcement => (

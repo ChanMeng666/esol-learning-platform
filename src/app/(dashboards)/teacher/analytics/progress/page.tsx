@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ProtectedRoute } from "@/components/auth/protected-route";
-import { useAnalyticsContext } from "../layout";
+import { useAnalyticsContext } from "../context";
 import { TrendingUp, Award, AlertTriangle } from "lucide-react";
 
 export default function TeacherAnalyticsProgressPage() {

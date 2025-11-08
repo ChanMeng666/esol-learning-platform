@@ -1,32 +1,12 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { useState, useEffect, ReactNode } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getTeacherClasses } from "@/actions/classes";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-
-// Context for sharing filters and data across insights pages
-interface InsightsContextType {
-  classes: any[];
-  selectedClass: any;
-  setSelectedClass: (cls: any) => void;
-  timeframe: string;
-  setTimeframe: (timeframe: string) => void;
-  isLoading: boolean;
-  insights: any[];
-}
-
-const InsightsContext = createContext<InsightsContextType | null>(null);
-
-export function useInsightsContext() {
-  const context = useContext(InsightsContext);
-  if (!context) {
-    throw new Error("useInsightsContext must be used within InsightsLayout");
-  }
-  return context;
-}
+import { InsightsContext } from './context';
 
 // Navigation tabs for insights sub-pages
 const insightsNavItems = [
@@ -118,7 +98,7 @@ export default function InsightsLayout({ children }: { children: ReactNode }) {
         timeframe,
         setTimeframe,
         isLoading,
-        insights,
+        insightsData: insights,
       }}
     >
       <div className="flex flex-col gap-6">

@@ -1,10 +1,11 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { useState, useEffect, ReactNode } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { AssignmentContext } from "./context";
 
 interface Assignment {
   id: string;
@@ -21,27 +22,6 @@ interface Assignment {
   feedback?: string;
   attachments?: string[];
   type: "homework" | "project" | "quiz" | "exam";
-}
-
-// Context for sharing assignment data across pages
-interface AssignmentContextType {
-  assignments: Assignment[];
-  selectedChild: string;
-  setSelectedChild: (child: string) => void;
-  statusFilter: string;
-  setStatusFilter: (status: string) => void;
-  isLoading: boolean;
-  children: Array<{ id: string; name: string; avatar: string }>;
-}
-
-const AssignmentContext = createContext<AssignmentContextType | null>(null);
-
-export function useAssignmentContext() {
-  const context = useContext(AssignmentContext);
-  if (!context) {
-    throw new Error("useAssignmentContext must be used within AssignmentLayout");
-  }
-  return context;
 }
 
 // Navigation items for assignment sub-pages

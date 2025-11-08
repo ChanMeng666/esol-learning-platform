@@ -79,12 +79,10 @@ function ClassesPageContent() {
           title="No classes yet"
           description="You haven't been assigned to any classes"
           icon={<GraduationCap className="w-16 h-16" />}
-          action={
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Class
-            </Button>
-          }
+          action={{
+            label: "Create Class",
+            onClick: () => console.log("Create class clicked")
+          }}
         />
       </div>
     );

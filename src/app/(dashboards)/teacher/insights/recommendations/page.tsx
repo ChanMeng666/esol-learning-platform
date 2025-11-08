@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ProtectedRoute } from "@/components/auth/protected-route";
-import { useInsightsContext } from "../layout";
+import { useInsightsContext } from "../context";
 import {
   Lightbulb,
   Target,

@@ -5,7 +5,7 @@ import { ProtectedRoute } from "@/components/auth/protected-route";
 import { ProgressLineChart } from "@/components/charts/progress-line-chart";
 import { SkillRadarChart } from "@/components/charts/skill-radar-chart";
 import { Progress } from "@/components/ui/progress";
-import { useAnalyticsContext } from "./layout";
+import { useAnalyticsContext } from "./context";
 import {
   TrendingUp,
   TrendingDown,

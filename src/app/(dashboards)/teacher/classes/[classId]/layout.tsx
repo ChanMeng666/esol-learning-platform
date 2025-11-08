@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { useState, useEffect, ReactNode } from "react";
 import { useParams, usePathname } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -8,28 +8,14 @@ import { getTeacherClasses } from "@/actions/classes";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, Calendar, MapPin, BookOpen } from "lucide-react";
-
-// Context for sharing class data across pages
-interface ClassContextType {
-  classData: any;
-  isLoading: boolean;
-}
-
-const ClassContext = createContext<ClassContextType | null>(null);
-
-export function useClassContext() {
-  const context = useContext(ClassContext);
-  if (!context) {
-    throw new Error("useClassContext must be used within ClassLayout");
-  }
-  return context;
-}
+import { ClassContext } from './context';
 
 export default function ClassLayout({ children }: { children: ReactNode }) {
   const params = useParams();
   const pathname = usePathname();
   const classId = params.classId as string;
   const [classData, setClassData] = useState<any>(null);
+  const [students, setStudents] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Navigation tabs for class sub-pages
@@ -83,7 +69,7 @@ export default function ClassLayout({ children }: { children: ReactNode }) {
   const studentCount = classData.enrollmentCount || classData.enrollmentCount || 0;
 
   return (
-    <ClassContext.Provider value={{ classData, isLoading }}>
+    <ClassContext.Provider value={{ classData, students, isLoading }}>
       <div className="flex flex-col gap-6">
         {/* Class Header Card */}
         <Card className="p-6">

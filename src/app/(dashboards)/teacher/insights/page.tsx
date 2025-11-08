@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ProtectedRoute } from "@/components/auth/protected-route";
-import { useInsightsContext } from "./layout";
+import { useInsightsContext } from "./context";
 import {
   Brain,
   Lightbulb,
@@ -25,7 +25,7 @@ export default function TeacherInsightsPage() {
 }
 
 function InsightsOverviewContent() {
-  const { selectedClass, timeframe, insights } = useInsightsContext();
+  const { selectedClass, timeframe, insightsData } = useInsightsContext();
 
   const getInsightIcon = (type: string) => {
     switch (type) {
@@ -63,7 +63,7 @@ function InsightsOverviewContent() {
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Key Insights This {timeframe === 'week' ? 'Week' : timeframe === 'month' ? 'Month' : timeframe === 'semester' ? 'Semester' : 'Period'}</h3>
         <div className="grid gap-4">
-          {insights.map((insight: any) => (
+          {insightsData.map((insight: any) => (
             <Card key={insight.id} className={getInsightBgColor(insight.type)}>
               <CardContent className="p-4">
                 <div className="flex items-start gap-4">

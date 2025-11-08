@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProtectedRoute } from "@/components/auth/protected-route";
-import { useGradebookContext } from "../layout";
+import { useGradebookContext } from "../context";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -65,7 +65,7 @@ function SummaryContent() {
                 .map(student => (
                   <div key={student.id} className="flex justify-between items-center">
                     <span className="text-sm">{student.name}</span>
-                    <Badge variant="success">{student.overall}%</Badge>
+                    <Badge variant="default" className="bg-green-500 hover:bg-green-600">{student.overall}%</Badge>
                   </div>
                 ))}
             </div>

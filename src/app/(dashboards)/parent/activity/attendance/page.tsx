@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { DataTable } from "@/components/data-table/data-table";
-import { useActivityContext } from "../layout";
+import { useActivityContext } from "../context";
 import { type ColumnDef } from "@tanstack/react-table";
 import {
   CheckCircle2,

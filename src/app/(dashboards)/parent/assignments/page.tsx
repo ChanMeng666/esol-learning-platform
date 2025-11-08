@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { DataTable } from "@/components/data-table/data-table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useAssignmentContext } from "./layout";
+import { useAssignmentContext } from "./context";
 import { type ColumnDef } from "@tanstack/react-table";
 import {
   BookOpen,

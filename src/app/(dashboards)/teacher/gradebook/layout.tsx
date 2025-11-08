@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { useState, useEffect, ReactNode } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { getTeacherClasses } from "@/actions/classes";
@@ -9,30 +9,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Download, Upload, Save } from "lucide-react";
 import { toast } from "sonner";
-
-// Context for sharing gradebook data across pages
-interface GradebookContextType {
-  classes: any[];
-  selectedClass: any;
-  setSelectedClass: (cls: any) => void;
-  isLoading: boolean;
-  isSaving: boolean;
-  studentGrades: any[];
-  classStats: any;
-  gradeDistribution: any[];
-  handleSaveGrades: () => Promise<void>;
-  handleExportGrades: () => void;
-}
-
-const GradebookContext = createContext<GradebookContextType | null>(null);
-
-export function useGradebookContext() {
-  const context = useContext(GradebookContext);
-  if (!context) {
-    throw new Error("useGradebookContext must be used within GradebookLayout");
-  }
-  return context;
-}
+import { GradebookContext } from './context';
 
 // Navigation tabs for gradebook sub-pages
 const gradebookNavItems = [

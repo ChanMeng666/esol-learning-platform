@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { ClassScheduleCalendar } from "@/components/calendar/fullcalendar-schedule";
-import { useClassContext } from "../layout";
+import { useClassContext } from "../context";
 import { Calendar, Clock, Plus, Edit, Trash2 } from "lucide-react";
 
 export default function ClassSchedulePage() {

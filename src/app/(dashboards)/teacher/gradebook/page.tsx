@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { GradeSpreadsheet } from "@/components/spreadsheet/grade-spreadsheet";
-import { useGradebookContext } from "./layout";
+import { useGradebookContext } from "./context";
 import { AlertCircle, Info } from "lucide-react";
 
 export default function TeacherGradebookPage() {

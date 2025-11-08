@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ProtectedRoute } from "@/components/auth/protected-route";
-import { useClassContext } from "../layout";
+import { useClassContext } from "../context";
 import {
   CheckCircle,
   XCircle,
@@ -64,11 +64,11 @@ function AttendanceContent() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "present":
-        return <Badge variant="success">Present</Badge>;
+        return <Badge variant="default" className="bg-green-500 hover:bg-green-600">Present</Badge>;
       case "absent":
         return <Badge variant="destructive">Absent</Badge>;
       case "late":
-        return <Badge variant="warning">Late</Badge>;
+        return <Badge variant="default" className="bg-yellow-500 hover:bg-yellow-600">Late</Badge>;
       case "excused":
         return <Badge variant="secondary">Excused</Badge>;
       default:
@@ -226,9 +226,9 @@ function AttendanceContent() {
                           <XCircle className="h-4 w-4" />
                         </Button>
                         <Button
-                          variant={student.status === "late" ? "warning" : "ghost"}
+                          variant={student.status === "late" ? "secondary" : "ghost"}
                           size="icon"
-                          className="h-8 w-8"
+                          className={cn("h-8 w-8", student.status === "late" && "bg-yellow-100 hover:bg-yellow-200 text-yellow-600")}
                           onClick={() => {/* Update status */}}
                         >
                           <Clock className="h-4 w-4" />
@@ -289,7 +289,7 @@ function AttendanceContent() {
                     <span>Chronic Absences</span>
                     <span className="font-medium text-amber-600">2 students</span>
                   </div>
-                  <p className="text-xs text-muted-foreground">Missing >10% of classes</p>
+                  <p className="text-xs text-muted-foreground">Missing &gt;10% of classes</p>
                 </div>
               </div>
             </CardContent>

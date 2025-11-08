@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { ChartRevenue } from "@/components/charts/chart-revenue";
 import { ChartVisitors } from "@/components/charts/chart-visitors";
-import { useAnalyticsContext } from "../layout";
+import { useAnalyticsContext } from "../context";
 
 export default function TeacherAnalyticsEngagementPage() {
   return (

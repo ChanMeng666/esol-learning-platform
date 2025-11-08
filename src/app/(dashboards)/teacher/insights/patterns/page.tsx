@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ProtectedRoute } from "@/components/auth/protected-route";
-import { useInsightsContext } from "../layout";
+import { useInsightsContext } from "../context";
 import {
   BarChart3,
   Brain,

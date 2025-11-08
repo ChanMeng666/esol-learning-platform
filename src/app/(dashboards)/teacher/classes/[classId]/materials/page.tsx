@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ProtectedRoute } from "@/components/auth/protected-route";
-import { useClassContext } from "../layout";
+import { useClassContext } from "../context";
 import {
   Upload,
   FileText,

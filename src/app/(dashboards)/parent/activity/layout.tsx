@@ -1,10 +1,11 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { useState, useEffect, ReactNode } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { ActivityContext } from "./context";
 
 // Activity log data structure
 interface ActivityLog {
@@ -26,28 +27,6 @@ interface AttendanceRecord {
   status: "present" | "absent" | "late" | "excused";
   class: string;
   notes?: string;
-}
-
-// Context for sharing activity data across pages
-interface ActivityContextType {
-  selectedChild: string;
-  setSelectedChild: (child: string) => void;
-  timeRange: string;
-  setTimeRange: (range: string) => void;
-  activityData: ActivityLog[];
-  attendanceData: AttendanceRecord[];
-  isLoading: boolean;
-  children: Array<{ id: string; name: string; avatar: string }>;
-}
-
-const ActivityContext = createContext<ActivityContextType | null>(null);
-
-export function useActivityContext() {
-  const context = useContext(ActivityContext);
-  if (!context) {
-    throw new Error("useActivityContext must be used within ActivityLayout");
-  }
-  return context;
 }
 
 // Navigation items for activity sub-pages

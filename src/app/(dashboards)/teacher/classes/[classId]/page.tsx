@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/data-table/data-table";
 import { Progress } from "@/components/ui/progress";
 import { ProtectedRoute } from "@/components/auth/protected-route";
-import { useClassContext } from "./layout";
+import { useClassContext } from "./context";
 import { UserPlus, Download, Mail } from "lucide-react";
 
 // Define columns for students in class

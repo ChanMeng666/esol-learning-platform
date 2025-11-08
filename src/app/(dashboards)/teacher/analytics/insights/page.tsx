@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProtectedRoute } from "@/components/auth/protected-route";
-import { useAnalyticsContext } from "../layout";
+import { useAnalyticsContext } from "../context";
 import { AlertTriangle, Info, Zap } from "lucide-react";
 
 export default function TeacherAnalyticsInsightsPage() {

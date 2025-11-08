@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useAssignmentContext } from "../layout";
+import { useAssignmentContext } from "../context";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ProgressLineChart } from "@/components/charts/progress-line-chart";
 import {

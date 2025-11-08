@@ -1,31 +1,12 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { useState, useEffect, ReactNode } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getTeacherClasses } from "@/actions/classes";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-
-// Context for sharing filters and data across analytics pages
-interface AnalyticsContextType {
-  classes: any[];
-  selectedClass: any;
-  setSelectedClass: (cls: any) => void;
-  timeRange: string;
-  setTimeRange: (range: string) => void;
-  isLoading: boolean;
-}
-
-const AnalyticsContext = createContext<AnalyticsContextType | null>(null);
-
-export function useAnalyticsContext() {
-  const context = useContext(AnalyticsContext);
-  if (!context) {
-    throw new Error("useAnalyticsContext must be used within AnalyticsLayout");
-  }
-  return context;
-}
+import { AnalyticsContext } from './context';
 
 // Navigation tabs for analytics sub-pages
 const analyticsNavItems = [

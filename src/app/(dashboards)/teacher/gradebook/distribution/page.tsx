@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProtectedRoute } from "@/components/auth/protected-route";
-import { useGradebookContext } from "../layout";
+import { useGradebookContext } from "../context";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertCircle, TrendingUp, TrendingDown, BarChart2 } from "lucide-react";
 import { useState } from "react";

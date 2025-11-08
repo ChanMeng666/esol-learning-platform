@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { ProgressLineChart } from "@/components/charts/progress-line-chart";
-import { useActivityContext } from "../layout";
+import { useActivityContext } from "../context";
 import {
   Trophy,
   TrendingUp,
