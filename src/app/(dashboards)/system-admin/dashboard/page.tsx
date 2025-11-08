@@ -4,38 +4,24 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { LoadingState } from "@/components/shared/loading-state";
+import { StatCard } from "@/components/dashboard/stat-card";
 import { ProtectedRoute } from "@/components/auth/protected-route";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Building2,
   Users,
-  Activity,
   Database,
   ArrowRight,
-  CheckCircle2,
-  AlertCircle,
+  Info,
   Shield,
-  FileText,
-  Server,
-  Cpu,
-  HardDrive,
-  TrendingUp,
-  Clock,
   Settings,
   BarChart3,
-  Eye,
+  FileText,
+  Activity,
 } from "lucide-react";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import { toast } from "sonner";
+import Link from "next/link";
 
 export default function SystemAdminDashboardPage() {
   return (
@@ -47,42 +33,43 @@ export default function SystemAdminDashboardPage() {
 
 function DashboardContent() {
   const router = useRouter();
-
-  // Real-time system metrics
-  const [systemMetrics, setSystemMetrics] = useState({
-    cpu: 42,
-    memory: 68,
-    storage: 55,
-    uptime: 99.98,
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalOrganizations: 0,
+    totalUsers: 0,
+    databaseSize: "0 MB",
+    systemHealth: "Healthy",
   });
 
-  // Mock data for activity chart
-  const [activityData] = useState([
-    { hour: "00:00", requests: 1200 },
-    { hour: "04:00", requests: 800 },
-    { hour: "08:00", requests: 2400 },
-    { hour: "12:00", requests: 3200 },
-    { hour: "16:00", requests: 2800 },
-    { hour: "20:00", requests: 1800 },
-    { hour: "24:00", requests: 1500 },
-  ]);
-
-  // Real-time metrics update
   useEffect(() => {
-    const interval = setInterval(() => {
-      setSystemMetrics(prev => ({
-        cpu: Math.min(100, Math.max(20, prev.cpu + (Math.random() - 0.5) * 10)),
-        memory: Math.min(100, Math.max(40, prev.memory + (Math.random() - 0.5) * 5)),
-        storage: prev.storage,
-        uptime: prev.uptime,
-      }));
-    }, 5000);
-
-    return () => clearInterval(interval);
+    loadDashboardData();
   }, []);
 
+  async function loadDashboardData() {
+    try {
+      setLoading(true);
+
+      // TODO: Implement API calls to fetch real data
+      // const data = await getSystemStats();
+      // setStats(data);
+
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+    } catch (error) {
+      console.error("Error loading dashboard data:", error);
+      toast.error("Failed to load dashboard");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (loading) {
+    return <LoadingState message="Loading dashboard..." fullScreen />;
+  }
+
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       {/* Header */}
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold tracking-tight">System Administration</h1>
@@ -91,174 +78,200 @@ function DashboardContent() {
         </p>
       </div>
 
-      {/* System Status Alert */}
-      <Alert>
-        <CheckCircle2 className="h-4 w-4" />
-        <AlertTitle>System Status: All Systems Operational</AlertTitle>
+      {/* Development Notice */}
+      <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-900/20">
+        <Info className="h-4 w-4 text-blue-600" />
         <AlertDescription>
-          All services are running normally. Last backup completed 2 hours ago.
+          System admin dashboard is displaying basic statistics.
+          Use the management pages below to access full system administration features.
         </AlertDescription>
       </Alert>
 
-      {/* Key Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Organizations</p>
-                <p className="text-2xl font-bold">15</p>
-                <p className="text-xs text-green-500 mt-1">+2 this month</p>
-              </div>
-              <Building2 className="h-8 w-8 text-blue-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Users</p>
-                <p className="text-2xl font-bold">2,301</p>
-                <p className="text-xs text-green-500 mt-1">+156 this month</p>
-              </div>
-              <Users className="h-8 w-8 text-green-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Database Size</p>
-                <p className="text-2xl font-bold">1.2GB</p>
-                <p className="text-xs text-muted-foreground mt-1">60% of limit</p>
-              </div>
-              <Database className="h-8 w-8 text-purple-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">System Uptime</p>
-                <p className="text-2xl font-bold">99.98%</p>
-                <p className="text-xs text-muted-foreground mt-1">30 days</p>
-              </div>
-              <Activity className="h-8 w-8 text-amber-500" />
-            </div>
-          </CardContent>
-        </Card>
+      {/* Simplified Stats Grid */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          title="Organizations"
+          value={stats.totalOrganizations}
+          description="Active organizations"
+          icon={Building2}
+          variant="info"
+        />
+        <StatCard
+          title="Total Users"
+          value={stats.totalUsers}
+          description="Across all organizations"
+          icon={Users}
+          variant="success"
+        />
+        <StatCard
+          title="Database Size"
+          value={stats.databaseSize}
+          description="Current usage"
+          icon={Database}
+          variant="warning"
+        />
+        <StatCard
+          title="System Health"
+          value={stats.systemHealth}
+          description="Overall status"
+          icon={Activity}
+          variant="primary"
+        />
       </div>
 
-      {/* System Health Overview */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>System Resources</CardTitle>
-              <Badge variant="outline" className="gap-1">
-                <Activity className="h-3 w-3 animate-pulse" />
-                Live
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <Cpu className="h-4 w-4 text-blue-500" />
-                  <span className="text-sm font-medium">CPU Usage</span>
-                </div>
-                <span className="text-sm font-bold">{Math.round(systemMetrics.cpu)}%</span>
-              </div>
-              <Progress value={systemMetrics.cpu} className="h-2" />
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <Server className="h-4 w-4 text-green-500" />
-                  <span className="text-sm font-medium">Memory</span>
-                </div>
-                <span className="text-sm font-bold">{Math.round(systemMetrics.memory)}%</span>
-              </div>
-              <Progress value={systemMetrics.memory} className="h-2" />
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <HardDrive className="h-4 w-4 text-purple-500" />
-                  <span className="text-sm font-medium">Storage</span>
-                </div>
-                <span className="text-sm font-bold">{Math.round(systemMetrics.storage)}%</span>
-              </div>
-              <Progress value={systemMetrics.storage} className="h-2" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Platform Activity (24h)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={activityData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="hour" />
-                <YAxis />
-                <Tooltip />
-                <Line
-                  type="monotone"
-                  dataKey="requests"
-                  stroke="#8884d8"
-                  strokeWidth={2}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Recent Activity */}
+      {/* Quick Access System Management Cards */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Recent System Events</CardTitle>
-            <Button variant="outline" size="sm" onClick={() => router.push("/system-admin/audit")}>
-              View All
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
+          <CardTitle>System Management</CardTitle>
+          <CardDescription>
+            Quick access to system administration features
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <Badge variant="default">Success</Badge>
-              <span className="text-sm">New organization "Tech Corp" created</span>
-              <span className="text-xs text-muted-foreground ml-auto">5 minutes ago</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <Badge variant="default">Success</Badge>
-              <span className="text-sm">Automated backup completed</span>
-              <span className="text-xs text-muted-foreground ml-auto">2 hours ago</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <Badge variant="secondary">Warning</Badge>
-              <span className="text-sm">High API usage detected from org "Demo Org"</span>
-              <span className="text-xs text-muted-foreground ml-auto">3 hours ago</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <Badge variant="default">Success</Badge>
-              <span className="text-sm">System update installed successfully</span>
-              <span className="text-xs text-muted-foreground ml-auto">1 day ago</span>
-            </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Link href="/system-admin/organizations">
+              <Button
+                variant="outline"
+                className="w-full h-auto p-4 flex items-start justify-between hover:bg-accent"
+              >
+                <div className="flex items-start gap-3 text-left">
+                  <Building2 className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-sm">Organization Management</h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Create and manage organizations across the platform
+                    </p>
+                  </div>
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            </Link>
+
+            <Link href="/system-admin/users">
+              <Button
+                variant="outline"
+                className="w-full h-auto p-4 flex items-start justify-between hover:bg-accent"
+              >
+                <div className="flex items-start gap-3 text-left">
+                  <Users className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-sm">User Management</h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      View and manage all users across organizations
+                    </p>
+                  </div>
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            </Link>
+
+            <Link href="/system-admin/health">
+              <Button
+                variant="outline"
+                className="w-full h-auto p-4 flex items-start justify-between hover:bg-accent"
+              >
+                <div className="flex items-start gap-3 text-left">
+                  <Activity className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-sm">System Health</h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Monitor system performance and resource usage
+                    </p>
+                  </div>
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            </Link>
+
+            <Link href="/system-admin/database">
+              <Button
+                variant="outline"
+                className="w-full h-auto p-4 flex items-start justify-between hover:bg-accent"
+              >
+                <div className="flex items-start gap-3 text-left">
+                  <Database className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-sm">Database Management</h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Database operations, backups, and maintenance
+                    </p>
+                  </div>
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            </Link>
+
+            <Link href="/system-admin/audit">
+              <Button
+                variant="outline"
+                className="w-full h-auto p-4 flex items-start justify-between hover:bg-accent"
+              >
+                <div className="flex items-start gap-3 text-left">
+                  <FileText className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-sm">Audit Logs</h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      View system events and security audit logs
+                    </p>
+                  </div>
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            </Link>
+
+            <Link href="/system-admin/analytics">
+              <Button
+                variant="outline"
+                className="w-full h-auto p-4 flex items-start justify-between hover:bg-accent"
+              >
+                <div className="flex items-start gap-3 text-left">
+                  <BarChart3 className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-sm">Platform Analytics</h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Usage statistics and performance metrics
+                    </p>
+                  </div>
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            </Link>
+
+            <Link href="/system-admin/security">
+              <Button
+                variant="outline"
+                className="w-full h-auto p-4 flex items-start justify-between hover:bg-accent"
+              >
+                <div className="flex items-start gap-3 text-left">
+                  <Shield className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-sm">Security Settings</h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Configure authentication and security policies
+                    </p>
+                  </div>
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            </Link>
+
+            <Link href="/system-admin/settings">
+              <Button
+                variant="outline"
+                className="w-full h-auto p-4 flex items-start justify-between hover:bg-accent"
+              >
+                <div className="flex items-start gap-3 text-left">
+                  <Settings className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-sm">System Settings</h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Configure platform-wide settings and preferences
+                    </p>
+                  </div>
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            </Link>
           </div>
         </CardContent>
       </Card>

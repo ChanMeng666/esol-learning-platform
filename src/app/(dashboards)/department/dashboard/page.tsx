@@ -4,21 +4,23 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { LoadingState } from "@/components/shared/loading-state";
+import { StatCard } from "@/components/dashboard/stat-card";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import {
   Users,
   GraduationCap,
   BookOpen,
   ArrowRight,
-  TrendingUp,
-  Award,
-  FileText,
-  BarChart3,
   Target,
-  Activity,
-  CheckCircle2,
+  Info,
+  UserCheck,
+  School,
+  BarChart3,
 } from "lucide-react";
+import { toast } from "sonner";
+import Link from "next/link";
 
 export default function DepartmentDashboardPage() {
   return (
@@ -30,30 +32,43 @@ export default function DepartmentDashboardPage() {
 
 function DashboardContent() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalTeachers: 0,
+    totalStudents: 0,
+    totalClasses: 0,
+    averagePerformance: 0,
+  });
 
   useEffect(() => {
-    const loadData = async () => {
-      setIsLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setIsLoading(false);
-    };
-    loadData();
+    loadDashboardData();
   }, []);
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-          <p className="mt-4 text-muted-foreground">Loading dashboard...</p>
-        </div>
-      </div>
-    );
+  async function loadDashboardData() {
+    try {
+      setLoading(true);
+
+      // TODO: Implement API calls to fetch real data
+      // const data = await getDepartmentStats();
+      // setStats(data);
+
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+    } catch (error) {
+      console.error("Error loading dashboard data:", error);
+      toast.error("Failed to load dashboard");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (loading) {
+    return <LoadingState message="Loading dashboard..." fullScreen />;
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       {/* Header */}
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold tracking-tight">Department Dashboard</h1>
@@ -62,180 +77,131 @@ function DashboardContent() {
         </p>
       </div>
 
-      {/* Key Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Teachers</p>
-                <p className="text-2xl font-bold">12</p>
-                <p className="text-xs text-green-500 mt-1">+2 from last month</p>
-              </div>
-              <GraduationCap className="h-8 w-8 text-blue-500" />
-            </div>
-          </CardContent>
-        </Card>
+      {/* Development Notice */}
+      <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-900/20">
+        <Info className="h-4 w-4 text-blue-600" />
+        <AlertDescription>
+          Department dashboard is currently displaying basic statistics.
+          Full analytics and reporting features are in development.
+        </AlertDescription>
+      </Alert>
 
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Students</p>
-                <p className="text-2xl font-bold">285</p>
-                <p className="text-xs text-green-500 mt-1">+18 this semester</p>
-              </div>
-              <Users className="h-8 w-8 text-green-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Active Classes</p>
-                <p className="text-2xl font-bold">28</p>
-                <p className="text-xs text-muted-foreground mt-1">Across all levels</p>
-              </div>
-              <BookOpen className="h-8 w-8 text-purple-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Avg Performance</p>
-                <p className="text-2xl font-bold">86%</p>
-                <p className="text-xs text-green-500 mt-1">+3% improvement</p>
-              </div>
-              <Target className="h-8 w-8 text-amber-500" />
-            </div>
-          </CardContent>
-        </Card>
+      {/* Simplified Stats Grid */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          title="Total Teachers"
+          value={stats.totalTeachers}
+          description="In your department"
+          icon={GraduationCap}
+          variant="info"
+        />
+        <StatCard
+          title="Total Students"
+          value={stats.totalStudents}
+          description="Currently enrolled"
+          icon={Users}
+          variant="success"
+        />
+        <StatCard
+          title="Active Classes"
+          value={stats.totalClasses}
+          description="Across all levels"
+          icon={BookOpen}
+          variant="warning"
+        />
+        <StatCard
+          title="Avg Performance"
+          value={`${stats.averagePerformance}%`}
+          description="Department average"
+          icon={Target}
+          variant="primary"
+        />
       </div>
 
-      {/* Department Overview */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activities</CardTitle>
-            <CardDescription>Latest updates from your department</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <Badge variant="default">New</Badge>
-                <span className="text-sm">New teacher onboarded: Sarah Johnson</span>
-                <span className="text-xs text-muted-foreground ml-auto">2 hours ago</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Badge variant="default">Update</Badge>
-                <span className="text-sm">Curriculum update: Level 3 materials revised</span>
-                <span className="text-xs text-muted-foreground ml-auto">1 day ago</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Badge variant="secondary">Completed</Badge>
-                <span className="text-sm">Performance review: Q2 assessments finalized</span>
-                <span className="text-xs text-muted-foreground ml-auto">2 days ago</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Badge variant="default">Achievement</Badge>
-                <span className="text-sm">Department achieved 86% average performance</span>
-                <span className="text-xs text-muted-foreground ml-auto">3 days ago</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Upcoming Tasks</CardTitle>
-            <CardDescription>Important deadlines and events</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 rounded-lg border">
-                <div>
-                  <p className="font-medium text-sm">Department Meeting</p>
-                  <p className="text-xs text-muted-foreground">Tomorrow at 2:00 PM</p>
+      {/* Quick Access Cards */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Department Management</CardTitle>
+          <CardDescription>
+            Quick access to department features and reports
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Link href="/department/teachers">
+              <Button
+                variant="outline"
+                className="w-full h-auto p-4 flex items-start justify-between hover:bg-accent"
+              >
+                <div className="flex items-start gap-3 text-left">
+                  <UserCheck className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-sm">Teacher Management</h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      View and manage department teachers
+                    </p>
+                  </div>
                 </div>
-                <Badge variant="destructive">Tomorrow</Badge>
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-lg border">
-                <div>
-                  <p className="font-medium text-sm">Budget Review</p>
-                  <p className="text-xs text-muted-foreground">Friday, Dec 15</p>
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            </Link>
+
+            <Link href="/department/classes">
+              <Button
+                variant="outline"
+                className="w-full h-auto p-4 flex items-start justify-between hover:bg-accent"
+              >
+                <div className="flex items-start gap-3 text-left">
+                  <School className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-sm">Class Overview</h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Monitor department classes and schedules
+                    </p>
+                  </div>
                 </div>
-                <Badge variant="secondary">This Week</Badge>
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-lg border">
-                <div>
-                  <p className="font-medium text-sm">Teacher Evaluations Due</p>
-                  <p className="text-xs text-muted-foreground">Dec 20</p>
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            </Link>
+
+            <Link href="/department/students">
+              <Button
+                variant="outline"
+                className="w-full h-auto p-4 flex items-start justify-between hover:bg-accent"
+              >
+                <div className="flex items-start gap-3 text-left">
+                  <Users className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-sm">Student Overview</h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Track student enrollment and progress
+                    </p>
+                  </div>
                 </div>
-                <Badge variant="outline">Next Week</Badge>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            </Link>
 
-      {/* Performance Highlights */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Top Performing Class</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-full bg-green-500/10">
-                <TrendingUp className="w-6 h-6 text-green-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">ENG-401</p>
-                <p className="text-sm text-muted-foreground">87% average score</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Best Attendance</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-full bg-blue-500/10">
-                <CheckCircle2 className="w-6 h-6 text-blue-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">READ-201</p>
-                <p className="text-sm text-muted-foreground">97% attendance rate</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Most Active Teacher</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-full bg-purple-500/10">
-                <Award className="w-6 h-6 text-purple-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">Dr. Anderson</p>
-                <p className="text-sm text-muted-foreground">4.8 satisfaction rating</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            <Link href="/department/reports">
+              <Button
+                variant="outline"
+                className="w-full h-auto p-4 flex items-start justify-between hover:bg-accent"
+              >
+                <div className="flex items-start gap-3 text-left">
+                  <BarChart3 className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-sm">Performance Reports</h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      View analytics and performance metrics
+                    </p>
+                  </div>
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

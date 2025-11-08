@@ -83,14 +83,6 @@ export default function TeacherDashboardPage() {
     ? Math.round((completedAssignments / totalAssignments) * 100)
     : 0;
 
-  // Mock trends (replace with real data from API)
-  const mockTrends = {
-    students: { value: 5.2, label: "vs last month" },
-    classes: { value: 0, label: "no change" },
-    assignments: { value: 12.8, label: "vs last month" },
-    reviews: { value: -8.5, label: "vs last week" },
-  };
-
   // Generate class performance data for bar chart
   const classPerformanceData = classes.slice(0, 6).map((cls) => ({
     label: cls.name.length > 15 ? cls.name.substring(0, 15) + "..." : cls.name,
@@ -172,7 +164,6 @@ export default function TeacherDashboardPage() {
               value={totalClasses}
               description="Active classes you're teaching"
               icon={GraduationCap}
-              trend={mockTrends.classes}
               variant="info"
             />
             <StatCard
@@ -180,7 +171,6 @@ export default function TeacherDashboardPage() {
               value={totalStudents}
               description="Across all your classes"
               icon={Users}
-              trend={mockTrends.students}
               variant="success"
             />
             <StatCard
@@ -188,7 +178,6 @@ export default function TeacherDashboardPage() {
               value={activeAssignments}
               description="Currently assigned"
               icon={ClipboardList}
-              trend={mockTrends.assignments}
               variant="warning"
             />
             <StatCard
@@ -196,7 +185,6 @@ export default function TeacherDashboardPage() {
               value={pendingReviews}
               description="Submissions to review"
               icon={Clock}
-              trend={mockTrends.reviews}
               variant="primary"
               footer={{
                 label: "Review Now",
