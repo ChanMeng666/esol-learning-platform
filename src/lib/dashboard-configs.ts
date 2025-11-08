@@ -25,6 +25,7 @@ import {
   HeadphonesIcon,
   Lightbulb,
   FileSpreadsheet,
+  KeyRound,
   type LucideIcon,
 } from "lucide-react";
 import { type UserRole, type DashboardConfig, type NavGroup, type NavMainItem } from "@/types/navigation";
@@ -181,11 +182,23 @@ export const teacherDashboardConfig: DashboardConfig = {
           title: "My Classes",
           url: "/teacher/classes",
           icon: Users,
+          subItems: [
+            { title: "All Classes", url: "/teacher/classes" },
+            { title: "Attendance", url: "/teacher/classes/attendance" },
+            { title: "Materials", url: "/teacher/classes/materials" },
+            { title: "Schedule", url: "/teacher/classes/schedule" },
+          ],
         },
         {
           title: "Gradebook",
           url: "/teacher/gradebook",
           icon: FileSpreadsheet,
+          subItems: [
+            { title: "Overview", url: "/teacher/gradebook" },
+            { title: "Summary", url: "/teacher/gradebook/summary" },
+            { title: "Distribution", url: "/teacher/gradebook/distribution" },
+            { title: "Settings", url: "/teacher/gradebook/settings" },
+          ],
         },
         {
           title: "Assignments",
@@ -270,11 +283,21 @@ export const parentDashboardConfig: DashboardConfig = {
           title: "Activity & Attendance",
           url: "/parent/activity",
           icon: Activity,
+          subItems: [
+            { title: "Overview", url: "/parent/activity" },
+            { title: "Summary", url: "/parent/activity/summary" },
+            { title: "Attendance", url: "/parent/activity/attendance" },
+          ],
         },
         {
           title: "Assignments",
           url: "/parent/assignments",
           icon: ClipboardList,
+          subItems: [
+            { title: "All Assignments", url: "/parent/assignments" },
+            { title: "Upcoming", url: "/parent/assignments/upcoming" },
+            { title: "Graded", url: "/parent/assignments/graded" },
+          ],
         },
         {
           title: "Speaking Progress",
@@ -471,6 +494,11 @@ export const systemAdminDashboardConfig: DashboardConfig = {
           title: "User Management",
           url: "/system-admin/users",
           icon: Users,
+        },
+        {
+          title: "Invitation Codes",
+          url: "/system-admin/dashboard/invitations",
+          icon: KeyRound,
         },
         {
           title: "Permissions",
