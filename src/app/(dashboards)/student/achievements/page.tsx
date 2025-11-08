@@ -12,22 +12,12 @@ import type { Badge as UserBadge } from "@/types";
 import {
   Award,
   Trophy,
-  Medal,
   Target,
-  Zap,
   Crown,
   Star,
   Shield,
   Flame,
-  Gem,
-  Heart,
   BookOpen,
-  Headphones,
-  MessageSquare,
-  PenTool,
-  Mic2,
-  Clock,
-  TrendingUp,
   CheckCircle2,
   Lock
 } from "lucide-react";
@@ -47,8 +37,6 @@ interface Achievement {
   unlockedAt?: Date;
   tier?: "bronze" | "silver" | "gold" | "platinum";
 }
-
-// Remove the local Badge interface as we'll use the one from types
 
 export default function StudentAchievementsPage() {
   return (
@@ -170,12 +158,12 @@ function AchievementsPageContent() {
     .reduce((sum, a) => sum + a.points, 0);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       {/* Header */}
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold tracking-tight">Achievements & Badges</h1>
         <p className="text-muted-foreground">
-          Track your accomplishments and earn rewards for your progress
+          Track your learning milestones
         </p>
       </div>
 
@@ -234,205 +222,152 @@ function AchievementsPageContent() {
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="achievements" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="achievements">Achievements</TabsTrigger>
           <TabsTrigger value="badges">Badges</TabsTrigger>
-          <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
         </TabsList>
 
         {/* Achievements Tab */}
-        <TabsContent value="achievements" className="mt-6 space-y-6">
+        <TabsContent value="achievements" className="mt-6 space-y-8">
           {/* In Progress Section */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">In Progress</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {inProgressAchievements.map((achievement) => {
-                const Icon = achievement.icon;
-                return (
-                  <Card key={achievement.id} className="relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-2">
-                      <Lock className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                    <CardContent className="p-6">
-                      <div className="flex items-start gap-4">
-                        <div className={`p-3 rounded-full bg-muted ${getTierColor(achievement.tier)}`}>
-                          <Icon className="h-6 w-6" />
+          {inProgressAchievements.length > 0 && (
+            <div>
+              <h3 className="text-lg font-semibold mb-4">In Progress</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {inProgressAchievements.map((achievement) => {
+                  const Icon = achievement.icon;
+                  return (
+                    <Card key={achievement.id} className="relative overflow-hidden">
+                      <div className="absolute top-0 right-0 p-2">
+                        <Lock className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                      <CardContent className="p-6">
+                        <div className="flex items-start gap-4">
+                          <div className={`p-3 rounded-full bg-muted ${getTierColor(achievement.tier)}`}>
+                            <Icon className="h-6 w-6" />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-semibold">{achievement.title}</h4>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {achievement.description}
+                            </p>
+                            <div className="mt-3 space-y-2">
+                              <Progress
+                                value={(achievement.progress / achievement.target) * 100}
+                                className="h-2"
+                              />
+                              <div className="flex justify-between text-xs">
+                                <span className="text-muted-foreground">
+                                  {achievement.progress}/{achievement.target}
+                                </span>
+                                <span className="font-medium">
+                                  +{achievement.points} pts
+                                </span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex-1">
-                          <h4 className="font-semibold">{achievement.title}</h4>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {achievement.description}
-                          </p>
-                          <div className="mt-3 space-y-2">
-                            <Progress
-                              value={(achievement.progress / achievement.target) * 100}
-                              className="h-2"
-                            />
-                            <div className="flex justify-between text-xs">
-                              <span className="text-muted-foreground">
-                                {achievement.progress}/{achievement.target}
-                              </span>
-                              <span className="font-medium">
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Completed Section */}
+          {completedAchievements.length > 0 && (
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Completed</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {completedAchievements.map((achievement) => {
+                  const Icon = achievement.icon;
+                  return (
+                    <Card
+                      key={achievement.id}
+                      className="relative overflow-hidden border-primary/20 bg-primary/5"
+                    >
+                      <div className="absolute top-0 right-0 p-2">
+                        <CheckCircle2 className="h-4 w-4 text-primary" />
+                      </div>
+                      <CardContent className="p-6">
+                        <div className="flex items-start gap-4">
+                          <div className={`p-3 rounded-full bg-primary/10 ${getTierColor(achievement.tier)}`}>
+                            <Icon className="h-6 w-6" />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-semibold">{achievement.title}</h4>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {achievement.description}
+                            </p>
+                            <div className="mt-3 flex items-center gap-2">
+                              <Badge variant="secondary" className="text-xs">
+                                Completed
+                              </Badge>
+                              <span className="text-xs font-medium text-primary">
                                 +{achievement.points} pts
                               </span>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Completed Section */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Completed</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {completedAchievements.map((achievement) => {
-                const Icon = achievement.icon;
-                return (
-                  <Card
-                    key={achievement.id}
-                    className="relative overflow-hidden border-primary/20 bg-primary/5"
-                  >
-                    <div className="absolute top-0 right-0 p-2">
-                      <CheckCircle2 className="h-4 w-4 text-primary" />
-                    </div>
-                    <CardContent className="p-6">
-                      <div className="flex items-start gap-4">
-                        <div className={`p-3 rounded-full bg-primary/10 ${getTierColor(achievement.tier)}`}>
-                          <Icon className="h-6 w-6" />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-semibold">{achievement.title}</h4>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {achievement.description}
-                          </p>
-                          <div className="mt-3 flex items-center gap-2">
-                            <Badge variant="secondary" className="text-xs">
-                              Completed
-                            </Badge>
-                            <span className="text-xs font-medium text-primary">
-                              +{achievement.points} pts earned
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          </div>
-        </TabsContent>
-
-        {/* Badges Tab */}
-        <TabsContent value="badges" className="mt-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {badges.map((badge) => (
-              <Card key={badge.id} className="text-center hover:scale-105 transition-transform">
-                <CardContent className="p-4">
-                  <div className={`text-4xl mb-2 p-3 rounded-full inline-block ${getRarityColor(badge.rarity)}`}>
-                    {badge.icon}
-                  </div>
-                  <h4 className="font-semibold text-sm">{badge.name}</h4>
-                  <Badge variant="outline" className="mt-2 text-xs">
-                    {badge.rarity}
-                  </Badge>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {badge.description}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {badges.length === 0 && (
+          {/* Empty State */}
+          {achievements.length === 0 && (
             <Card className="p-12 text-center">
-              <Shield className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold">No badges earned yet</h3>
+              <Trophy className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold">No achievements yet</h3>
               <p className="text-sm text-muted-foreground mt-2">
-                Complete achievements and challenges to earn your first badge!
+                Start practicing to unlock your first achievement!
               </p>
               <Button className="mt-4" onClick={() => window.location.href = "/practice"}>
-                Start Practicing
+                Start Learning
               </Button>
             </Card>
           )}
         </TabsContent>
 
-        {/* Leaderboard Tab */}
-        <TabsContent value="leaderboard" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Weekly Leaderboard</CardTitle>
-              <CardDescription>
-                See how you rank against other learners this week
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {[
-                  { rank: 1, name: "Alex Chen", points: 2850, change: "up", avatar: "🏆" },
-                  { rank: 2, name: "Sarah Kim", points: 2720, change: "up", avatar: "🥈" },
-                  { rank: 3, name: "Mike Johnson", points: 2680, change: "down", avatar: "🥉" },
-                  { rank: 4, name: "You", points: 2450, change: "up", isCurrentUser: true },
-                  { rank: 5, name: "Emma Wilson", points: 2320, change: "same" },
-                  { rank: 6, name: "James Lee", points: 2280, change: "down" },
-                  { rank: 7, name: "Lisa Brown", points: 2150, change: "up" },
-                  { rank: 8, name: "Tom Davis", points: 2080, change: "same" }
-                ].map((user) => (
-                  <div
-                    key={user.rank}
-                    className={`flex items-center justify-between p-3 rounded-lg ${
-                      user.isCurrentUser ? "bg-primary/10 border border-primary/20" : "hover:bg-muted/50"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className={`text-lg font-bold ${
-                        user.rank <= 3 ? "text-primary" : "text-muted-foreground"
-                      }`}>
-                        #{user.rank}
-                      </span>
-                      <div className="text-2xl">{user.avatar || "👤"}</div>
-                      <div>
-                        <p className="font-medium">
-                          {user.name}
-                          {user.isCurrentUser && <span className="ml-2 text-primary">(You)</span>}
-                        </p>
-                        <p className="text-sm text-muted-foreground">{user.points.toLocaleString()} pts</p>
-                      </div>
+        {/* Badges Tab */}
+        <TabsContent value="badges" className="mt-6">
+          {badges.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {badges.map((badge) => (
+                <Card key={badge.id} className="text-center hover:scale-105 transition-transform">
+                  <CardContent className="p-4">
+                    <div className={`text-4xl mb-2 p-3 rounded-full inline-block ${getRarityColor(badge.rarity)}`}>
+                      {badge.icon}
                     </div>
-                    <div className="flex items-center gap-2">
-                      {user.change === "up" && <TrendingUp className="h-4 w-4 text-green-600" />}
-                      {user.change === "down" && <TrendingUp className="h-4 w-4 text-red-600 rotate-180" />}
-                      {user.change === "same" && <span className="text-muted-foreground">-</span>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                    <h4 className="font-semibold text-sm">{badge.name}</h4>
+                    <Badge variant="outline" className="mt-2 text-xs capitalize">
+                      {badge.rarity}
+                    </Badge>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {badge.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card className="p-12 text-center">
+              <Shield className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold">No badges earned yet</h3>
+              <p className="text-sm text-muted-foreground mt-2">
+                Complete achievements to earn your first badge!
+              </p>
+              <Button className="mt-4" onClick={() => window.location.href = "/practice"}>
+                Start Learning
+              </Button>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
-
-      {/* Next Achievement Card */}
-      <Card className="bg-gradient-to-r from-primary/10 to-primary/5">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold">Next Achievement</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Complete 10 more questions to unlock "Dedicated Learner"
-              </p>
-              <Progress value={70} className="w-full max-w-xs mt-3 h-2" />
-            </div>
-            <div className="text-4xl">🎯</div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

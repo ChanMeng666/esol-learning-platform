@@ -31,7 +31,7 @@ function SpeakingProgressContent() {
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold tracking-tight">Speaking Statistics</h1>
         <p className="text-muted-foreground">
-          Review your AI Speaking Coach sessions and track your speaking improvement
+          Track your speaking progress
         </p>
       </div>
 
