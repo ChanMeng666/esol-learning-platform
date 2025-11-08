@@ -49,10 +49,12 @@ const NavItemExpanded = ({
   item,
   isActive,
   isSubmenuOpen,
+  isExactItemActive,
 }: {
   item: NavMainItem;
   isActive: (url: string, subItems?: NavMainItem["subItems"]) => boolean;
   isSubmenuOpen: (subItems?: NavMainItem["subItems"]) => boolean;
+  isExactItemActive: (url: string) => boolean;
 }) => {
   return (
     <Collapsible
@@ -66,8 +68,9 @@ const NavItemExpanded = ({
           {item.subItems ? (
             <SidebarMenuButton
               disabled={item.comingSoon}
-              isActive={isActive(item.url, item.subItems)}
+              isActive={false} // Parent items should never be highlighted
               tooltip={item.title}
+              className="" // No highlight styles for parent items
             >
               {item.icon && <item.icon />}
               <span>{item.title}</span>
@@ -78,8 +81,9 @@ const NavItemExpanded = ({
             <SidebarMenuButton
               asChild
               aria-disabled={item.comingSoon}
-              isActive={isActive(item.url)}
+              isActive={isExactItemActive(item.url)}
               tooltip={item.title}
+              className={isExactItemActive(item.url) ? "bg-gradient-to-r from-blue-500/20 to-purple-500/20 border-l-4 border-blue-500 font-semibold text-blue-600 dark:text-blue-400" : ""}
             >
               <Link href={item.url} target={item.newTab ? "_blank" : undefined}>
                 {item.icon && <item.icon />}
@@ -96,8 +100,9 @@ const NavItemExpanded = ({
                 <SidebarMenuSubItem key={subItem.title}>
                   <SidebarMenuSubButton
                     aria-disabled={subItem.comingSoon}
-                    isActive={isActive(subItem.url)}
+                    isActive={isExactItemActive(subItem.url)}
                     asChild
+                    className={isExactItemActive(subItem.url) ? "bg-gradient-to-r from-blue-500/20 to-purple-500/20 border-l-4 border-blue-500 font-semibold text-blue-600 dark:text-blue-400" : ""}
                   >
                     <Link
                       href={subItem.url}
@@ -124,9 +129,11 @@ const NavItemExpanded = ({
 const NavItemCollapsed = ({
   item,
   isActive,
+  isExactItemActive,
 }: {
   item: NavMainItem;
   isActive: (url: string, subItems?: NavMainItem["subItems"]) => boolean;
+  isExactItemActive: (url: string) => boolean;
 }) => {
   return (
     <SidebarMenuItem key={item.title}>
@@ -135,7 +142,8 @@ const NavItemCollapsed = ({
           <SidebarMenuButton
             disabled={item.comingSoon}
             tooltip={item.title}
-            isActive={isActive(item.url, item.subItems)}
+            isActive={false} // Parent items should never be highlighted in collapsed mode
+            className="" // No highlight styles for parent items
           >
             {item.icon && <item.icon />}
             <span>{item.title}</span>
@@ -148,9 +156,9 @@ const NavItemCollapsed = ({
               <SidebarMenuSubButton
                 key={subItem.title}
                 asChild
-                className="focus-visible:ring-0"
+                className={isExactItemActive(subItem.url) ? "bg-gradient-to-r from-blue-500/20 to-purple-500/20 border-l-4 border-blue-500 font-semibold text-blue-600 dark:text-blue-400 focus-visible:ring-0" : "focus-visible:ring-0"}
                 aria-disabled={subItem.comingSoon}
-                isActive={isActive(subItem.url)}
+                isActive={isExactItemActive(subItem.url)}
               >
                 <Link
                   href={subItem.url}
@@ -178,17 +186,33 @@ export function NavMain({ items }: NavMainProps) {
   const path = usePathname();
   const { state, isMobile } = useSidebar();
 
+  // Check if a specific item is exactly active (for highlighting)
+  const isExactItemActive = (url: string) => {
+    // Exact match only for the current item
+    return path === url;
+  };
+
+  // Check if any subitem is active (for parent expansion state)
+  const hasActiveSubItem = (subItems?: NavMainItem["subItems"]) => {
+    if (!subItems?.length) return false;
+    return subItems.some((sub) => {
+      // Check if current path matches this subitem
+      return path === sub.url || path.startsWith(sub.url + "/");
+    });
+  };
+
+  // Legacy function for backward compatibility - DO NOT use for highlighting parent items
   const isItemActive = (url: string, subItems?: NavMainItem["subItems"]) => {
-    // Check if any subitem is active
+    // If has subitems, check if any subitem is active (for expansion)
     if (subItems?.length) {
-      return subItems.some((sub) => path.startsWith(sub.url));
+      return hasActiveSubItem(subItems);
     }
-    // Check if the main item is active
-    return path === url || path.startsWith(url);
+    // For items without subitems, check exact match
+    return isExactItemActive(url);
   };
 
   const isSubmenuOpen = (subItems?: NavMainItem["subItems"]) => {
-    return subItems?.some((sub) => path.startsWith(sub.url)) ?? false;
+    return hasActiveSubItem(subItems);
   };
 
   return (
@@ -209,7 +233,8 @@ export function NavMain({ items }: NavMainProps) {
                           asChild
                           aria-disabled={item.comingSoon}
                           tooltip={item.title}
-                          isActive={isItemActive(item.url)}
+                          isActive={isExactItemActive(item.url)}
+                          className={isExactItemActive(item.url) ? "bg-gradient-to-r from-blue-500/20 to-purple-500/20 border-l-4 border-blue-500 font-semibold text-blue-600 dark:text-blue-400" : ""}
                         >
                           <Link
                             href={item.url}
@@ -228,6 +253,7 @@ export function NavMain({ items }: NavMainProps) {
                       key={item.title}
                       item={item}
                       isActive={isItemActive}
+                      isExactItemActive={isExactItemActive}
                     />
                   );
                 }
@@ -238,6 +264,7 @@ export function NavMain({ items }: NavMainProps) {
                     item={item}
                     isActive={isItemActive}
                     isSubmenuOpen={isSubmenuOpen}
+                    isExactItemActive={isExactItemActive}
                   />
                 );
               })}

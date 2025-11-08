@@ -61,35 +61,34 @@ export const studentDashboardConfig: DashboardConfig = {
       items: [
         {
           title: "NZCEL Exam Prep",
-          url: "/practice/nzcel",
+          url: "/student/dashboard/practice/nzcel",
           icon: GraduationCap,
           subItems: [
-            { title: "Overview", url: "/practice/nzcel" },
-            { title: "Skills Practice", url: "/practice/nzcel/skills" },
-            { title: "Conversation", url: "/practice/nzcel/conversation" },
-            { title: "Mock Exams", url: "/practice/nzcel/exams", comingSoon: true },
+            { title: "Overview", url: "/student/dashboard/practice/nzcel" },
+            { title: "Skills Practice", url: "/student/dashboard/practice/nzcel/skills" },
+            { title: "Conversation", url: "/student/dashboard/practice/nzcel/conversation" },
+            { title: "Mock Exams", url: "/student/dashboard/practice/nzcel/exams" },
           ],
         },
         {
           title: "General English",
-          url: "/practice/general",
+          url: "/student/dashboard/practice/general",
           icon: Globe,
         },
         {
           title: "AI Speaking Coach",
-          url: "/speaking",
+          url: "/student/dashboard/speaking",
           icon: Mic,
         },
         {
           title: "Diagnostic Tests",
-          url: "/diagnostic",
+          url: "/student/dashboard/diagnostic",
           icon: FileText,
         },
         {
           title: "Scenario Practice",
-          url: "/practice/scenarios",
+          url: "/student/dashboard/practice/scenarios",
           icon: Languages,
-          comingSoon: true,
         },
       ],
     },
@@ -126,7 +125,6 @@ export const studentDashboardConfig: DashboardConfig = {
       title: "Help & Support",
       url: "/student/help",
       icon: Bell,
-      comingSoon: true,
     },
   ],
 };
@@ -218,7 +216,6 @@ export const teacherDashboardConfig: DashboardConfig = {
           title: "Curriculum",
           url: "/teacher/curriculum",
           icon: Target,
-          comingSoon: true,
         },
       ],
     },
@@ -228,7 +225,6 @@ export const teacherDashboardConfig: DashboardConfig = {
       title: "Help & Support",
       url: "/teacher/help",
       icon: Bell,
-      comingSoon: true,
     },
   ],
 };
@@ -307,7 +303,6 @@ export const parentDashboardConfig: DashboardConfig = {
       title: "Help & Support",
       url: "/parent/help",
       icon: Bell,
-      comingSoon: true,
     },
   ],
 };

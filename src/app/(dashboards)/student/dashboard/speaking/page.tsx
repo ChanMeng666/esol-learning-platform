@@ -1,13 +1,36 @@
+"use client";
+
 import { ProtectedRoute } from "@/components/auth/protected-route";
-import { SpeakingContent } from "@/components/content/speaking-content";
+import { AISpeakingCoach } from "@/components/speaking/ai-coach";
 
 /**
- * Speaking practice page within student dashboard
+ * AI Speaking Practice Page
+ *
+ * Real-time voice conversation with AI ESOL coach
+ * Provides interactive speaking practice with instant feedback
  */
-export default function StudentDashboardSpeakingPage() {
+export default function SpeakingPage() {
   return (
     <ProtectedRoute>
-      <SpeakingContent />
+      <SpeakingPageContent />
     </ProtectedRoute>
+  );
+}
+
+function SpeakingPageContent() {
+  return (
+    <div className="min-h-screen bg-background pb-20">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-primary mb-4">
+            AI Speaking Practice
+          </h1>
+        </div>
+
+        {/* Main Component */}
+        <AISpeakingCoach />
+      </div>
+    </div>
   );
 }
