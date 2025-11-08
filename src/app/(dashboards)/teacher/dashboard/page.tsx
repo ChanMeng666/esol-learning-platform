@@ -350,58 +350,6 @@ export default function TeacherDashboardPage() {
 
 
       </Tabs>
-
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>Common tasks for teachers</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-            <Button
-              variant="outline"
-              className="h-auto p-4 flex flex-col items-center gap-2"
-              onClick={() => router.push("/teacher/classes")}
-            >
-              <Users className="h-5 w-5" />
-              <span className="text-xs">My Classes</span>
-            </Button>
-            <Button
-              variant="outline"
-              className="h-auto p-4 flex flex-col items-center gap-2"
-              onClick={() => router.push("/teacher/gradebook")}
-            >
-              <Table className="h-5 w-5" />
-              <span className="text-xs">Gradebook</span>
-            </Button>
-            <Button
-              variant="outline"
-              className="h-auto p-4 flex flex-col items-center gap-2"
-              onClick={() => router.push("/teacher/assignments")}
-            >
-              <ClipboardList className="h-5 w-5" />
-              <span className="text-xs">Assignments</span>
-            </Button>
-            <Button
-              variant="outline"
-              className="h-auto p-4 flex flex-col items-center gap-2"
-              onClick={() => router.push("/teacher/analytics")}
-            >
-              <BarChart3 className="h-5 w-5" />
-              <span className="text-xs">Analytics</span>
-            </Button>
-            <Button
-              variant="outline"
-              className="h-auto p-4 flex flex-col items-center gap-2"
-              onClick={() => router.push("/teacher/insights")}
-            >
-              <Lightbulb className="h-5 w-5" />
-              <span className="text-xs">Insights</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

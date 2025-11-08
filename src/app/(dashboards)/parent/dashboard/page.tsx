@@ -418,49 +418,6 @@ export default function ParentDashboardPage() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button
-              variant="outline"
-              className="h-auto p-4 flex flex-col items-center gap-2"
-              onClick={() => router.push('/parent/children')}
-            >
-              <Users className="h-5 w-5" />
-              <span className="text-xs">My Children</span>
-            </Button>
-            <Button
-              variant="outline"
-              className="h-auto p-4 flex flex-col items-center gap-2"
-              onClick={() => router.push('/parent/schedule')}
-            >
-              <Calendar className="h-5 w-5" />
-              <span className="text-xs">Schedule</span>
-            </Button>
-            <Button
-              variant="outline"
-              className="h-auto p-4 flex flex-col items-center gap-2"
-              onClick={() => router.push('/parent/feedback')}
-            >
-              <Award className="h-5 w-5" />
-              <span className="text-xs">Feedback</span>
-            </Button>
-            <Button
-              variant="outline"
-              className="h-auto p-4 flex flex-col items-center gap-2"
-              onClick={() => router.push('/parent/reports')}
-            >
-              <BarChart3 className="h-5 w-5" />
-              <span className="text-xs">Reports</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

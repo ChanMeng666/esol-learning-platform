@@ -1049,3 +1049,160 @@ export interface OrganizationQuestionAccess {
   accessType: QuestionBankAccessType;
   grantedAt: Date;
 }
+
+// ============================================================================
+// DASHBOARD OPTIMIZATION TYPES
+// ============================================================================
+
+/**
+ * Todo Item for Student Dashboard
+ *
+ * Represents a single actionable todo item for students.
+ * Sourced from assignments, achievements, and diagnostic suggestions.
+ *
+ * @see getStudentTodoItems() - Server Action to fetch all todo items
+ *
+ * @example
+ * ```typescript
+ * const todos = await getStudentTodoItems();
+ * // Returns items like:
+ * // - Incomplete assignments (due soon)
+ * // - Achievements nearly complete (progress > 80%)
+ * // - Recommended practice based on diagnostic results
+ * ```
+ */
+export interface TodoItem {
+  id: string;
+  type: "assignment" | "achievement" | "recommendation";
+  title: string;
+  description: string;
+  priority: "high" | "medium" | "low";
+  dueDate?: Date;
+  progress?: number; // 0-100 for achievements
+  actionUrl: string; // Where to navigate when clicked
+  metadata?: {
+    assignmentId?: bigint;
+    achievementId?: string;
+    skillType?: SkillType;
+    level?: string;
+  };
+}
+
+/**
+ * Diagnostic Suggestion for Student Dashboard
+ *
+ * AI-generated learning recommendations based on diagnostic test results.
+ * Highlights strengths and suggests targeted practice areas.
+ *
+ * @see getDiagnosticSuggestions() - Server Action to fetch suggestions
+ *
+ * @example
+ * ```typescript
+ * const suggestion = await getDiagnosticSuggestions();
+ * // Returns:
+ * // {
+ * //   currentLevel: "B1",
+ * //   strengths: ["Good vocabulary", "Clear pronunciation"],
+ * //   weaknesses: ["Grammar accuracy", "Complex sentences"],
+ * //   recommendations: [{
+ * //     skill: "writing",
+ * //     focus: "grammar",
+ * //     description: "Practice conditional sentences",
+ * //     actionUrl: "/practice/general?skill=writing&level=B1"
+ * //   }]
+ * // }
+ * ```
+ */
+export interface DiagnosticSuggestion {
+  currentLevel: string; // CEFR or NZCEL level
+  levelSystem: DiagnosticLevelSystem;
+  strengths: string[];
+  weaknesses: string[]; // areasForImprovement
+  recommendations: DiagnosticRecommendation[];
+  completedAt: Date;
+  nextAssessmentDue?: Date;
+}
+
+export interface DiagnosticRecommendation {
+  skill: SkillType;
+  focus: string; // e.g., "grammar", "pronunciation", "vocabulary"
+  description: string;
+  estimatedDuration?: number; // minutes
+  actionUrl: string;
+}
+
+/**
+ * Priority Assignment for Teacher Dashboard
+ *
+ * Assignment with calculated priority based on due date and status.
+ * Used to show teachers the most urgent items first.
+ *
+ * @see getPriorityAssignments() - Server Action with priority sorting
+ *
+ * @example
+ * ```typescript
+ * const assignments = await getPriorityAssignments();
+ * // Sorted by:
+ * // 1. Due today (red badge)
+ * // 2. Pending grading (orange badge)
+ * // 3. Active assignments (green badge)
+ * ```
+ */
+export interface PriorityAssignment extends Assignment {
+  priority: "urgent" | "high" | "normal";
+  priorityReason: string; // e.g., "Due in 2 hours", "15 submissions to grade"
+  studentsAssigned: number;
+  studentsCompleted: number;
+  studentsInProgress: number;
+  submissionsToReview: number;
+}
+
+/**
+ * Student Needs Attention for Teacher Dashboard
+ *
+ * Identifies students requiring immediate teacher attention.
+ * Based on class analytics and AI-generated insights.
+ *
+ * @see getStudentsNeedAttention() - Server Action to fetch list
+ *
+ * @example
+ * ```typescript
+ * const students = await getStudentsNeedAttention();
+ * // Returns students with:
+ * // - Low engagement (no activity in 7+ days)
+ * // - Poor performance (< 50% accuracy)
+ * // - Incomplete assignments (> 3 overdue)
+ * ```
+ */
+export interface StudentNeedAttention {
+  studentId: bigint;
+  studentName: string;
+  className: string;
+  classId: bigint;
+  reasons: AttentionReason[];
+  lastActivity?: Date;
+  averageScore?: number; // 0-100
+  overdueAssignments: number;
+  recommendedAction: string;
+}
+
+export interface AttentionReason {
+  type: "low_engagement" | "poor_performance" | "overdue_assignments" | "skill_decline" | "other";
+  severity: "critical" | "warning" | "info";
+  description: string;
+  metric?: number; // Optional numeric value (e.g., days inactive, accuracy %)
+}
+
+/**
+ * Teacher Insight with Enhanced Data
+ *
+ * Extends base TeacherInsight with computed fields for dashboard display.
+ *
+ * @see getTeacherInsightsSummary() - Server Action for dashboard
+ */
+export interface TeacherInsightDashboard extends TeacherInsight {
+  isNew: boolean; // Not yet acknowledged
+  isActionable: boolean; // Requires teacher action
+  studentsAffected?: number;
+  estimatedImpact?: "high" | "medium" | "low";
+}
