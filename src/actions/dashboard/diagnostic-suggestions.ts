@@ -133,7 +133,7 @@ export async function getDiagnosticSuggestions(): Promise<DiagnosticSuggestion |
 
     return {
       currentLevel: latestResult.overallLevel,
-      levelSystem: latestResult.levelSystem,
+      levelSystem: latestResult.levelSystem as "nzcel" | "cefr",
       strengths: latestResult.strengths,
       weaknesses: latestResult.areasForImprovement,
       recommendations,

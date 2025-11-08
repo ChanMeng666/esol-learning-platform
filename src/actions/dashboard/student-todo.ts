@@ -3,7 +3,7 @@
 import { fetchWithDrizzle } from "@/lib/db";
 import * as schema from "@/lib/db/schema";
 import { eq, and, gt, sql, desc } from "drizzle-orm";
-import type { TodoItem } from "@/types";
+import type { TodoItem, SkillType } from "@/types";
 
 /**
  * Get Student Todo Items for Dashboard
@@ -64,7 +64,7 @@ export async function getStudentTodoItems(): Promise<TodoItem[]> {
       });
 
       for (const assignmentStatus of assignments) {
-        const assignment = assignmentStatus.assignment;
+        const assignment = assignmentStatus.assignment as typeof schema.assignments.$inferSelect | undefined;
         if (!assignment) continue;
 
         const now = new Date();
@@ -97,7 +97,7 @@ export async function getStudentTodoItems(): Promise<TodoItem[]> {
           actionUrl: `/student/assignments/${assignment.id}`,
           metadata: {
             assignmentId: assignment.id,
-            skillType: assignment.targetSkill || undefined,
+            skillType: (assignment.targetSkill as SkillType) || undefined,
             level: assignment.targetLevel || undefined,
           },
         });
@@ -122,14 +122,14 @@ export async function getStudentTodoItems(): Promise<TodoItem[]> {
             eq(schema.achievements.userId, userId),
             eq(schema.achievements.organizationId, organizationId),
             eq(schema.achievements.isCompleted, false),
-            gt(schema.achievements.currentProgress, 80)
+            gt(schema.achievements.progress, 80)
           ),
-          orderBy: [desc(schema.achievements.currentProgress)],
+          orderBy: [desc(schema.achievements.progress)],
           limit: 3,
         });
 
         for (const achievement of achievements) {
-          const progressPercent = (achievement.currentProgress / achievement.targetValue) * 100;
+          const progressPercent = (achievement.progress / achievement.target) * 100;
 
           todos.push({
             id: `achievement-${achievement.id}`,
