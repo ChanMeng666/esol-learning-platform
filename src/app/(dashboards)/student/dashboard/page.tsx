@@ -1,15 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { OverviewTabNew as OverviewTab } from "@/components/dashboard/overview-tab-new";
-import { NZCELTab } from "@/components/dashboard/nzcel-tab";
-import { GeneralPracticeTab } from "@/components/dashboard/general-practice-tab";
-import { SpeakingTab } from "@/components/dashboard/speaking-tab";
 import { useContainerQuery } from "@/hooks/use-container-query";
 import { useUserProgress } from "@/lib/store/user-progress";
 import { useCEFRProgress } from "@/lib/store/cefr-progress";
@@ -21,10 +17,8 @@ import {
   Zap,
   Target,
   Mic2,
-  LayoutDashboard,
-  GraduationCap,
-  Globe,
-  Mic,
+  TrendingUp,
+  ArrowRight,
   BarChart3,
   Calendar
 } from "lucide-react";
@@ -172,43 +166,62 @@ function DashboardPageContent() {
         />
       </div>
 
-      {/* Main Content with Simplified Tabs */}
-      <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 h-auto">
-          <TabsTrigger value="overview" className="gap-2">
-            <LayoutDashboard className="h-4 w-4" />
-            <span>Overview</span>
-          </TabsTrigger>
-          <TabsTrigger value="nzcel" className="gap-2">
-            <GraduationCap className="h-4 w-4" />
-            <span>NZCEL</span>
-          </TabsTrigger>
-          <TabsTrigger value="general" className="gap-2">
-            <Globe className="h-4 w-4" />
-            <span>General</span>
-          </TabsTrigger>
-          <TabsTrigger value="speaking" className="gap-2">
-            <Mic className="h-4 w-4" />
-            <span>Speaking</span>
-          </TabsTrigger>
-        </TabsList>
+      {/* Main Overview Content */}
+      <div className="space-y-6">
+        <OverviewTab />
 
-        <TabsContent value="overview" className="mt-6 space-y-4">
-          <OverviewTab />
-        </TabsContent>
+        {/* Progress Navigation Cards */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Detailed Progress</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-3">
+              <Button
+                variant="outline"
+                className="h-auto p-4 flex flex-col items-start text-left hover:bg-accent transition-colors"
+                onClick={() => window.location.href = "/student/progress/nzcel"}
+              >
+                <div className="flex items-center justify-between w-full mb-2">
+                  <span className="font-medium">NZCEL Progress</span>
+                  <ArrowRight className="h-4 w-4" />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Track your NZCEL exam preparation progress
+                </p>
+              </Button>
 
-        <TabsContent value="nzcel" className="mt-6 space-y-4">
-          <NZCELTab />
-        </TabsContent>
+              <Button
+                variant="outline"
+                className="h-auto p-4 flex flex-col items-start text-left hover:bg-accent transition-colors"
+                onClick={() => window.location.href = "/student/progress/general"}
+              >
+                <div className="flex items-center justify-between w-full mb-2">
+                  <span className="font-medium">General English</span>
+                  <ArrowRight className="h-4 w-4" />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Monitor your CEFR level advancement
+                </p>
+              </Button>
 
-        <TabsContent value="general" className="mt-6 space-y-4">
-          <GeneralPracticeTab />
-        </TabsContent>
-
-        <TabsContent value="speaking" className="mt-6 space-y-4">
-          <SpeakingTab />
-        </TabsContent>
-      </Tabs>
+              <Button
+                variant="outline"
+                className="h-auto p-4 flex flex-col items-start text-left hover:bg-accent transition-colors"
+                onClick={() => window.location.href = "/student/progress/speaking"}
+              >
+                <div className="flex items-center justify-between w-full mb-2">
+                  <span className="font-medium">Speaking Stats</span>
+                  <ArrowRight className="h-4 w-4" />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Review your speaking practice sessions
+                </p>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Quick Actions */}
       <Card>

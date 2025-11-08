@@ -47,6 +47,12 @@ export const studentDashboardConfig: DashboardConfig = {
           title: "My Progress",
           url: "/student/progress",
           icon: TrendingUp,
+          subItems: [
+            { title: "Progress Overview", url: "/student/progress" },
+            { title: "NZCEL Progress", url: "/student/progress/nzcel" },
+            { title: "General English", url: "/student/progress/general" },
+            { title: "Speaking Stats", url: "/student/progress/speaking" },
+          ],
         },
         {
           title: "Analytics",
