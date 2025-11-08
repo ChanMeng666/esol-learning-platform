@@ -6,6 +6,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![CopilotKit](https://img.shields.io/badge/CopilotKit-1.10-purple)](https://copilotkit.ai/)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.0-06B6D4?logo=tailwindcss)](https://tailwindcss.com/)
+[![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?logo=vercel)](https://vercel.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 A comprehensive, AI-powered ESOL learning platform featuring **real-time voice conversation**, **CEFR-aligned practice**, **NZCEL exam prep**, and **multi-module progress tracking**. Built with Next.js 15, OpenAI Realtime API, CopilotKit, and Neon PostgreSQL.
