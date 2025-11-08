@@ -37,6 +37,7 @@ export function NavSecondary({ items, ...props }: NavSecondaryProps) {
                   isActive={isActive}
                   tooltip={item.title}
                   aria-disabled={item.comingSoon}
+                  className={isActive ? "bg-gradient-to-r from-blue-500/20 to-purple-500/20 border-l-4 border-blue-500 font-semibold text-blue-600 dark:text-blue-400" : ""}
                 >
                   <Link href={item.url} target={item.newTab ? "_blank" : undefined}>
                     {Icon && <Icon />}
