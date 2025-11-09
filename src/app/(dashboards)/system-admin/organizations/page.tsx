@@ -133,7 +133,7 @@ function OrganizationsPageContent() {
     data: Partial<{
       name: string;
       isActive: boolean;
-      subscriptionTier: string;
+      subscriptionTier: "basic" | "pro" | "enterprise";
       maxStudents: number;
     }>
   ) {
@@ -515,13 +515,18 @@ function EditOrganizationDialog({
   onSubmit: (data: Partial<{
     name: string;
     isActive: boolean;
-    subscriptionTier: string;
+    subscriptionTier: "basic" | "pro" | "enterprise";
     maxStudents: number;
   }>) => void;
 }) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    subscriptionTier: "basic" | "pro" | "enterprise";
+    maxStudents: string;
+    isActive: boolean;
+  }>({
     name: organization.name,
-    subscriptionTier: organization.subscriptionTier,
+    subscriptionTier: organization.subscriptionTier as "basic" | "pro" | "enterprise",
     maxStudents: organization.maxStudents?.toString() || "",
     isActive: organization.isActive,
   });
@@ -557,7 +562,7 @@ function EditOrganizationDialog({
               <Label htmlFor="edit-tier">Subscription Tier</Label>
               <Select
                 value={formData.subscriptionTier}
-                onValueChange={(value) => setFormData({ ...formData, subscriptionTier: value })}
+                onValueChange={(value) => setFormData({ ...formData, subscriptionTier: value as "basic" | "pro" | "enterprise" })}
               >
                 <SelectTrigger>
                   <SelectValue />

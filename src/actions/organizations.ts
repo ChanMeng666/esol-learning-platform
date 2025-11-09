@@ -162,6 +162,34 @@ export async function deactivateOrganization(organizationId: bigint) {
 }
 
 /**
+ * Delete organization permanently (hard delete)
+ * WARNING: This permanently removes the organization and all related data
+ * System admin only
+ */
+export async function deleteOrganization(organizationId: bigint) {
+  return fetchWithDrizzle(async (db) => {
+    // Check if organization exists
+    const organization = await db.query.organizations.findFirst({
+      where: eq(schema.organizations.id, organizationId),
+    });
+
+    if (!organization) {
+      throw new Error("Organization not found");
+    }
+
+    // Delete organization (CASCADE will handle related records based on schema constraints)
+    const [deleted] = await db
+      .delete(schema.organizations)
+      .where(eq(schema.organizations.id, organizationId))
+      .returning();
+
+    revalidatePath("/admin/organizations");
+    revalidatePath("/system-admin/organizations");
+    return deleted;
+  });
+}
+
+/**
  * Create default system organization
  * Used for initial setup and data migration
  */
