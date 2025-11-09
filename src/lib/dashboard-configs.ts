@@ -432,7 +432,7 @@ export const schoolAdminDashboardConfig: DashboardConfig = {
 // System Admin Dashboard Configuration
 export const systemAdminDashboardConfig: DashboardConfig = {
   dashboardTitle: "System Administration",
-  dashboardDescription: "Manage all organizations and system health",
+  dashboardDescription: "Manage all organizations and users",
   navMain: [
     {
       id: "overview",
@@ -442,11 +442,6 @@ export const systemAdminDashboardConfig: DashboardConfig = {
           title: "Dashboard",
           url: "/system-admin/dashboard",
           icon: LayoutDashboard,
-        },
-        {
-          title: "System Health",
-          url: "/system-admin/health",
-          icon: Activity,
         },
       ],
     },
@@ -473,22 +468,6 @@ export const systemAdminDashboardConfig: DashboardConfig = {
           title: "Permissions",
           url: "/system-admin/permissions",
           icon: Shield,
-        },
-      ],
-    },
-    {
-      id: "technical",
-      label: "Technical",
-      items: [
-        {
-          title: "Audit Logs",
-          url: "/system-admin/audit",
-          icon: FileText,
-        },
-        {
-          title: "Database",
-          url: "/system-admin/database",
-          icon: Database,
         },
       ],
     },

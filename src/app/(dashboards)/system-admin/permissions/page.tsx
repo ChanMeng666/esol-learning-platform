@@ -1,30 +1,17 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProtectedRoute } from "@/components/auth/protected-route";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Shield,
   Users,
-  Key,
-  Lock,
-  Unlock,
-  Settings,
-  Edit,
-  Plus,
-  Save,
-  AlertCircle,
-  CheckCircle2,
+  User,
+  Building2,
+  GraduationCap,
   UserCheck,
-  ShieldCheck,
-  ShieldAlert,
-  FileKey,
-  Copy,
+  AlertCircle,
 } from "lucide-react";
 import {
   Table,
@@ -34,25 +21,101 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-interface Role {
-  id: string;
+// Define standard role permissions based on the application's RBAC model
+interface RoleDefinition {
+  role: string;
   name: string;
   description: string;
-  type: "system" | "organization" | "custom";
-  userCount: number;
+  icon: any;
   permissions: string[];
-  createdAt: Date;
-  modifiedAt: Date;
 }
 
-interface Permission {
-  id: string;
-  name: string;
-  category: string;
-  description: string;
-  risk: "low" | "medium" | "high";
-}
+const roleDefinitions: RoleDefinition[] = [
+  {
+    role: "system_admin",
+    name: "System Administrator",
+    description: "Full platform access across all organizations",
+    icon: Shield,
+    permissions: [
+      "Manage all organizations",
+      "Manage all users",
+      "Configure platform settings",
+      "View system health and logs",
+      "Manage permissions",
+      "Create invitation codes",
+    ],
+  },
+  {
+    role: "school_admin",
+    name: "School Administrator",
+    description: "Full access within assigned organization",
+    icon: Building2,
+    permissions: [
+      "Manage organization settings",
+      "Manage organization users",
+      "Create departments",
+      "Create classes",
+      "View organization analytics",
+      "Manage assignments",
+    ],
+  },
+  {
+    role: "department_head",
+    name: "Department Head",
+    description: "Manage department-level operations",
+    icon: Users,
+    permissions: [
+      "Manage department classes",
+      "View department teachers",
+      "View department students",
+      "Access department analytics",
+    ],
+  },
+  {
+    role: "teacher",
+    name: "Teacher",
+    description: "Manage classes and student progress",
+    icon: GraduationCap,
+    permissions: [
+      "Manage assigned classes",
+      "Create assignments",
+      "Grade student work",
+      "View student progress",
+      "Review speaking assessments",
+      "Access class analytics",
+    ],
+  },
+  {
+    role: "student",
+    name: "Student",
+    description: "Access learning materials and track progress",
+    icon: User,
+    permissions: [
+      "Access practice modules",
+      "Submit assignments",
+      "View own progress",
+      "Use AI speaking coach",
+      "Take diagnostic tests",
+      "View achievements",
+    ],
+  },
+  {
+    role: "parent",
+    name: "Parent",
+    description: "Monitor children's learning progress",
+    icon: UserCheck,
+    permissions: [
+      "View children's progress",
+      "View children's assignments",
+      "View speaking progress",
+      "Access progress reports",
+      "View activity and attendance",
+      "Send messages to teachers",
+    ],
+  },
+];
 
 export default function PermissionsPage() {
   return (
@@ -63,425 +126,180 @@ export default function PermissionsPage() {
 }
 
 function PermissionsContent() {
-  const [roles, setRoles] = useState<Role[]>([]);
-  const [permissions, setPermissions] = useState<Permission[]>([]);
-  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [editMode, setEditMode] = useState(false);
-
-  useEffect(() => {
-    const loadPermissionData = async () => {
-      try {
-        // Mock data - replace with actual API calls
-        const mockRoles: Role[] = [
-          {
-            id: "1",
-            name: "System Administrator",
-            description: "Full system access with all permissions",
-            type: "system",
-            userCount: 2,
-            permissions: ["*"],
-            createdAt: new Date(2023, 0, 1),
-            modifiedAt: new Date(2024, 2, 1),
-          },
-          {
-            id: "2",
-            name: "School Administrator",
-            description: "Manage school-level operations and users",
-            type: "organization",
-            userCount: 15,
-            permissions: [
-              "users.create", "users.read", "users.update",
-              "classes.manage", "reports.view", "settings.school"
-            ],
-            createdAt: new Date(2023, 0, 1),
-            modifiedAt: new Date(2024, 1, 15),
-          },
-          {
-            id: "3",
-            name: "Teacher",
-            description: "Manage classes and student progress",
-            type: "organization",
-            userCount: 142,
-            permissions: [
-              "classes.view", "students.view", "assignments.manage",
-              "grades.manage", "reports.class"
-            ],
-            createdAt: new Date(2023, 0, 1),
-            modifiedAt: new Date(2024, 0, 20),
-          },
-          {
-            id: "4",
-            name: "Student",
-            description: "Access learning materials and view progress",
-            type: "organization",
-            userCount: 1250,
-            permissions: [
-              "practice.access", "progress.view.own", "assignments.submit"
-            ],
-            createdAt: new Date(2023, 0, 1),
-            modifiedAt: new Date(2023, 11, 10),
-          },
-          {
-            id: "5",
-            name: "Parent",
-            description: "View child's progress and communicate with teachers",
-            type: "organization",
-            userCount: 892,
-            permissions: [
-              "children.view", "progress.view.children", "messages.send"
-            ],
-            createdAt: new Date(2023, 0, 1),
-            modifiedAt: new Date(2023, 10, 5),
-          },
-          {
-            id: "6",
-            name: "Content Manager",
-            description: "Manage learning content and questions",
-            type: "custom",
-            userCount: 5,
-            permissions: [
-              "content.create", "content.edit", "content.delete",
-              "questions.manage", "curriculum.edit"
-            ],
-            createdAt: new Date(2023, 6, 15),
-            modifiedAt: new Date(2024, 2, 10),
-          },
-        ];
-
-        const mockPermissions: Permission[] = [
-          // User Management
-          { id: "1", name: "users.create", category: "User Management", description: "Create new users", risk: "medium" },
-          { id: "2", name: "users.read", category: "User Management", description: "View user information", risk: "low" },
-          { id: "3", name: "users.update", category: "User Management", description: "Update user details", risk: "medium" },
-          { id: "4", name: "users.delete", category: "User Management", description: "Delete users", risk: "high" },
-          { id: "5", name: "users.suspend", category: "User Management", description: "Suspend user accounts", risk: "high" },
-
-          // Class Management
-          { id: "6", name: "classes.manage", category: "Class Management", description: "Full class management", risk: "medium" },
-          { id: "7", name: "classes.view", category: "Class Management", description: "View class information", risk: "low" },
-          { id: "8", name: "students.view", category: "Class Management", description: "View student information", risk: "low" },
-
-          // Content Management
-          { id: "9", name: "content.create", category: "Content", description: "Create learning content", risk: "medium" },
-          { id: "10", name: "content.edit", category: "Content", description: "Edit learning content", risk: "medium" },
-          { id: "11", name: "content.delete", category: "Content", description: "Delete learning content", risk: "high" },
-          { id: "12", name: "questions.manage", category: "Content", description: "Manage question banks", risk: "medium" },
-
-          // System Administration
-          { id: "13", name: "system.config", category: "System", description: "System configuration", risk: "high" },
-          { id: "14", name: "audit.view", category: "System", description: "View audit logs", risk: "low" },
-          { id: "15", name: "database.access", category: "System", description: "Direct database access", risk: "high" },
-          { id: "16", name: "api.manage", category: "System", description: "API key management", risk: "high" },
-
-          // Reports & Analytics
-          { id: "17", name: "reports.view", category: "Reports", description: "View reports", risk: "low" },
-          { id: "18", name: "reports.export", category: "Reports", description: "Export reports", risk: "low" },
-          { id: "19", name: "analytics.full", category: "Reports", description: "Full analytics access", risk: "medium" },
-        ];
-
-        setRoles(mockRoles);
-        setPermissions(mockPermissions);
-        setSelectedRole(mockRoles[0]);
-      } catch (error) {
-        console.error("Failed to load permission data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadPermissionData();
-  }, []);
-
-  const getRiskBadge = (risk: string) => {
-    const colors = {
-      low: "default",
-      medium: "secondary",
-      high: "destructive",
-    };
-    return <Badge variant={colors[risk as keyof typeof colors] as any}>{risk}</Badge>;
-  };
-
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case "system":
-        return <ShieldAlert className="w-4 h-4" />;
-      case "organization":
-        return <ShieldCheck className="w-4 h-4" />;
-      case "custom":
-        return <Shield className="w-4 h-4" />;
-      default:
-        return null;
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-          <p className="mt-4 text-muted-foreground">Loading permissions...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold tracking-tight">Permissions & Roles</h1>
-          <p className="text-muted-foreground">
-            Manage system roles and access permissions
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline">
-            <Copy className="w-4 h-4 mr-2" />
-            Clone Role
-          </Button>
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            Create Role
-          </Button>
-        </div>
+      <div className="flex flex-col gap-2">
+        <h1 className="text-3xl font-bold tracking-tight">Roles & Permissions</h1>
+        <p className="text-muted-foreground">
+          View role definitions and their associated permissions
+        </p>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Roles</p>
-                <p className="text-2xl font-bold">{roles.length}</p>
-              </div>
-              <Shield className="h-8 w-8 text-blue-500" />
-            </div>
-          </CardContent>
-        </Card>
+      {/* Info Alert */}
+      <Alert>
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Role-Based Access Control (RBAC)</AlertTitle>
+        <AlertDescription>
+          The platform uses a role-based permission system. User roles are managed through the User
+          Management page. Permissions are automatically assigned based on user roles.
+        </AlertDescription>
+      </Alert>
 
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">System Roles</p>
-                <p className="text-2xl font-bold">{roles.filter(r => r.type === "system").length}</p>
-              </div>
-              <ShieldAlert className="h-8 w-8 text-red-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Custom Roles</p>
-                <p className="text-2xl font-bold">{roles.filter(r => r.type === "custom").length}</p>
-              </div>
-              <Settings className="h-8 w-8 text-green-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Permissions</p>
-                <p className="text-2xl font-bold">{permissions.length}</p>
-              </div>
-              <Key className="h-8 w-8 text-purple-500" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Roles List */}
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle>Roles</CardTitle>
-            <CardDescription>Select a role to view and edit permissions</CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="divide-y">
-              {roles.map(role => (
-                <div
-                  key={role.id}
-                  className={`p-4 hover:bg-muted/50 cursor-pointer transition-colors ${
-                    selectedRole?.id === role.id ? "bg-muted" : ""
-                  }`}
-                  onClick={() => {
-                    setSelectedRole(role);
-                    setEditMode(false);
-                  }}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-2">
-                      {getTypeIcon(role.type)}
-                      <div>
-                        <p className="font-medium">{role.name}</p>
-                        <p className="text-sm text-muted-foreground">{role.userCount} users</p>
-                      </div>
-                    </div>
-                    <Badge variant="outline" className="text-xs">
-                      {role.type}
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
-                    {role.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Role Details & Permissions */}
-        <Card className="lg:col-span-2">
-          {selectedRole ? (
-            <>
+      {/* Roles Grid */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {roleDefinitions.map((roleDef) => {
+          const Icon = roleDef.icon;
+          return (
+            <Card key={roleDef.role}>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      {getTypeIcon(selectedRole.type)}
-                      {selectedRole.name}
-                    </CardTitle>
-                    <CardDescription>{selectedRole.description}</CardDescription>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                    <Icon className="h-5 w-5 text-primary" />
                   </div>
-                  <div className="flex gap-2">
-                    {editMode ? (
-                      <>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setEditMode(false)}
-                        >
-                          Cancel
-                        </Button>
-                        <Button size="sm">
-                          <Save className="w-4 h-4 mr-2" />
-                          Save Changes
-                        </Button>
-                      </>
-                    ) : (
-                      <Button
-                        size="sm"
-                        onClick={() => setEditMode(true)}
-                        disabled={selectedRole.type === "system"}
-                      >
-                        <Edit className="w-4 h-4 mr-2" />
-                        Edit Permissions
-                      </Button>
-                    )}
+                  <div>
+                    <CardTitle className="text-lg">{roleDef.name}</CardTitle>
+                    <CardDescription>{roleDef.description}</CardDescription>
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
-                <Tabs defaultValue="permissions" className="space-y-4">
-                  <TabsList>
-                    <TabsTrigger value="permissions">Permissions</TabsTrigger>
-                    <TabsTrigger value="details">Details</TabsTrigger>
-                    <TabsTrigger value="users">Users</TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="permissions" className="space-y-4">
-                    {selectedRole.permissions[0] === "*" ? (
-                      <div className="p-4 rounded-lg bg-muted">
-                        <p className="flex items-center gap-2">
-                          <ShieldAlert className="w-4 h-4 text-amber-500" />
-                          This role has full system permissions
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="space-y-6">
-                        {Array.from(new Set(permissions.map(p => p.category))).map(category => (
-                          <div key={category}>
-                            <h4 className="font-medium mb-3">{category}</h4>
-                            <div className="space-y-2">
-                              {permissions
-                                .filter(p => p.category === category)
-                                .map(permission => (
-                                  <div
-                                    key={permission.id}
-                                    className="flex items-center justify-between p-3 rounded-lg border"
-                                  >
-                                    <div className="flex items-center gap-3">
-                                      <Checkbox
-                                        checked={selectedRole.permissions.includes(permission.name)}
-                                        disabled={!editMode || selectedRole.type === "system"}
-                                      />
-                                      <div>
-                                        <p className="text-sm font-medium">{permission.name}</p>
-                                        <p className="text-xs text-muted-foreground">
-                                          {permission.description}
-                                        </p>
-                                      </div>
-                                    </div>
-                                    {getRiskBadge(permission.risk)}
-                                  </div>
-                                ))}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </TabsContent>
-
-                  <TabsContent value="details" className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label className="text-muted-foreground">Role Type</Label>
-                        <p className="font-medium capitalize">{selectedRole.type}</p>
-                      </div>
-                      <div>
-                        <Label className="text-muted-foreground">User Count</Label>
-                        <p className="font-medium">{selectedRole.userCount} users</p>
-                      </div>
-                      <div>
-                        <Label className="text-muted-foreground">Created</Label>
-                        <p className="font-medium">{selectedRole.createdAt.toLocaleDateString()}</p>
-                      </div>
-                      <div>
-                        <Label className="text-muted-foreground">Last Modified</Label>
-                        <p className="font-medium">{selectedRole.modifiedAt.toLocaleDateString()}</p>
-                      </div>
-                      <div className="col-span-2">
-                        <Label className="text-muted-foreground">Permission Count</Label>
-                        <p className="font-medium">
-                          {selectedRole.permissions[0] === "*"
-                            ? "All permissions"
-                            : `${selectedRole.permissions.length} permissions`}
-                        </p>
-                      </div>
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="users">
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Users className="w-12 h-12 mx-auto mb-3" />
-                      <p>User list for this role</p>
-                      <p className="text-sm">Feature coming soon</p>
-                    </div>
-                  </TabsContent>
-                </Tabs>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline">{roleDef.role}</Badge>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium mb-2">Permissions:</h4>
+                    <ul className="space-y-1">
+                      {roleDef.permissions.map((permission, index) => (
+                        <li
+                          key={index}
+                          className="text-sm text-muted-foreground flex items-start gap-2"
+                        >
+                          <span className="text-primary mt-1">•</span>
+                          <span>{permission}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
               </CardContent>
-            </>
-          ) : (
-            <CardContent className="flex items-center justify-center h-96">
-              <div className="text-center">
-                <Shield className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">Select a role to view details</p>
-              </div>
-            </CardContent>
-          )}
-        </Card>
+            </Card>
+          );
+        })}
       </div>
+
+      {/* Permissions Matrix */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Permissions Matrix</CardTitle>
+          <CardDescription>Quick reference for role capabilities</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Capability</TableHead>
+                  <TableHead className="text-center">System Admin</TableHead>
+                  <TableHead className="text-center">School Admin</TableHead>
+                  <TableHead className="text-center">Department Head</TableHead>
+                  <TableHead className="text-center">Teacher</TableHead>
+                  <TableHead className="text-center">Student</TableHead>
+                  <TableHead className="text-center">Parent</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow>
+                  <TableCell className="font-medium">Manage Organizations</TableCell>
+                  <TableCell className="text-center">✓</TableCell>
+                  <TableCell className="text-center">-</TableCell>
+                  <TableCell className="text-center">-</TableCell>
+                  <TableCell className="text-center">-</TableCell>
+                  <TableCell className="text-center">-</TableCell>
+                  <TableCell className="text-center">-</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Manage Users</TableCell>
+                  <TableCell className="text-center">✓ All</TableCell>
+                  <TableCell className="text-center">✓ Org</TableCell>
+                  <TableCell className="text-center">-</TableCell>
+                  <TableCell className="text-center">-</TableCell>
+                  <TableCell className="text-center">-</TableCell>
+                  <TableCell className="text-center">-</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Manage Classes</TableCell>
+                  <TableCell className="text-center">✓</TableCell>
+                  <TableCell className="text-center">✓</TableCell>
+                  <TableCell className="text-center">✓ Dept</TableCell>
+                  <TableCell className="text-center">✓ Own</TableCell>
+                  <TableCell className="text-center">-</TableCell>
+                  <TableCell className="text-center">-</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Create Assignments</TableCell>
+                  <TableCell className="text-center">✓</TableCell>
+                  <TableCell className="text-center">✓</TableCell>
+                  <TableCell className="text-center">-</TableCell>
+                  <TableCell className="text-center">✓</TableCell>
+                  <TableCell className="text-center">-</TableCell>
+                  <TableCell className="text-center">-</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Grade Assignments</TableCell>
+                  <TableCell className="text-center">✓</TableCell>
+                  <TableCell className="text-center">✓</TableCell>
+                  <TableCell className="text-center">-</TableCell>
+                  <TableCell className="text-center">✓</TableCell>
+                  <TableCell className="text-center">-</TableCell>
+                  <TableCell className="text-center">-</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Access Practice Modules</TableCell>
+                  <TableCell className="text-center">✓</TableCell>
+                  <TableCell className="text-center">✓</TableCell>
+                  <TableCell className="text-center">✓</TableCell>
+                  <TableCell className="text-center">✓</TableCell>
+                  <TableCell className="text-center">✓</TableCell>
+                  <TableCell className="text-center">-</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">View Student Progress</TableCell>
+                  <TableCell className="text-center">✓ All</TableCell>
+                  <TableCell className="text-center">✓ Org</TableCell>
+                  <TableCell className="text-center">✓ Dept</TableCell>
+                  <TableCell className="text-center">✓ Class</TableCell>
+                  <TableCell className="text-center">✓ Own</TableCell>
+                  <TableCell className="text-center">✓ Child</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">View Analytics</TableCell>
+                  <TableCell className="text-center">✓ All</TableCell>
+                  <TableCell className="text-center">✓ Org</TableCell>
+                  <TableCell className="text-center">✓ Dept</TableCell>
+                  <TableCell className="text-center">✓ Class</TableCell>
+                  <TableCell className="text-center">✓ Own</TableCell>
+                  <TableCell className="text-center">✓ Child</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+          <div className="mt-4 text-sm text-muted-foreground">
+            <p className="font-medium mb-1">Legend:</p>
+            <ul className="space-y-1 ml-4">
+              <li>✓ - Full access</li>
+              <li>✓ All - Access across all organizations</li>
+              <li>✓ Org - Access within own organization</li>
+              <li>✓ Dept - Access within own department</li>
+              <li>✓ Class - Access to own classes</li>
+              <li>✓ Own - Access to own data only</li>
+              <li>✓ Child - Access to children's data</li>
+              <li>- - No access</li>
+            </ul>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
