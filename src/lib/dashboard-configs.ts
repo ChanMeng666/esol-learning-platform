@@ -397,11 +397,6 @@ export const schoolAdminDashboardConfig: DashboardConfig = {
           url: "/school-admin/dashboard",
           icon: LayoutDashboard,
         },
-        {
-          title: "Analytics",
-          url: "/school-admin/analytics",
-          icon: BarChart3,
-        },
       ],
     },
     {
@@ -427,17 +422,6 @@ export const schoolAdminDashboardConfig: DashboardConfig = {
           title: "Classes",
           url: "/school-admin/classes",
           icon: GraduationCap,
-        },
-      ],
-    },
-    {
-      id: "reports",
-      label: "Reports",
-      items: [
-        {
-          title: "Reports",
-          url: "/school-admin/reports",
-          icon: FileText,
         },
       ],
     },
