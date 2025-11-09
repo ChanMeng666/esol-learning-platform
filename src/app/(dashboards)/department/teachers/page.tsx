@@ -14,12 +14,18 @@ import { toast } from "sonner";
 
 interface DepartmentTeacher {
   id: bigint;
-  fullName: string;
+  organizationId: bigint;
+  stackUserId: string;
   email: string;
+  fullName: string;
+  role: string;
+  isActive: boolean;
+  metadata: Record<string, unknown> | null;
+  createdAt: Date;
+  updatedAt: Date;
   classCount: number;
   studentCount: number;
   status: string;
-  isActive: boolean;
 }
 
 export default function DepartmentTeachersPage() {

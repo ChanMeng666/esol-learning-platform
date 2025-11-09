@@ -14,11 +14,21 @@ import { toast } from "sonner";
 
 interface DepartmentStudent {
   id: bigint;
-  fullName: string;
+  organizationId: bigint;
+  stackUserId: string;
   email: string;
+  fullName: string;
+  role: string;
+  isActive: boolean;
+  metadata: Record<string, unknown> | null;
+  createdAt: Date;
+  updatedAt: Date;
   className: string;
   averageProgress: number;
+  totalPoints: number;
+  questionsCompleted: number;
   currentLevel: string;
+  cefrLevel: string;
   status: string;
   isAtRisk: boolean;
 }

@@ -14,15 +14,22 @@ import { toast } from "sonner";
 
 interface DepartmentClass {
   id: bigint;
+  organizationId: bigint;
   name: string;
   code: string | null;
-  teacherName: string;
-  studentCount: number;
-  status: string;
-  isActive: boolean;
   schedule: string | null;
   startDate: Date | null;
   endDate: Date | null;
+  isActive: boolean;
+  departmentId: bigint | null;
+  gradeLevelId: bigint | null;
+  teacherId: bigint | null;
+  academicYear: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  studentCount: number;
+  teacherName: string;
+  status: string;
 }
 
 export default function DepartmentClassesPage() {
