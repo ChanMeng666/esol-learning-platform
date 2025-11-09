@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { DataTable } from "@/components/data-table/data-table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { type ColumnDef } from "@/components/data-table/data-table";
+import { type ColumnDef } from "@tanstack/react-table";
 import { getOrganizationUsersWithDetails } from "@/actions/school-admin-stats";
 import { toast } from "sonner";
 import {
@@ -30,7 +30,7 @@ interface User {
   role: string;
   isActive: boolean;
   createdAt: Date;
-  metadata: Record<string, unknown> | null;
+  metadata: unknown;
 }
 
 export default function SchoolAdminUsersPage() {
@@ -72,7 +72,7 @@ function UsersPageContent() {
       accessorKey: "fullName",
       header: "User",
       cell: ({ row }) => {
-        const metadata = row.original.metadata as Record<string, unknown> | null;
+        const metadata = row.original.metadata as Record<string, unknown> | null | undefined;
         const initials = row.original.fullName
           .split(" ")
           .map((n) => n[0])
@@ -82,7 +82,7 @@ function UsersPageContent() {
         return (
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
-              {metadata?.avatar && typeof metadata.avatar === 'string' && <AvatarImage src={metadata.avatar} />}
+              {metadata && typeof metadata === 'object' && 'avatar' in metadata && typeof metadata.avatar === 'string' && <AvatarImage src={metadata.avatar} />}
               <AvatarFallback>{initials}</AvatarFallback>
             </Avatar>
             <div>
