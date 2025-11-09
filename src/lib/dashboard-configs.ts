@@ -356,27 +356,12 @@ export const departmentHeadDashboardConfig: DashboardConfig = {
           url: "/department/dashboard",
           icon: LayoutDashboard,
         },
-        {
-          title: "Analytics",
-          url: "/department/analytics",
-          icon: BarChart3,
-        },
-        {
-          title: "Reports",
-          url: "/department/reports",
-          icon: FileText,
-        },
       ],
     },
     {
       id: "management",
       label: "Management",
       items: [
-        {
-          title: "Teachers",
-          url: "/department/teachers",
-          icon: Users,
-        },
         {
           title: "Classes",
           url: "/department/classes",
@@ -388,9 +373,9 @@ export const departmentHeadDashboardConfig: DashboardConfig = {
           icon: User,
         },
         {
-          title: "Resources",
-          url: "/department/resources",
-          icon: FolderKanban,
+          title: "Teachers",
+          url: "/department/teachers",
+          icon: Users,
         },
       ],
     },
