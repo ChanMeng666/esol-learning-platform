@@ -4,10 +4,10 @@ import { useState, useEffect, ReactNode } from "react";
 import { useParams, usePathname } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { getTeacherClasses } from "@/actions/classes";
+import { getTeacherClasses, getClassStudents } from "@/actions/classes";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, Calendar, MapPin, BookOpen } from "lucide-react";
+import { Users } from "lucide-react";
 import { ClassContext } from './context';
 
 export default function ClassLayout({ children }: { children: ReactNode }) {
@@ -34,6 +34,12 @@ export default function ClassLayout({ children }: { children: ReactNode }) {
           (c: any) => c.id.toString() === classId
         );
         setClassData(currentClass);
+
+        // Load students if class found
+        if (currentClass) {
+          const studentsData = await getClassStudents(currentClass.id);
+          setStudents(studentsData || []);
+        }
       } catch (error) {
         console.error("Failed to load class data:", error);
       } finally {
@@ -70,39 +76,25 @@ export default function ClassLayout({ children }: { children: ReactNode }) {
 
   return (
     <ClassContext.Provider value={{ classData, students, isLoading }}>
-      <div className="flex flex-col gap-6">
-        {/* Class Header Card */}
+      <div className="flex flex-col gap-8">
+        {/* Streamlined Class Header Card */}
         <Card className="p-6">
           <div className="flex items-start justify-between">
-            <div className="space-y-3">
+            <div className="space-y-2">
               <div>
-                <h1 className="text-2xl font-bold">{classData.name}</h1>
-                <p className="text-muted-foreground">{classData.code}</p>
+                <h1 className="text-3xl font-bold">{classData.name}</h1>
+                <p className="text-muted-foreground text-base">{classData.code} • {classData.academicYear}</p>
               </div>
-              <div className="flex flex-wrap gap-3">
-                <Badge variant="outline" className="flex items-center gap-1">
-                  <Users className="h-3 w-3" />
-                  {studentCount} students
-                </Badge>
-                <Badge variant="outline" className="flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  {classData.schedule || "MWF 9-10am"}
-                </Badge>
-                <Badge variant="outline" className="flex items-center gap-1">
-                  <MapPin className="h-3 w-3" />
-                  {classData.room || "Room 204"}
-                </Badge>
-                <Badge variant="outline" className="flex items-center gap-1">
-                  <BookOpen className="h-3 w-3" />
-                  {classData.level || "NZCEL Level 3"}
-                </Badge>
-              </div>
+              <Badge variant="outline" className="flex items-center gap-1.5 w-fit">
+                <Users className="h-3.5 w-3.5" />
+                {studentCount} {studentCount === 1 ? "student" : "students"}
+              </Badge>
             </div>
             <Link
               href="/teacher/classes"
-              className="text-sm text-muted-foreground hover:text-foreground"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              ← Back to all classes
+              ← Back
             </Link>
           </div>
         </Card>

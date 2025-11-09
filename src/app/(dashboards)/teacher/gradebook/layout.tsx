@@ -7,7 +7,7 @@ import { getTeacherClasses } from "@/actions/classes";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { Download, Upload, Save } from "lucide-react";
+import { Download, Save } from "lucide-react";
 import { toast } from "sonner";
 import { GradebookContext } from './context';
 
@@ -117,13 +117,10 @@ export default function GradebookLayout({ children }: { children: ReactNode }) {
         handleExportGrades,
       }}
     >
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-8">
         {/* Header */}
-        <div className="flex flex-col gap-2">
+        <div>
           <h1 className="text-3xl font-bold tracking-tight">Gradebook</h1>
-          <p className="text-muted-foreground">
-            Manage and track student grades across your classes
-          </p>
         </div>
 
         {/* Class Selector and Actions */}
@@ -148,10 +145,6 @@ export default function GradebookLayout({ children }: { children: ReactNode }) {
           </Select>
 
           <div className="flex gap-2">
-            <Button variant="outline" size="sm">
-              <Upload className="h-4 w-4 mr-2" />
-              Import
-            </Button>
             <Button variant="outline" size="sm" onClick={handleExportGrades}>
               <Download className="h-4 w-4 mr-2" />
               Export

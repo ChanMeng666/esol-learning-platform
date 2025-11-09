@@ -137,17 +137,14 @@ export default function TeacherDashboardPage() {
 
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Header */}
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">Teacher Dashboard</h1>
-        <p className="text-muted-foreground">
-          Manage your classes, assignments, and track student progress
-        </p>
+    <div className="flex flex-col gap-8">
+      {/* Simplified Header */}
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
       </div>
 
       {/* Simplified Tabs - Keep only Overview */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
         <TabsList className="grid w-full max-w-md grid-cols-1">
           <TabsTrigger value="overview" className="gap-2">
             <BarChart3 className="h-4 w-4" />
@@ -156,53 +153,41 @@ export default function TeacherDashboardPage() {
         </TabsList>
 
         {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-6">
-          {/* Stats Grid */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <TabsContent value="overview" className="space-y-8">
+          {/* Streamlined Stats Grid - Only 3 Key Metrics */}
+          <div className="grid gap-6 md:grid-cols-3">
             <StatCard
-              title="Total Classes"
+              title="Classes"
               value={totalClasses}
-              description="Active classes you're teaching"
               icon={GraduationCap}
               variant="info"
+              href="/teacher/classes"
             />
             <StatCard
-              title="Total Students"
+              title="Students"
               value={totalStudents}
-              description="Across all your classes"
               icon={Users}
               variant="success"
             />
             <StatCard
-              title="Active Assignments"
-              value={activeAssignments}
-              description="Currently assigned"
-              icon={ClipboardList}
-              variant="warning"
-            />
-            <StatCard
               title="Pending Reviews"
               value={pendingReviews}
-              description="Submissions to review"
               icon={Clock}
               variant="primary"
-              footer={{
-                label: "Review Now",
-                sublabel: "→"
-              }}
+              href="/teacher/gradebook"
             />
           </div>
 
           {/* Charts Row */}
           {classes.length > 0 && (
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-6 md:grid-cols-2">
               <ChartRevenue
-                title={`${totalStudents} Total Students`}
+                title="Class Overview"
                 description="Students per class"
                 data={classPerformanceData}
                 config={classPerformanceConfig}
                 stacked={false}
-                footerDescription="Showing your top 6 classes"
+                footerDescription={`Showing ${Math.min(classes.length, 6)} of ${classes.length} classes`}
               />
               {assignments.length > 0 && (
                 <ChartVisitors

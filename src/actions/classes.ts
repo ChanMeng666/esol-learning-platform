@@ -654,3 +654,142 @@ export async function getTeacherStudentGroups() {
     return groupsWithCounts;
   });
 }
+
+/**
+ * Get class analytics from the class_analytics table
+ * Multi-tenant: Validates teacher access to class
+ *
+ * Returns pre-calculated daily/weekly analytics snapshots
+ *
+ * @param classId - Class ID to get analytics for
+ * @param dateRange - Optional date range filter
+ * @returns Array of class analytics records
+ */
+export async function getClassAnalytics(
+  classId: bigint,
+  dateRange?: {
+    start: Date;
+    end: Date;
+  }
+) {
+  return fetchWithDrizzle(async (db, { userId, organizationId, enhancedUser }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
+    if (!enhancedUser) {
+      throw new Error("User context required");
+    }
+
+    // Validate user is a teacher with access to this class
+    if (enhancedUser.role !== "teacher") {
+      throw new Error("Access denied: Teacher role required");
+    }
+
+    const classInfo = await db.query.classes.findFirst({
+      where: and(
+        eq(schema.classes.id, classId),
+        eq(schema.classes.organizationId, organizationId)
+      ),
+    });
+
+    if (!classInfo) {
+      throw new Error("Class not found");
+    }
+
+    const isTeacher =
+      classInfo.teacherId === enhancedUser.id ||
+      (await db.query.classTeachers.findFirst({
+        where: and(
+          eq(schema.classTeachers.classId, classId),
+          eq(schema.classTeachers.teacherId, enhancedUser.id)
+        ),
+      }));
+
+    if (!isTeacher) {
+      throw new Error("Access denied: Not a teacher of this class");
+    }
+
+    // Build query conditions
+    const conditions = [
+      eq(schema.classAnalytics.classId, classId),
+      eq(schema.classAnalytics.organizationId, organizationId),
+    ];
+
+    // Add date range filter if provided
+    if (dateRange) {
+      const { gte } = await import("drizzle-orm");
+      const { lte } = await import("drizzle-orm");
+      conditions.push(gte(schema.classAnalytics.date, dateRange.start));
+      conditions.push(lte(schema.classAnalytics.date, dateRange.end));
+    }
+
+    // Get analytics records
+    const analytics = await db.query.classAnalytics.findMany({
+      where: and(...conditions),
+      orderBy: [desc(schema.classAnalytics.date)],
+      limit: 30, // Last 30 records (days/weeks)
+    });
+
+    return analytics;
+  });
+}
+
+/**
+ * Get latest class analytics snapshot
+ * Multi-tenant: Validates teacher access to class
+ *
+ * @param classId - Class ID to get latest analytics for
+ * @returns Latest class analytics record or null
+ */
+export async function getLatestClassAnalytics(classId: bigint) {
+  return fetchWithDrizzle(async (db, { userId, organizationId, enhancedUser }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
+    if (!enhancedUser) {
+      throw new Error("User context required");
+    }
+
+    // Validate user is a teacher with access to this class
+    if (enhancedUser.role !== "teacher") {
+      throw new Error("Access denied: Teacher role required");
+    }
+
+    const classInfo = await db.query.classes.findFirst({
+      where: and(
+        eq(schema.classes.id, classId),
+        eq(schema.classes.organizationId, organizationId)
+      ),
+    });
+
+    if (!classInfo) {
+      throw new Error("Class not found");
+    }
+
+    const isTeacher =
+      classInfo.teacherId === enhancedUser.id ||
+      (await db.query.classTeachers.findFirst({
+        where: and(
+          eq(schema.classTeachers.classId, classId),
+          eq(schema.classTeachers.teacherId, enhancedUser.id)
+        ),
+      }));
+
+    if (!isTeacher) {
+      throw new Error("Access denied: Not a teacher of this class");
+    }
+
+    // Get most recent analytics record
+    const latestAnalytics = await db.query.classAnalytics.findFirst({
+      where: and(
+        eq(schema.classAnalytics.classId, classId),
+        eq(schema.classAnalytics.organizationId, organizationId)
+      ),
+      orderBy: [desc(schema.classAnalytics.date)],
+    });
+
+    return latestAnalytics;
+  });
+}

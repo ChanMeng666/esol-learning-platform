@@ -3,6 +3,7 @@
 import { useState, useEffect, ReactNode } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getTeacherClasses } from "@/actions/classes";
+import { getClassInsights } from "@/actions/teacher-insights";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -31,10 +32,16 @@ export default function InsightsLayout({ children }: { children: ReactNode }) {
         setClasses(classData || []);
         if (classData && classData.length > 0) {
           setSelectedClass(classData[0]);
-        }
 
-        // Mock insights data - in production this would come from Server Actions
-        setInsights(generateMockInsights());
+          // Load real insights for first class
+          try {
+            const classInsights = await getClassInsights(classData[0].id);
+            setInsights(classInsights || []);
+          } catch (err) {
+            console.error("Failed to load insights:", err);
+            setInsights([]);
+          }
+        }
       } catch (error) {
         console.error("Failed to load insights:", error);
       } finally {
@@ -45,38 +52,22 @@ export default function InsightsLayout({ children }: { children: ReactNode }) {
     loadData();
   }, []);
 
-  const generateMockInsights = () => [
-    {
-      id: "1",
-      type: "success",
-      title: "Excellent Class Engagement",
-      description: "Your class showed 25% higher engagement this week compared to the department average",
-      impact: "high",
-      category: "engagement",
-      actionable: false,
-      timestamp: new Date(),
-    },
-    {
-      id: "2",
-      type: "warning",
-      title: "Writing Skills Need Attention",
-      description: "30% of students are struggling with essay structure. Consider providing more templates.",
-      impact: "medium",
-      category: "skills",
-      actionable: true,
-      timestamp: new Date(),
-    },
-    {
-      id: "3",
-      type: "info",
-      title: "Vocabulary Progress",
-      description: "Class average vocabulary retention has improved by 18% since last month",
-      impact: "medium",
-      category: "progress",
-      actionable: false,
-      timestamp: new Date(),
-    },
-  ];
+  // Load insights when selected class changes
+  useEffect(() => {
+    const loadInsights = async () => {
+      if (selectedClass) {
+        try {
+          const classInsights = await getClassInsights(selectedClass.id);
+          setInsights(classInsights || []);
+        } catch (err) {
+          console.error("Failed to load insights:", err);
+          setInsights([]);
+        }
+      }
+    };
+
+    loadInsights();
+  }, [selectedClass]);
 
   if (isLoading) {
     return (
@@ -101,13 +92,10 @@ export default function InsightsLayout({ children }: { children: ReactNode }) {
         insightsData: insights,
       }}
     >
-      <div className="flex flex-col gap-6">
-        {/* Header */}
-        <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold tracking-tight">Teaching Insights</h1>
-          <p className="text-muted-foreground">
-            AI-powered insights to help you understand and improve student learning
-          </p>
+      <div className="flex flex-col gap-8">
+        {/* Simplified Header */}
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Insights</h1>
         </div>
 
         {/* Filters */}

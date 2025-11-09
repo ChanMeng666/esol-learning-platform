@@ -7,6 +7,7 @@ interface AnalyticsContextType {
   classes: any[];
   selectedClass: any;
   setSelectedClass: (cls: any) => void;
+  analyticsData: any;
   timeRange: string;
   setTimeRange: (range: string) => void;
   isLoading: boolean;

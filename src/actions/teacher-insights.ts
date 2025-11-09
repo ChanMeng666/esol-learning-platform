@@ -845,3 +845,262 @@ function calculateAverageProgress(progressData: any[]): string {
 
   return `${Math.round(avgProgress)}% average progress across all skills`;
 }
+
+/**
+ * Get saved teacher insights from database
+ * Multi-tenant: Returns insights for teacher's organization
+ *
+ * @param filters - Optional filters for insight type, scope, date range
+ * @returns Array of saved insights
+ */
+export async function getTeacherInsights(filters?: {
+  insightType?: string;
+  scopeType?: string;
+  scopeId?: bigint;
+  startDate?: Date;
+  endDate?: Date;
+  includeDismissed?: boolean;
+}) {
+  return fetchWithDrizzle(async (db, { userId, organizationId, enhancedUser }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
+    // Validate teacher role
+    if (enhancedUser.role !== "teacher") {
+      throw new Error("Access denied: Teacher role required");
+    }
+
+    // Build query conditions
+    const conditions = [
+      eq(schema.teacherInsights.teacherId, enhancedUser.id),
+      eq(schema.teacherInsights.organizationId, organizationId),
+    ];
+
+    // Add optional filters
+    if (filters?.insightType) {
+      conditions.push(eq(schema.teacherInsights.insightType, filters.insightType));
+    }
+
+    if (filters?.scopeType) {
+      conditions.push(eq(schema.teacherInsights.scopeType, filters.scopeType));
+    }
+
+    if (filters?.scopeId) {
+      conditions.push(eq(schema.teacherInsights.scopeId, filters.scopeId));
+    }
+
+    // Filter out dismissed insights unless explicitly requested
+    if (!filters?.includeDismissed) {
+      conditions.push(eq(schema.teacherInsights.isDismissed, false));
+    }
+
+    // Add date range filter if provided
+    if (filters?.startDate) {
+      conditions.push(gte(schema.teacherInsights.generatedAt, filters.startDate));
+    }
+
+    if (filters?.endDate) {
+      const { lte } = await import("drizzle-orm");
+      conditions.push(lte(schema.teacherInsights.generatedAt, filters.endDate));
+    }
+
+    // Get insights
+    const insights = await db.query.teacherInsights.findMany({
+      where: and(...conditions),
+      orderBy: [desc(schema.teacherInsights.generatedAt)],
+      limit: 50, // Limit to last 50 insights
+    });
+
+    return insights;
+  });
+}
+
+/**
+ * Get insights for a specific class
+ * Multi-tenant: Validates teacher access to class
+ *
+ * @param classId - Class ID to get insights for
+ * @param insightType - Optional filter by insight type
+ * @returns Array of class insights
+ */
+export async function getClassInsights(classId: bigint, insightType?: string) {
+  return fetchWithDrizzle(async (db, { userId, organizationId, enhancedUser }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
+    // Validate teacher access to class
+    if (enhancedUser.role !== "teacher") {
+      throw new Error("Access denied: Teacher role required");
+    }
+
+    const classInfo = await db.query.classes.findFirst({
+      where: and(
+        eq(schema.classes.id, classId),
+        eq(schema.classes.organizationId, organizationId)
+      ),
+    });
+
+    if (!classInfo) {
+      throw new Error("Class not found");
+    }
+
+    const isTeacher =
+      classInfo.teacherId === enhancedUser.id ||
+      (await db.query.classTeachers.findFirst({
+        where: and(
+          eq(schema.classTeachers.classId, classId),
+          eq(schema.classTeachers.teacherId, enhancedUser.id)
+        ),
+      }));
+
+    if (!isTeacher) {
+      throw new Error("Access denied: Not a teacher of this class");
+    }
+
+    // Build query conditions
+    const conditions = [
+      eq(schema.teacherInsights.teacherId, enhancedUser.id),
+      eq(schema.teacherInsights.organizationId, organizationId),
+      eq(schema.teacherInsights.scopeType, "class"),
+      eq(schema.teacherInsights.scopeId, classId),
+      eq(schema.teacherInsights.isDismissed, false),
+    ];
+
+    if (insightType) {
+      conditions.push(eq(schema.teacherInsights.insightType, insightType));
+    }
+
+    // Get insights
+    const insights = await db.query.teacherInsights.findMany({
+      where: and(...conditions),
+      orderBy: [desc(schema.teacherInsights.generatedAt)],
+      limit: 20,
+    });
+
+    return insights;
+  });
+}
+
+/**
+ * Save a teacher insight to database
+ * Multi-tenant: Saves to teacher's organization
+ *
+ * @param insightData - Insight data to save
+ * @returns Saved insight record
+ */
+export async function saveTeacherInsight(insightData: {
+  insightType: string;
+  scopeType: string;
+  scopeId: bigint;
+  timePeriodStart?: Date;
+  timePeriodEnd?: Date;
+  data: any;
+}) {
+  return fetchWithDrizzle(async (db, { userId, organizationId, enhancedUser }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
+    // Validate teacher role
+    if (enhancedUser.role !== "teacher") {
+      throw new Error("Access denied: Teacher role required");
+    }
+
+    // Create insight record
+    const [insight] = await db
+      .insert(schema.teacherInsights)
+      .values({
+        organizationId,
+        teacherId: enhancedUser.id,
+        insightType: insightData.insightType,
+        scopeType: insightData.scopeType,
+        scopeId: insightData.scopeId,
+        timePeriodStart: insightData.timePeriodStart,
+        timePeriodEnd: insightData.timePeriodEnd,
+        data: insightData.data,
+      })
+      .returning();
+
+    return insight;
+  });
+}
+
+/**
+ * Mark an insight as acknowledged (teacher has viewed it)
+ * Multi-tenant: Validates ownership
+ *
+ * @param insightId - Insight ID to acknowledge
+ * @returns Updated insight record
+ */
+export async function acknowledgeInsight(insightId: bigint) {
+  return fetchWithDrizzle(async (db, { userId, organizationId, enhancedUser }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
+    // Validate ownership
+    const insight = await db.query.teacherInsights.findFirst({
+      where: and(
+        eq(schema.teacherInsights.id, insightId),
+        eq(schema.teacherInsights.teacherId, enhancedUser.id),
+        eq(schema.teacherInsights.organizationId, organizationId)
+      ),
+    });
+
+    if (!insight) {
+      throw new Error("Insight not found or access denied");
+    }
+
+    // Update acknowledged timestamp
+    const [updated] = await db
+      .update(schema.teacherInsights)
+      .set({
+        acknowledgedAt: new Date(),
+      })
+      .where(eq(schema.teacherInsights.id, insightId))
+      .returning();
+
+    return updated;
+  });
+}
+
+/**
+ * Dismiss an insight (hide it from view)
+ * Multi-tenant: Validates ownership
+ *
+ * @param insightId - Insight ID to dismiss
+ * @returns Updated insight record
+ */
+export async function dismissInsight(insightId: bigint) {
+  return fetchWithDrizzle(async (db, { userId, organizationId, enhancedUser }) => {
+    if (!organizationId) {
+      throw new Error("Organization context required");
+    }
+
+    // Validate ownership
+    const insight = await db.query.teacherInsights.findFirst({
+      where: and(
+        eq(schema.teacherInsights.id, insightId),
+        eq(schema.teacherInsights.teacherId, enhancedUser.id),
+        eq(schema.teacherInsights.organizationId, organizationId)
+      ),
+    });
+
+    if (!insight) {
+      throw new Error("Insight not found or access denied");
+    }
+
+    // Mark as dismissed
+    const [updated] = await db
+      .update(schema.teacherInsights)
+      .set({
+        isDismissed: true,
+      })
+      .where(eq(schema.teacherInsights.id, insightId))
+      .returning();
+
+    return updated;
+  });
+}

@@ -90,61 +90,15 @@ function SpreadsheetViewContent() {
         <CardHeader>
           <CardTitle>Grade Entry Spreadsheet</CardTitle>
           <CardDescription>
-            Enter and modify student grades directly in the spreadsheet. Changes are saved automatically.
+            Click any cell to edit grades. Use Tab or Enter to navigate between cells.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-            <div className="flex items-start gap-2">
-              <Info className="h-5 w-5 text-blue-600 mt-0.5" />
-              <div className="text-sm">
-                <p className="font-medium">How to use the gradebook:</p>
-                <ul className="mt-1 space-y-1 text-muted-foreground">
-                  <li>• Click on any cell to edit grades</li>
-                  <li>• Use Tab or Enter to navigate between cells</li>
-                  <li>• Grades are automatically calculated and saved</li>
-                  <li>• Color coding: Green (≥90), Blue (≥80), Yellow (≥70), Red (&lt;60)</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
           <GradeSpreadsheet
             organizationId={BigInt(1)}
             classId={selectedClass.id}
             className="w-full"
           />
-        </CardContent>
-      </Card>
-
-      {/* Grade Weights Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Current Grading Scheme</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="text-center p-3 border rounded-lg">
-              <p className="text-sm font-medium">Assignments</p>
-              <p className="text-2xl font-bold">30%</p>
-            </div>
-            <div className="text-center p-3 border rounded-lg">
-              <p className="text-sm font-medium">Quizzes</p>
-              <p className="text-2xl font-bold">20%</p>
-            </div>
-            <div className="text-center p-3 border rounded-lg">
-              <p className="text-sm font-medium">Midterm</p>
-              <p className="text-2xl font-bold">20%</p>
-            </div>
-            <div className="text-center p-3 border rounded-lg">
-              <p className="text-sm font-medium">Final</p>
-              <p className="text-2xl font-bold">25%</p>
-            </div>
-            <div className="text-center p-3 border rounded-lg">
-              <p className="text-sm font-medium">Participation</p>
-              <p className="text-2xl font-bold">5%</p>
-            </div>
-          </div>
         </CardContent>
       </Card>
     </div>

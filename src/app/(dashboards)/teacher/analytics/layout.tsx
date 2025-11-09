@@ -2,7 +2,7 @@
 
 import { useState, useEffect, ReactNode } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getTeacherClasses } from "@/actions/classes";
+import { getTeacherClasses, getLatestClassAnalytics } from "@/actions/classes";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -19,6 +19,7 @@ const analyticsNavItems = [
 export default function AnalyticsLayout({ children }: { children: ReactNode }) {
   const [classes, setClasses] = useState<any[]>([]);
   const [selectedClass, setSelectedClass] = useState<any>(null);
+  const [analyticsData, setAnalyticsData] = useState<any>(null);
   const [timeRange, setTimeRange] = useState("week");
   const [isLoading, setIsLoading] = useState(true);
   const pathname = usePathname();
@@ -30,6 +31,14 @@ export default function AnalyticsLayout({ children }: { children: ReactNode }) {
         setClasses(classData || []);
         if (classData && classData.length > 0) {
           setSelectedClass(classData[0]);
+          // Load analytics for first class
+          try {
+            const analytics = await getLatestClassAnalytics(classData[0].id);
+            setAnalyticsData(analytics);
+          } catch (err) {
+            console.error("Failed to load analytics:", err);
+            setAnalyticsData(null);
+          }
         }
       } catch (error) {
         console.error("Failed to load analytics data:", error);
@@ -40,6 +49,23 @@ export default function AnalyticsLayout({ children }: { children: ReactNode }) {
 
     loadData();
   }, []);
+
+  // Load analytics when selected class changes
+  useEffect(() => {
+    const loadAnalytics = async () => {
+      if (selectedClass) {
+        try {
+          const analytics = await getLatestClassAnalytics(selectedClass.id);
+          setAnalyticsData(analytics);
+        } catch (err) {
+          console.error("Failed to load analytics:", err);
+          setAnalyticsData(null);
+        }
+      }
+    };
+
+    loadAnalytics();
+  }, [selectedClass]);
 
   if (isLoading) {
     return (
@@ -58,18 +84,16 @@ export default function AnalyticsLayout({ children }: { children: ReactNode }) {
         classes,
         selectedClass,
         setSelectedClass,
+        analyticsData,
         timeRange,
         setTimeRange,
         isLoading,
       }}
     >
-      <div className="flex flex-col gap-6">
-        {/* Header */}
-        <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold tracking-tight">Teaching Analytics</h1>
-          <p className="text-muted-foreground">
-            Comprehensive insights into student performance and engagement
-          </p>
+      <div className="flex flex-col gap-8">
+        {/* Simplified Header */}
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Analytics</h1>
         </div>
 
         {/* Filters */}
