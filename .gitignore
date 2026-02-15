@@ -45,3 +45,4 @@ neon-auth-demo-app
 # Claude Code local settings (contains user-specific permissions)
 .claude/
 next-shadcn-admin-dashboard/
+.env*.local
