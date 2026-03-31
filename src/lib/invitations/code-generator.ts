@@ -3,7 +3,6 @@
  * Generates secure, human-readable invitation codes
  */
 
-import crypto from "crypto";
 import type { UserRole } from "@/lib/auth/permissions";
 
 export type InvitationCodeType = "organization_general" | "teacher_specific" | "parent_specific";
@@ -54,7 +53,7 @@ export function generateInvitationCode(options: GenerateCodeOptions): string {
   // Generate random alphanumeric string (excluding ambiguous characters: 0, O, I, l)
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let randomPart = "";
-  const randomBytes = crypto.randomBytes(length);
+  const randomBytes = crypto.getRandomValues(new Uint8Array(length));
 
   for (let i = 0; i < length; i++) {
     randomPart += chars[randomBytes[i] % chars.length];

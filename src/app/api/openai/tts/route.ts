@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getOpenAIClient, VOICE_PROFILES, VoiceProfile } from "@/lib/openai";
 
-export const runtime = "edge";
-
 /**
  * Text-to-Speech API endpoint
  * Generates audio from text using OpenAI TTS
@@ -33,14 +31,15 @@ export async function POST(request: NextRequest) {
       speed: profile.speed,
     });
 
-    // Convert to buffer
-    const buffer = Buffer.from(await mp3.arrayBuffer());
+    // Convert to Uint8Array (compatible with Edge/Cloudflare Workers)
+    const arrayBuffer = await mp3.arrayBuffer();
+    const audioData = new Uint8Array(arrayBuffer);
 
     // Return audio file
-    return new NextResponse(buffer, {
+    return new NextResponse(audioData, {
       headers: {
         "Content-Type": "audio/mpeg",
-        "Content-Length": buffer.length.toString(),
+        "Content-Length": audioData.byteLength.toString(),
       },
     });
   } catch (error) {

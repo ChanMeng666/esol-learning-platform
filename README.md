@@ -6,7 +6,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![CopilotKit](https://img.shields.io/badge/CopilotKit-1.10-purple)](https://copilotkit.ai/)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.0-06B6D4?logo=tailwindcss)](https://tailwindcss.com/)
-[![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?logo=vercel)](https://vercel.com/)
+[![Cloudflare](https://img.shields.io/badge/Cloudflare-Ready-F38020?logo=cloudflare)](https://developers.cloudflare.com/pages/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 A comprehensive, AI-powered ESOL learning platform featuring **real-time voice conversation**, **CEFR-aligned practice**, **NZCEL exam prep**, and **multi-module progress tracking**. Built with Next.js 15, OpenAI Realtime API, CopilotKit, and Neon PostgreSQL.
@@ -51,6 +51,7 @@ The **AI-Powered ESOL Learning Platform** is a comprehensive solution for Englis
 - 💾 **Intelligent Audio Caching** - 90%+ cost savings on TTS API calls
 - 🔐 **Secure Authentication** - Stack Auth with route protection
 - ☁️ **Cloud Storage** - Vercel Blob for audio files with CDN acceleration
+- 🌐 **Cloudflare Ready** - Configured for Cloudflare Pages deployment via OpenNext
 - ✨ **Modern UI/UX** - Beautiful animations, theme switching, and responsive design
 - 📈 **Complete Session Tracking** - Every practice session, recording, and conversation permanently stored
 - 🏗️ **Clean Architecture** - Organized component structure with comprehensive placement guidelines
@@ -245,6 +246,11 @@ graph TB
         W[CDN Delivery]
     end
 
+    subgraph "Deployment"
+        AA[Cloudflare Pages]
+        AB[OpenNext Adapter]
+    end
+
     subgraph "External APIs"
         X[OpenAI TTS]
         Y[OpenAI Whisper]
@@ -374,10 +380,11 @@ mindmap
       Neon PostgreSQL
       Drizzle ORM
       Stack Auth
-    Storage
+    Storage & Deployment
       Vercel Blob
       CDN Acceleration
       Audio Caching
+      Cloudflare Pages
     UI/UX
       shadcn/ui
       Framer Motion
@@ -412,6 +419,7 @@ mindmap
 | **ORM** | Drizzle ORM 0.44 | Type-safe database queries |
 | **Authentication** | Stack Auth 2.8 | User authentication and session management |
 | **File Storage** | Vercel Blob 2.0 | CDN-accelerated audio file storage |
+| **Deployment** | Cloudflare Pages | Edge deployment via @opennextjs/cloudflare |
 | **State Mgmt** | Zustand | Lightweight client state management |
 | **Cache** | LocalStorage | Client-side caching for performance |
 | **Animations** | Framer Motion | Smooth, declarative animations |
@@ -469,11 +477,36 @@ The application will be available at:
 ### Build for Production
 
 ```bash
-# Create optimized production build
+# Create optimized production build (standard Next.js)
 npm run build
 
 # Start production server
 npm start
+```
+
+### Deploy to Cloudflare
+
+The project is configured for Cloudflare Pages deployment via `@opennextjs/cloudflare`:
+
+```bash
+# Build for Cloudflare
+npm run build:cf
+
+# Deploy to Cloudflare
+npm run deploy
+
+# Local preview with Cloudflare Workers runtime
+npm run preview
+```
+
+> **Note**: Cloudflare Workers free tier has a 3MB (compressed) worker size limit. This project requires the Workers Paid plan ($5/month, 10MB limit) for deployment. The compressed bundle is approximately 5MB.
+
+Before deploying, set secrets via Wrangler:
+```bash
+npx wrangler secret put OPENAI_API_KEY
+npx wrangler secret put BLOB_READ_WRITE_TOKEN
+npx wrangler secret put DATABASE_URL
+npx wrangler secret put STACK_SECRET_SERVER_KEY
 ```
 
 ### Linting
@@ -683,6 +716,8 @@ nzcel-prep/
 ├── tsconfig.json                   # TypeScript config
 ├── tailwind.config.ts              # Tailwind config
 ├── next.config.ts                  # Next.js config
+├── wrangler.jsonc                  # Cloudflare Workers configuration
+├── open-next.config.ts             # OpenNext adapter for Cloudflare
 ├── docs/
 │   ├── COMPONENT_PLACEMENT_GUIDELINES.md  # Component organization rules ✨
 │   ├── architecture/
@@ -1069,7 +1104,8 @@ Comprehensive documentation is available for developers and contributors:
 - **CopilotKit** - For enabling seamless AI integration
 - **Stack Auth** - For secure authentication infrastructure
 - **Neon** - For serverless PostgreSQL database
-- **Vercel** - For Next.js framework, hosting, and Blob storage
+- **Vercel** - For Next.js framework and Blob storage
+- **Cloudflare** - For edge deployment via Pages and Workers
 - **OpenAI** - For TTS, Whisper, and GPT-4 APIs
 - **shadcn/ui** - For beautiful, accessible components
 - **NZCEL Students** - For inspiring this educational tool
@@ -1092,6 +1128,7 @@ For questions, issues, or suggestions:
 
 [![Next.js](https://img.shields.io/badge/Powered%20by-Next.js-black?logo=next.js)](https://nextjs.org/)
 [![CopilotKit](https://img.shields.io/badge/AI%20by-CopilotKit-purple)](https://copilotkit.ai/)
+[![Cloudflare](https://img.shields.io/badge/Deploy%20on-Cloudflare-F38020?logo=cloudflare)](https://developers.cloudflare.com/pages/)
 
 </div>
 

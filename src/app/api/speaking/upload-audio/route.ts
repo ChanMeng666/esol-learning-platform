@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { uploadAudioFile } from "@/lib/blob/audio-storage";
 
-export const runtime = "nodejs";
-
 /**
  * API route to upload audio files to Vercel Blob
  * This is needed because the BLOB_READ_WRITE_TOKEN is only available on the server

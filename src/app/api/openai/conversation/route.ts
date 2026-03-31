@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getOpenAIClient } from "@/lib/openai";
 
-export const runtime = "edge";
-
 interface ConversationMessage {
   role: "system" | "user" | "assistant";
   content: string;

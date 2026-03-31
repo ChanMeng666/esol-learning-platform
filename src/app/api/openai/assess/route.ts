@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getOpenAIClient } from "@/lib/openai";
 import type { NZCELLevel, SkillType } from "@/types";
 
-export const runtime = "edge";
-
 /**
  * Assessment API endpoint
  * Uses GPT-4 to assess speaking or writing responses
